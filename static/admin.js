@@ -924,7 +924,7 @@ VIEWS.apps = async () => {
   $('#content').innerHTML = `
     <div class="panel">
       <div class="ph"><span class="pt">시공업체 입점 신청 <small>${data.length}건 · 승인 시 협력업체로 자동 등록</small></span>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
           <div class="filters">${F.map(f=>`<span class="fc ${f===appFilter?'on':''}" data-act="setAppFilter" data-arg="${esc(f)}">${f}</span>`).join('')}</div>
           ${xlsxBtn('applications','입점신청')}
           <button class="btn p sm" data-act="appIntakeForm" title="전화·팩스·영업으로 받은 신청을 대신 접수">+ 직접 접수</button>
@@ -1433,8 +1433,8 @@ VIEWS.partners = async () => {
         <div class="filters">
           ${['시행사','시공사','전체'].map(t=>`<span class="fc ${t===partnerFilter.ptype?'on':''}" data-act="setPtype" data-arg="${esc(t)}">${t==='시행사'?'🏢 시행사':t==='시공사'?'🔧 시공사':'전체'}</span>`).join('')}
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="pq" placeholder="🔍 업체명·지역·공종·사업자번호·대표·연락처" value="${esc(partnerFilter.q)}" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:.78rem;min-width:230px" data-act-enter="doPartnerSearch">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <input id="pq" placeholder="🔍 업체명·지역·공종·사업자번호·대표·연락처" value="${esc(partnerFilter.q)}" style="border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:.78rem;flex:1 1 220px;min-width:150px" data-act-enter="doPartnerSearch">
           <button class="btn g sm" data-act="doPartnerSearch">검색</button>
           ${xlsxBtn('partners','협력업체')}
           <button class="btn p sm" data-act="partnerForm">+ 업체 등록</button>
@@ -1442,7 +1442,7 @@ VIEWS.partners = async () => {
       </div>
       <div class="filters" style="margin-bottom:12px">${majors.map(m=>`<span class="fc ${m===partnerFilter.major?'on':''}" data-act="setPartnerMajor" data-arg="${esc(m)}">${m}</span>`).join('')}</div>
       <div style="font-weight:800;font-size:.85rem;margin-bottom:8px">${isPrime?'🏢 시행사':partnerFilter.ptype==='시공사'?'🔧 시공사':'전체'} <span style="color:var(--faint);font-weight:600">${data.length}개사</span></div>
-      <div class="tbl-wrap"><table class="tbl">
+      <div class="tbl-wrap"><table class="tbl tbl-partners">
         <tr><th>#</th><th>업체명</th><th>구분</th><th>대공종</th><th>권역</th><th>연락처</th>${isPrime?'<th>면허</th>':'<th>평점</th>'}<th class="r">이행</th><th>상태</th><th class="r">액션</th></tr>
         ${data.length?data.map(p=>`<tr data-act="partnerForm" data-arg="${p.id}" style="cursor:pointer">
           <td>${p.id}</td><td class="em">${esc(p.name)}</td>
@@ -3866,7 +3866,7 @@ VIEWS.defects = async () => {
         하자보증 기간 내 건은 <b>시행사 비용 부담</b>입니다. 비용 부담이 <b>시행사</b>로 확정된 완료 건만 해당 업체 평점에서 차감됩니다(중대 0.2 · 보통 0.1점).
       </div>
       <div class="ph"><span class="pt">하자 목록 <small>${data.length}건</small></span>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
           <div class="filters">${['전체',...DEFECT_FLOW].map(f=>`<span class="fc ${f===defectFilter?'on':''}" data-act="setDefectFilter" data-arg="${esc(f)}">${f}</span>`).join('')}</div>
           ${/*  ⚠ 하자가 전화·메일로 들어오면 시스템에 넣을 창구가 없었다. 보험사가
                  포털로 올린 것만 존재했고, 나머지는 운영자 머릿속에만 남았다. */''}

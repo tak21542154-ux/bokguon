@@ -41,7 +41,13 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 .top .crumb{font-size:.78rem;color:var(--faint);font-weight:600}
 .top .sp{flex:1}
 .chip-date{background:var(--mist);border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:.74rem;font-weight:700;color:var(--sub)}
-.content{flex:1;overflow-y:auto;padding:22px 26px 60px}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;padding:22px 26px 60px}
+/*  ⚠ overflow-x 를 안 적으면 overflow-y:auto 때문에 브라우저가 alongside 자동으로
+    auto 로 계산한다 — 안에서 표(.tbl)처럼 뭔가 하나라도 자기 overflow 컨테이너를
+    제대로 안 만들면, 그 가로 길이가 .content 전체로 새서 카드·본문 전부가 함께
+    옆으로 밀려 보인다(표만 가로 스크롤돼야 하는데 화면 전체가 밀리는 모바일 버그
+    의 전형적 원인). 명시적으로 hidden 을 박아 .content 자체는 절대 가로로
+    안 밀리게 하고, 표처럼 가로 스크롤이 필요한 곳은 .tbl-wrap 이 따로 담당한다. */
 .loading{color:var(--faint);padding:40px;text-align:center}
 
 /* KPI */
@@ -84,7 +90,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 .pstep .pfill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--blue),#3E9BDD)}
 .pstep.done .pfill{background:var(--green)}
 @media(max-width:1200px){.pipe{flex-wrap:wrap}.pstep{min-width:130px}.krow.k5{grid-template-columns:repeat(3,1fr)}}
-.kc{background:#fff;border-radius:14px;padding:15px 16px;box-shadow:0 2px 8px rgba(15,40,70,.05)}
+.kc{background:#fff;border-radius:14px;padding:15px 16px;box-shadow:0 2px 8px rgba(15,40,70,.05);min-width:0}
 .kc .k{font-size:.74rem;color:var(--faint);font-weight:700}
 .kc .v{font-weight:800;font-size:1.42rem;letter-spacing:-.02em;margin-top:5px}
 .kc .v small{font-size:.7rem;font-weight:700}
@@ -102,6 +108,11 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 @media(max-width:1100px){.krow.k6,.krow.k4{grid-template-columns:repeat(2,1fr)}.row2{grid-template-columns:1fr}}
 
 .tbl{width:100%;border-collapse:collapse;font-size:.84rem}
+/*  ⚠ 첫 칸(#/번호)에 폭을 안 주면 table-layout:auto 가 "업체명" 같은 긴 칸에
+    너비를 몰아주면서 이 칸을 억지로 쥐어짜 숫자가 "2/4/0"처럼 한 글자씩
+    세로로 쌓인다(모바일에서 특히 심함 — 칼럼이 많은 표일수록 더 쥐어짜인다).
+    width:1%+nowrap 은 "내용만큼만 차지하고 절대 안 쪼그라든다"는 표준 트릭. */
+.tbl td:first-child,.tbl th:first-child{white-space:nowrap;width:1%}
 .tbl th{text-align:left;color:var(--faint);font-weight:700;padding:9px 12px;background:#FAFCFE;border-bottom:1px solid var(--mist);font-size:.72rem;white-space:nowrap;position:sticky;top:0}
 .tbl td{padding:10px 12px;border-bottom:1px solid var(--mist);font-weight:600;vertical-align:middle}
 .tbl td.r,.tbl th.r{text-align:right}
@@ -170,6 +181,18 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
   /* 표는 가로로 밀리게 두되, 페이지 자체는 절대 가로 스크롤이 생기지 않게 한다 */
   .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .tbl{min-width:560px}
+  /*  ⚠ 업체 등록·관리 표(10칸: #·업체명·구분·대공종·권역·연락처·면허·이행·상태·액션)는
+      폭이 가장 넓은 축에 속한다 — 560px 로 묶어도 모바일 화면보다 훨씬 넓어
+      계속 가로 스크롤을 해야 했다. 행 자체가 이미 클릭하면 상세/수정 모달을
+      여는 구조(partnerForm)이므로, 부가정보(대공종·권역·연락처·면허·이행)는
+      모바일에서 숨기고 핵심(#·업체명·구분·상태·액션)만 남겨 가로 스크롤
+      없이 한 화면에 들어오게 한다. 상세는 행을 눌러서 본다. */
+  .tbl-partners{min-width:0}
+  .tbl-partners th:nth-child(4),.tbl-partners td:nth-child(4),
+  .tbl-partners th:nth-child(5),.tbl-partners td:nth-child(5),
+  .tbl-partners th:nth-child(6),.tbl-partners td:nth-child(6),
+  .tbl-partners th:nth-child(7),.tbl-partners td:nth-child(7),
+  .tbl-partners th:nth-child(8),.tbl-partners td:nth-child(8){display:none}
   .panel{padding:14px 12px}
   .ph{flex-wrap:wrap;gap:8px}
   .krow.k4,.krow.k5,.krow.k6,.krow.k3{grid-template-columns:repeat(2,1fr)}
