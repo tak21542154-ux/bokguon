@@ -1,0 +1,343 @@
+:root{
+  --blue:#0064B2; --blue-deep:#004E8C; --blue-ink:#003A69; --blue-bg:#E8F2FA;
+  --amber:#E8A33D; --amber-deep:#D18A1F; --amber-bg:#FFF1DB;
+  --paper:#FFFFFF; --mist:#F3F7FB; --line:#DCE6F0;
+  --ink:#12202E; --sub:#4A5B6C;
+  --green:#137A38; --green-bg:#E6F4EA; --red:#C63A3A; --red-bg:#FBEAEA;
+
+  /* ── 접근성 (WCAG 2.1 AA) ────────────────────────────────
+     기존 --faint(#8698A9)는 흰 배경에서 대비 2.97:1, --amber-deep(#D18A1F)는 2.85:1 로
+     본문 기준 4.5:1 은 물론 큰 글씨 기준 3:1 에도 미달했다.
+     보험사·협력업체 담당자 연령대를 고려하면 실제로 읽기 어려운 수준이다.
+     브랜드 색(--amber)은 배경·테두리용으로 그대로 두고, **글자에 쓰는 값만** 어둡게 분리한다. */
+  --faint:#5C6E82;        /* paper 5.24:1 · mist 4.87:1 — AA 통과 */
+  --amber-text:#8A5800;   /* paper 6.04:1 · mist 5.61:1 — AA 통과 */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+/*  ⚠⚠ [라운드221] 예전엔 여기 OS별 폴백(맑은 고딕·Malgun Gothic)만 손으로
+    적어 뒀다 — fonts.css 가 이미 Windows·macOS/iOS·Android 순 전체 대체
+    사슬을 --font-sans 로 정의해 두고(랜딩·에러·약관 3개 페이지만 그 변수를
+    직접 썼다) 나머지 콘솔·포털 전부는 이 하드코딩값을 그대로 물려받아,
+    자체호스팅 Pretendard 로드가 실패하면 macOS(Apple SD Gothic Neo)·
+    Android(Noto Sans KR) 폴백이 여기서만 빠졌다. var(--font-sans) 로
+    바꿔 fonts.css 를 유일한 소스로 만든다(둘 다 로드하는 14개 템플릿
+    전수 확인 — 이 한 줄만 고치면 전부 같은 사슬을 받는다). */
+body{font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word;background:var(--mist);
+  /* 고아문자 방지 — 한글은 어절 단위로 줄이 갈려 마지막 줄에 두 글자만
+     떨어지는 일이 잦다("…재시공 / 주선"). pretty 가 그 줄을 채워 올린다.
+     지원하지 않는 브라우저는 무시할 뿐이라 부작용이 없다. */
+  text-wrap:pretty}
+/* 짧은 제목·라벨·버튼은 줄 길이를 고르게 나눈다.
+   긴 문단에 balance 를 걸면 느려지므로 짧은 것에만 쓴다. */
+h1,h2,h3,h4,.pt,.k,.lbl,.tag,.pill,label{text-wrap:balance}
+/* 버튼 글자는 쪼개지 않는다 — 좁은 화면에서 "보험 / 사"처럼 갈렸다 */
+.btn,.tab,.mi{white-space:nowrap}
+/* 표 셀은 줄 길이를 고르게 나눈다.
+   공종 이름이 가운뎃점에서 갈려 "외벽·석재·담장· / 조적" 처럼 한 낱말만
+   떨어지곤 했다(72px / 25px). balance 를 주면 50px / 47px 로 고르게 나뉜다.
+   ⚠ 표 전체에 nowrap 을 걸면 안 된다 — 연락처 표에는 50자짜리 셀이 있어
+     가로가 끝없이 늘어나고 다른 열이 화면 밖으로 밀려난다. */
+.tbl td,.tbl th{text-wrap:balance}
+/* 전화번호는 어떤 경우에도 쪼개지 않는다.
+   좁은 칸에서 "063-242- / 1480" 처럼 갈려 잘못 읽고 잘못 걸게 된다.
+   (하이픈이 줄바꿈 기회로 잡히기 때문에 생긴다) */
+.tel,td.tel{white-space:nowrap;text-wrap:nowrap}
+/* 공종 이름도 쪼개지 않는다. 좁은 칸에서 "누수·배관 / ·설비" 처럼 갈려
+   가운뎃점이 줄 앞머리로 넘어갔다(한글 조판에서 피하는 형태).
+   공종은 정해진 짧은 어휘라 한 줄에 들어간다. */
+.cat,td.cat{white-space:nowrap;text-wrap:nowrap}
+a{color:inherit;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;border-radius:12px;font-weight:800;font-family:inherit;font-size:.9rem;padding:12px 22px;transition:transform .12s,box-shadow .12s,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.btn.p{background:var(--blue);color:#fff;box-shadow:0 6px 16px rgba(0,100,178,.28)}
+.btn.p:hover{background:var(--blue-deep)}
+.btn.a{background:var(--amber);color:#1E1503;box-shadow:0 6px 16px rgba(232,163,61,.32)}
+.btn.g{background:#fff;color:var(--sub);border:1px solid var(--line);box-shadow:none}
+.btn.sm{padding:7px 13px;font-size:.76rem;border-radius:9px}
+.btn.danger{background:var(--red-bg);color:var(--red)}
+.pill{display:inline-block;font-size:.66rem;font-weight:800;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.pill.blue{background:var(--blue-bg);color:var(--blue)}
+.pill.amber{background:var(--amber-bg);color:var(--amber-text)}
+.pill.green{background:var(--green-bg);color:var(--green)}
+.pill.red{background:var(--red-bg);color:var(--red)}
+.pill.gray{background:var(--mist);color:var(--sub)}
+
+/* ─── forms ─── */
+.form-shell{max-width:720px;margin:0 auto;padding:40px 24px 80px}
+.form-card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:38px 36px;box-shadow:0 20px 50px rgba(15,45,80,.06)}
+.form-head{margin-bottom:26px}
+.form-head .badge{display:inline-block;background:var(--amber);color:#1E1503;font-weight:800;font-size:.72rem;padding:5px 14px;border-radius:99px;margin-bottom:14px}
+.form-head h1{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.form-head p{color:var(--sub);font-size:.95rem;line-height:1.6}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.8rem;font-weight:800;color:var(--sub);margin-bottom:7px}
+.field label .req{color:var(--red);margin-left:3px}
+.field input,.field select,.field textarea{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.9rem;font-family:inherit;color:var(--ink)}
+.field textarea{min-height:110px;resize:vertical;line-height:1.6}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,100,178,.12)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.checks{display:flex;gap:18px;flex-wrap:wrap}
+.check{display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700;color:var(--sub);cursor:pointer}
+.check input{width:auto}
+.form-foot{display:flex;gap:12px;margin-top:24px}
+.form-note{font-size:.72rem;color:var(--faint);line-height:1.6;margin-top:14px}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--blue-ink);color:#fff;font-size:.85rem;font-weight:700;padding:14px 26px;border-radius:12px;box-shadow:0 12px 30px rgba(0,20,45,.35);transition:transform .3s;z-index:200;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast b{color:var(--amber)}
+.success-box{text-align:center;padding:40px 20px}
+.success-box .ico{width:70px;height:70px;border-radius:50%;background:var(--green-bg);color:var(--green);display:grid;place-items:center;font-size:2rem;margin:0 auto 20px}
+.success-box h2{font-size:1.5rem;font-weight:800;margin-bottom:10px}
+.success-box p{color:var(--sub);line-height:1.7}
+.topbar{background:#fff;border-bottom:1px solid var(--line);height:60px;display:flex;align-items:center;padding:0 24px}
+.topbar .logo{font-weight:800;font-size:1.15rem}
+.topbar .logo b{color:var(--blue)}
+.topbar .sp{flex:1}
+
+/* ── 개인정보 수집·이용 동의 (개인정보 보호법 §15·§22) ────────── */
+.consent{
+  margin-top:26px;padding:20px 22px;border:1.5px solid var(--line);
+  border-radius:16px;background:var(--mist);
+}
+.consent > h4{
+  font-size:.86rem;font-weight:800;color:var(--blue-ink);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.consent table{width:100%;border-collapse:collapse;font-size:.75rem;background:#fff;border-radius:10px;overflow:hidden}
+.consent th,.consent td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top;line-height:1.55}
+.consent th{background:#F7FAFD;font-weight:800;color:var(--sub);white-space:nowrap;width:26%}
+.consent .agree{
+  display:flex;align-items:flex-start;gap:10px;margin-top:14px;cursor:pointer;
+  font-size:.84rem;font-weight:700;color:var(--ink);line-height:1.55;
+}
+.consent .agree input{width:18px;height:18px;flex:none;margin-top:1px;accent-color:var(--blue);cursor:pointer}
+.consent .agree .tag{
+  font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:99px;flex:none;margin-top:1px;
+}
+.consent .agree .tag.req{background:var(--red-bg);color:var(--red)}
+.consent .agree .tag.opt{background:var(--mist);color:var(--faint);border:1px solid var(--line)}
+.consent .more{
+  font-size:.72rem;color:var(--sub);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+}
+.consent .more a{color:var(--blue);font-weight:800}
+.consent.err{border-color:var(--red);background:var(--red-bg)}
+.consent .agree:focus-within{outline:2px solid var(--blue);outline-offset:3px;border-radius:6px}
+
+/* ══════════════════════════════════════════════════════════════
+   반응형 — 이 파일에는 미디어쿼리가 하나도 없어서
+   신청 폼의 2단 그리드(.field-row)가 좁은 화면에서 그대로 유지돼
+   입력칸이 짓눌리고 가로 스크롤이 생겼다.
+   협력업체 담당자는 대부분 현장에서 휴대폰으로 접속한다.
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px){
+  .form-shell{padding:20px 14px 56px}
+  .form-card{padding:24px 18px;border-radius:16px}
+  .form-head h1{font-size:1.4rem}
+  .field-row{grid-template-columns:1fr;gap:0}   /* 2단 → 1단 */
+  .form-foot{flex-direction:column}
+  .form-foot .btn{width:100%}
+  .checks{flex-direction:column;gap:10px}
+  .consent{padding:16px 14px}
+  .consent th{width:34%}
+  .toast{left:12px;right:12px;transform:translateY(90px);max-width:none}
+  .toast.show{transform:translateY(0)}
+}
+
+/* 좁은 화면의 넓은 표 — **표만** 가로로 굴러가게 한다.
+   ⚠ 예전에는 `body{overflow-x:hidden}` 으로 넘침을 '숨겼다'. 그런데 이건
+     넘침을 고친 게 아니라 **손가락으로 끌어올 길을 없앤 것**이었다.
+     래퍼 없는 표(보험사 낙찰 승인 대기 표 등)의 오른쪽 열이 화면 밖 250px 에
+     놓인 채 영영 닿을 수 없었다 — 승인 버튼이 거기 있었다.
+     지금은 모든 표를 .tbl-wrap 으로 감싸 표 안에서만 스크롤되게 하고,
+     본문은 넘치지 않으므로 숨길 필요 자체가 없다. */
+@media (max-width: 900px){
+  .tbl-wrap, .panel > div[style*="overflow"]{
+    overflow-x:auto; -webkit-overflow-scrolling:touch; max-width:100%}
+  /* 표가 지나치게 좁아져 글자가 세로로 쪼개지지 않도록 최소폭을 준다 */
+  .tbl-wrap > .tbl{min-width:520px}
+
+  /*  ⚠ 표가 옆으로 굴러가긴 하는데 **굴러간다는 표시가 없다.**
+      실측(폰 375px, 협력사 입찰 화면): 「입찰」 버튼 18개가 **전부 화면 밖**
+      x=519 에 놓여 있었다. 하자 화면의 「완료 보고」·「귀책 이의」도 같다.
+      협력사에게는 "입찰하러 들어왔는데 입찰 버튼이 없다" 로 읽힌다.
+      → 누를 자리(버튼이 든 마지막 열)만 오른쪽에 붙여 둔다.
+        표는 그대로 밀리고 버튼은 항상 보인다.
+      ⚠ 래퍼로 걸지 않는다 — 정작 결함이 난 입찰 표는 `.tbl-wrap` 이 아니라
+        인라인 `style="overflow:auto"` 안에 있었다. 표 자체에 건다.
+      ⚠ `:has()` 를 못 읽는 브라우저는 규칙이 통째로 무시돼 지금과 똑같이 동작한다. */
+  .tbl:has(td:last-child .btn) tr > :last-child{
+    position:sticky; right:0; z-index:1;
+    box-shadow:-9px 0 9px -9px rgba(15,40,70,.28)}
+  .tbl:has(td:last-child .btn) td:last-child{background:#fff}
+  .tbl:has(td:last-child .btn) th:last-child{background:#FAFCFE}
+}
+
+/*  손가락 크기 — 폰에서 버튼은 최소 44px(iOS 권장) ─────────────
+    ⚠ 이 보정이 **협력사 포털 안에만** 들어 있었다. 실측(폰 375px):
+      발주처 포털 버튼은 전부 44px 미만 — 「완료 승인」·「검토」가 29px 이었다.
+      돈이 오가는 승인 버튼이 옆 버튼과 붙어 있으면 잘못 눌린다.
+    → `.btn` 원본이 여기 있으니 보정도 여기 둔다. 세 화면이 같이 낫는다.
+      (협력사 포털의 복사본은 지웠다 — 자리가 둘이면 언젠가 하나만 고쳐진다)
+    ⚠ 폭 조건은 협력사에 있던 820px 그대로다. 숫자를 바꾸면
+      태블릿 가로에서 버튼 크기가 조용히 달라진다. */
+@media (max-width: 820px){
+  .btn, label.btn{min-height:44px; gap:4px}
+  /* 44px 안에서 글자가 위아래로 짓눌리지 않게 작은 버튼의 여백을 조정 */
+  .btn.sm{padding:9px 14px;font-size:.8rem}
+}
+
+/* ── 키보드 접근성 ────────────────────────────────────────────
+   마우스를 쓰지 않는 이용자가 지금 어디에 있는지 볼 수 있어야 한다. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+  outline:3px solid var(--amber);
+  outline-offset:2px;
+  border-radius:6px;
+}
+
+/* 화면에는 안 보이지만 스크린리더는 읽는 텍스트 */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   시공 현장 · 사진 (협력사 포털 / 어드민 검수 공용)
+   ══════════════════════════════════════════════════════════════ */
+.sitecard{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;background:#fff}
+.sitecard .sitehead{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.sitecard .em{font-weight:800;font-size:.92rem;color:var(--ink)}
+.sitecard .sub{font-size:.76rem;color:var(--sub)}
+.siteact{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);flex-wrap:wrap}
+.siteact .sp{flex:1}
+.upl{cursor:pointer;margin:0}
+
+.sitephotos{margin-top:12px}
+.pgroup{margin-top:14px}
+.pgtitle{font-size:.8rem;font-weight:800;color:var(--blue-ink);margin-bottom:8px;
+  padding-bottom:6px;border-bottom:2px solid var(--line)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.pcell{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--mist)}
+.pcell.rej{border-color:var(--red);box-shadow:0 0 0 2px var(--red-bg)}
+.pcell img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#E9EFF5}
+.pcell figcaption{padding:7px 9px;font-size:.7rem;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff}
+.pcell .pk{font-weight:800;color:var(--blue)}
+.pcell .prej{color:var(--red);font-weight:700;width:100%;line-height:1.4}
+.pcell select{width:100%;font-size:.72rem;padding:5px 7px;border:1px solid var(--line);border-radius:7px;font-family:inherit}
+
+@media (max-width: 640px){
+  .pgrid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+  .sitecard .sitehead{flex-direction:column}
+  .siteact{gap:6px}
+  .siteact .btn{flex:1;min-width:0}
+}
+
+/* ══════════════════════════════════════════════════════════════
+   우측 하단 알림 트레이 (협력사·보험사 포털 공용 — static/tray.js)
+   벨은 눌러야 보인다. 현장 기사·보험사 담당자가 다른 화면을 보고 있어도
+   새 출동 콜·승인 요청이 스스로 알려야 해서 화면 위로 띄운다.
+   ══════════════════════════════════════════════════════════════ */
+.tray{position:fixed;right:16px;bottom:16px;z-index:200;display:flex;
+  flex-direction:column-reverse;gap:9px;pointer-events:none;
+  max-width:min(360px,calc(100vw - 32px))}
+.tray .tc{pointer-events:auto;background:#fff;border:1px solid var(--line);
+  border-left:4px solid var(--blue);border-radius:13px;padding:12px 14px;
+  box-shadow:0 14px 38px rgba(6,26,48,.19);cursor:pointer;
+  display:flex;gap:11px;align-items:flex-start;
+  animation:trayin .34s cubic-bezier(.22,1,.36,1)}
+.tray .tc.out{animation:trayout .26s ease forwards}
+@keyframes trayin{from{opacity:0;transform:translateX(26px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes trayout{to{opacity:0;transform:translateX(26px) scale(.97)}}
+.tray .tc:hover{border-color:var(--blue);box-shadow:0 16px 44px rgba(0,100,178,.24)}
+.tray .tc.amber{border-left-color:var(--amber)}
+.tray .tc .ti{width:32px;height:32px;border-radius:10px;background:var(--blue-bg);
+  display:grid;place-items:center;font-size:.95rem;flex:0 0 auto}
+.tray .tc.amber .ti{background:var(--amber-bg)}
+.tray .tc .tw{min-width:0;flex:1}
+.tray .tc .tt{font-size:.76rem;font-weight:800;color:var(--blue);letter-spacing:.02em}
+.tray .tc.amber .tt{color:#8A5F12}
+.tray .tc .tb{font-size:.79rem;font-weight:700;line-height:1.48;margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tray .tc .tg{font-size:.68rem;color:var(--faint);font-weight:700;margin-top:4px}
+.tray .tc .tx{background:none;border:none;color:var(--faint);font-size:1rem;
+  cursor:pointer;padding:0 2px;line-height:1;flex:0 0 auto;min-width:26px;min-height:26px}
+.tray .tc .tx:hover{color:var(--ink)}
+@media(max-width:640px){
+  /* 폰에서는 하단 전폭 — 손가락이 닿는 자리에 둔다 */
+  .tray{right:10px;left:10px;bottom:10px;max-width:none}
+}
+@media(prefers-reduced-motion:reduce){ .tray .tc{animation:none} }
+
+
+/* ══════════════════════════════════════════════════════════════
+   앱(홈화면 설치 · standalone) 대응
+   manifest 가 display:standalone 이라 브라우저 UI 없이 뜬다. 그러면 상단 노치·
+   하단 홈바가 화면을 그대로 가려, 붙박이 헤더가 상태바 밑으로 들어가고 맨 아래
+   버튼이 홈바에 먹힌다 — "화면이 밀린다"의 정체다.
+   env(safe-area-inset-*) 는 <meta viewport-fit=cover> 가 있어야 0 이 아니다(위 참조).
+   ══════════════════════════════════════════════════════════════ */
+
+/* iOS 는 가로↔세로 전환 때 글자 크기를 제멋대로 키운다 — 그게 글자 밀림으로 보인다 */
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100% }
+
+/* 세로 고무줄 스크롤(당겨서 새로고침)이 앱에서는 화면 전체를 들썩이게 한다 */
+body{ overscroll-behavior-y:contain }
+
+/* 좌우 여백 — 가로 모드에서 노치가 글자를 먹는다 */
+body{
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+
+/* 붙박이 상단바는 상태바 높이만큼 자기 배경을 늘린다(내용은 그만큼 내려온다) */
+.pnav, .topbar{
+  padding-top:env(safe-area-inset-top);
+}
+
+/* 맨 아래 요소가 홈바에 먹히지 않게 */
+.wrap, main, #wrap, #content{
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));
+}
+.tray{ bottom:calc(10px + env(safe-area-inset-bottom)) }
+
+/* 화면을 덮는 것들도 안전영역 안으로 */
+.modal-back{
+  padding-top:calc(20px + env(safe-area-inset-top));
+  padding-bottom:calc(20px + env(safe-area-inset-bottom));
+}
+aside{ padding-top:env(safe-area-inset-top) }
+
+/* 계좌번호·이메일처럼 안 끊기는 긴 문자열이 칸을 밀어 벌린다 */
+.tbl td, .kv .v, .msub, .notice{ overflow-wrap:anywhere }
+/*  ⚠ 단, **번호 칸(.em)은 끊지 않는다.**
+    실측(폰 375px): 접수번호 `26-80162` 가 `26-` / `8016` / `2` 세 줄로 쪼개졌다.
+    `anywhere` 는 최소폭을 한 글자로 만들어 칸을 62px 까지 짜부라뜨린다.
+    이 칸에 들어가는 건 접수번호·하자번호·아이디처럼 **불러 주는 짧은 값**이고,
+    쪼개져 보이면 전화로 잘못 읽는다. 정작 길어서 문제인 계좌번호·이메일은
+    `.kv .v`·`.msub` 쪽이라 위 규칙 그대로 남는다.
+    ⚠ `overflow-wrap:normal` 만으로는 안 된다 — 하이픈은 그 자체가 줄바꿈
+      자리라 `26-` / `80162` 로 여전히 끊긴다. 아예 끊지 않게 한다. */
+.tbl td.em{ overflow-wrap:normal; white-space:nowrap }
+
+/* 앱으로 띄웠을 때만 — 텍스트 길게 눌러 선택되는 것을 막아 앱처럼 느껴지게.
+   단, 입력·표는 예외(계좌번호 복사 등 실제로 필요하다) */
+@media all and (display-mode:standalone){
+  body{ -webkit-user-select:none; user-select:none;
+        -webkit-tap-highlight-color:transparent }
+  input, textarea, select, .tbl, .kv, code{ -webkit-user-select:text; user-select:text }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   지도가 화면 위 요소들을 덮던 문제 — 한 줄로 막는다
+
+   Leaflet 은 지도 안에서 타일 200 · 마커 600 · 팝업 700 · 컨트롤 1000 을 쓴다.
+   그런데 지도 상자(.leaflet-container)에는 z-index 가 없어 **뿌리 쌓임맥락**이라,
+   그 숫자들이 페이지 전체와 직접 겨룬다. 그래서
+     · 현장 지도에서 사건을 누르면 상세 모달(150)이 지도에 덮여 안 보였고,
+     · 협력사 포털 출동 목록의 미니 지도가 상단 내비(50)·앱바(130)를 타고 올라왔다.
+   isolation 으로 상자 자체를 하나의 층으로 만들면 안쪽 숫자가 밖으로 새지 않는다.
+   모달·트레이·토스트·벨·사이드바가 한꺼번에 제자리를 찾는다.
+   (지도 컨트롤은 상자 안에 있으므로 기능은 그대로다)
+   ══════════════════════════════════════════════════════════════ */
+.leaflet-container{ isolation:isolate }

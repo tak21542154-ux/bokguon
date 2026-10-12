@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 오피스 — 보험사 포털</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<link rel="stylesheet" href="{{ asset('leaflet/leaflet.css') }}">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#0064B2">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<script nonce="{{ csp_nonce }}">if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}</script>
+<style>
+body{background:var(--mist)}
+.pnav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.pnav .in{max-width:1180px;margin:0 auto;padding:0 24px;height:62px;display:flex;align-items:center;gap:20px}
+.pnav .lg{font-weight:800;font-size:1.15rem;white-space:nowrap}
+.pnav .lg b{color:var(--blue)}
+.pnav .tabs{display:flex;gap:4px;margin-left:8px}
+.pnav .tab{font-size:.86rem;font-weight:700;color:var(--sub);padding:9px 14px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.pnav .tab:hover{background:var(--mist)}
+.pnav .tab.on{background:var(--blue-bg);color:var(--blue)}
+.pnav .tab .n{background:var(--red);color:#fff;font-size:.6rem;font-weight:800;padding:1px 6px;border-radius:99px;margin-left:5px}
+.pnav .sp{flex:1}
+.pnav .who{font-size:.8rem;font-weight:700;text-align:right;white-space:nowrap}
+.pnav .who small{display:block;font-size:.66rem;color:var(--faint);font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:24px}
+.krow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.kc{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 8px rgba(15,40,70,.05)}
+.kc .k{font-size:.7rem;color:var(--faint);font-weight:700}
+.kc .v{font-weight:800;font-size:1.35rem;margin-top:5px;letter-spacing:-.02em}
+.kc .v small{font-size:.72rem}
+.kc .d{font-size:.65rem;color:var(--faint);margin-top:4px;font-weight:600}
+.kc.hero{background:linear-gradient(135deg,var(--blue),var(--blue-deep));color:#fff}
+.kc.hero .k,.kc.hero .d{color:rgba(255,255,255,.75)}
+.kc.gold{background:linear-gradient(135deg,var(--amber),#C98A26);color:#1E1503}
+.kc.gold .k,.kc.gold .d{color:rgba(30,21,3,.62)}
+.kc.alert{border:1.5px solid var(--red);background:#FFF8F8;cursor:pointer}
+.panel{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(15,40,70,.05);padding:20px 22px;margin-bottom:16px}
+.panel .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.panel .pt{font-weight:800;font-size:.98rem}
+.panel .pt small{color:var(--faint);font-weight:600;font-size:.7rem;margin-left:8px}
+.tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.tbl th{text-align:left;color:var(--faint);font-weight:700;padding:9px 12px;background:#FAFCFE;font-size:.68rem;white-space:nowrap}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--mist);font-weight:600}
+.tbl td.r,.tbl th.r{text-align:right}
+.tbl .em{font-weight:800}
+.tbl tr:hover td{background:#FAFCFE}
+.empty{color:var(--faint);text-align:center;padding:30px;font-size:.85rem}
+.view{display:none}.view.on{display:block}
+.tag{display:inline-block;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.tag.blue{background:var(--blue-bg);color:var(--blue)} .tag.red{background:var(--red-bg);color:var(--red)}
+.tag.green{background:var(--green-bg);color:var(--green)} .tag.amber{background:var(--amber-bg);color:var(--amber-text)}
+.tag.gray{background:var(--mist);color:var(--sub)}
+.notice{background:var(--blue-bg);border:1px solid #C3DEF2;border-radius:12px;padding:13px 16px;font-size:.8rem;color:var(--blue);font-weight:600;margin-bottom:14px;line-height:1.6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.modal-back{position:fixed;inset:0;background:rgba(10,25,45,.45);display:none;place-items:center;z-index:150;padding:20px}
+.modal-back.show{display:grid}
+.modal{background:#fff;border-radius:20px;width:640px;max-width:96vw;max-height:90vh;overflow-y:auto;padding:28px 30px;box-shadow:0 30px 70px rgba(0,20,45,.4)}
+.modal h3{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.modal .msub{color:var(--faint);font-size:.76rem;margin-bottom:18px}
+.modal-foot{display:flex;gap:10px;margin-top:20px}
+.rank{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;margin-bottom:9px;cursor:pointer}
+.rank:hover{border-color:var(--blue)}
+.rank.sel{border-color:var(--amber);background:#FFFBF3}
+.rank .no{width:26px;height:26px;border-radius:9px;background:var(--mist);display:grid;place-items:center;font-weight:800;font-size:.72rem;color:var(--sub);flex:0 0 auto}
+.rank.sel .no{background:var(--amber);color:#1E1503}
+.rank .a{font-weight:800;font-size:.84rem}
+.rank .b{font-size:.66rem;color:var(--faint);margin-top:2px}
+.rank .prc{margin-left:auto;text-align:right}
+.rank .prc .a{font-size:.92rem}
+.reco{display:flex;align-items:center;gap:8px;background:var(--green-bg);border-radius:12px;padding:10px 14px;font-size:.74rem;font-weight:700;color:var(--green);margin-bottom:12px;flex-wrap:wrap}
+/* 다속성 점수 표시 */
+.rank .a .tag{margin-left:6px;vertical-align:middle}
+.sbar{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.sbar span{font-size:.6rem;font-weight:700;color:var(--sub);background:var(--mist);
+  border-radius:99px;padding:2px 7px;white-space:nowrap}
+.rank .prc .scr{font-size:.78rem;font-weight:800;color:var(--blue);margin-top:3px}
+.rank.sel .prc .scr{color:var(--amber-text)}
+@media(max-width:900px){.krow{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
+  /* ⚠ 협력사 포털과 같은 결함 — 폰에서 탭 줄 폭이 0px 이 돼 사라졌다.
+     `.tabs` 만 overflow-x:auto 라 min-width 가 0 으로 풀리고 옆 요소들이
+     62px 한 줄을 다 먹는다. 헤더를 2행으로 나눠 탭을 둘째 줄 전폭으로 내린다. */
+  .pnav .in{height:auto;flex-wrap:wrap;padding:8px 14px;gap:10px}
+  .pnav .sp{display:none}
+  .pnav .tabs{order:3;flex:1 0 100%;min-width:0;margin-left:0;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+  .pnav .tabs::-webkit-scrollbar{display:none}
+  .pnav .tab{min-height:44px;display:flex;align-items:center}
+  .tbl-wrap,.tblx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* ⚠ 일부 .krow 는 인라인 style 로 3~4열을 지정한다. 인라인은 스타일시트를 이기므로
+     !important 가 없으면 좁은 화면에서도 4열이 유지돼 카드가 36px 로 짓눌린다
+     (그 안의 글자가 "수수료는 / 시행사 / 부담" 처럼 세 줄로 갈렸다). */
+  .krow[style*="grid-template-columns"]{grid-template-columns:repeat(2,1fr)!important}}
+.mp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mp-ro label{display:block;font-size:.72rem;color:var(--faint,#8698a9);margin-bottom:4px;font-weight:600}
+.mp-ro input{width:100%;border:1px solid var(--line,#dfe6ee);border-radius:9px;padding:9px 12px;font-size:.85rem}
+.mp-fixed{padding:9px 12px;background:var(--mist,#f4f7fa);border-radius:9px;font-size:.85rem;color:var(--sub,#5a7089)}
+@media(max-width:620px){.mp-grid{grid-template-columns:1fr}}
+/* 알림 벨 */
+.bellwrap{position:relative}
+.bell{cursor:pointer;font-size:1.15rem;position:relative;width:38px;height:38px;border-radius:10px;
+  line-height:1;display:grid;place-items:center;border:1px solid var(--line);background:var(--mist)}
+.bell:hover{background:#E7EDF2}
+/*  ⚠ 배지는 종 **바깥** 모서리에 — 안쪽(top:-1/right:1)에 두면 두 자리 수부터 종을 덮는다 */
+.bdot{position:absolute;top:-7px;right:-8px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;
+  background:var(--red);color:#fff;font-size:.62rem;font-weight:800;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 0 0 2px #fff;letter-spacing:-.02em;pointer-events:none}
+/* ⚠ 폭이 344px 고정이라 폰(375px)에서 화면 밖으로 밀려 잘렸다.
+     앱(standalone)은 좌우 안전영역까지 먹어서 더 심했다.
+     화면보다 넓어질 수 없게 묶고, 높이도 화면 기준으로 잡는다. */
+.bellpop{position:absolute;top:calc(100% + 8px);right:0;width:min(344px,calc(100vw - 24px));
+  max-height:min(440px,calc(100vh - 120px));overflow:auto;background:#fff;
+  border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 14px 44px rgba(0,20,45,.18);z-index:120;overscroll-behavior:contain}
+/* ⚠ 폰에서는 벨 아이콘이 화면 가운데쯤에 온다(상단바가 2줄로 접히기 때문).
+     거기에 right:0 으로 340px 팝업을 붙이면 **왼쪽으로 −173px 삐져나가** 잘린다.
+     — 이게 "앱에서 알림창이 밀려서 안 보인다"의 정체다.
+     좁은 화면에서는 벨에 붙이지 말고 화면 기준으로 띄운다(앱들이 하는 방식). */
+@media(max-width:640px){
+  .bellpop{position:fixed;top:auto;right:10px;left:10px;
+    top:calc(56px + env(safe-area-inset-top));width:auto;
+    max-height:calc(100vh - 130px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+}
+.bellpop .bh{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid var(--mist);font-weight:800;font-size:.82rem;position:sticky;top:0;background:#fff}
+.bellpop .bh a{font-size:.68rem;color:var(--blue);font-weight:700;cursor:pointer}
+.bellpop .bi{padding:11px 15px;border-bottom:1px solid var(--mist);cursor:pointer;font-size:.79rem;line-height:1.5}
+.bellpop .bi:hover{background:#FAFCFE}
+.bellpop .bi.un{background:var(--blue-bg)}
+.bellpop .bt{font-size:.64rem;color:var(--faint);margin-top:3px;font-weight:600}
+.bellpop .bi .bty{font-size:.6rem;font-weight:800;color:var(--blue);margin-right:5px}
+/* 진행율 */
+.prog{height:10px;border-radius:99px;background:var(--mist);overflow:hidden;margin:7px 0 3px}
+.prog>i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),#3E9BDD);transition:width .4s}
+.pstage{display:flex;gap:6px;font-size:.64rem;color:var(--faint);margin-top:6px;flex-wrap:wrap}
+.pstage span{padding:3px 10px;border-radius:99px;background:var(--mist);font-weight:700}
+.pstage span.on{background:var(--green);color:#fff}
+/* 상세 모달 */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin:14px 0}
+.dgrid .di{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--mist);font-size:.8rem}
+.dgrid .di .l{color:var(--faint);font-weight:700}
+.dgrid .di .v{font-weight:700;text-align:right}
+.dsec{margin-top:16px}
+.dsec .st{font-weight:800;font-size:.82rem;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.dphotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px}
+.dphotos a{display:block}
+.dphotos img{width:100%;height:86px;object-fit:cover;border-radius:9px;border:1px solid var(--line)}
+.dphotos .pl{font-size:.55rem;text-align:center;color:var(--faint);margin-top:2px;font-weight:700}
+.dnote{background:#FFFBF3;border:1px solid var(--amber-bg);border-radius:10px;padding:11px 14px;font-size:.8rem;line-height:1.6;font-weight:600}
+.rowclick{cursor:pointer}
+.catgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:5px}
+.catck{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:600;padding:8px 10px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:#fff}
+.catck:has(input:checked){border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.filterbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;background:var(--mist);border-radius:10px}
+.filterbar label{font-size:.72rem;font-weight:700;color:var(--sub);display:flex;align-items:center;gap:5px}
+.filterbar select{border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.78rem;font-weight:600;background:#fff}
+@media(max-width:620px){.catgrid{grid-template-columns:1fr 1fr}.dgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+{% if server_stale %}
+<div style="background:#8A2B2B;color:#fff;padding:10px 16px;font-size:.78rem;font-weight:700;
+            text-align:center;line-height:1.5;font-family:'Malgun Gothic',sans-serif">
+  ⚠ 서버가 <b>예전 코드</b>로 실행 중입니다 — 코드가 바뀐 뒤 재시작하지 않았습니다.<br>
+  <span style="font-weight:600">서버 창을 닫고 다시 실행해 주세요. 그 전까지는 새로 추가된 메뉴가 열리지 않습니다.</span>
+</div>
+{% endif %}
+
+<div class="pnav"><div class="in">
+  <span class="lg">복구<b>온</b> 오피스</span>
+  <div class="tabs" id="tabs">
+    <span class="tab on" data-v="home">홈</span>
+    <span class="tab" data-v="cases">내 사건</span>
+    <span class="tab" data-v="newcase">사건 등록</span>
+    <span class="tab" data-v="defects">하자·A/S<span class="n" id="dn" style="display:none"></span></span>
+    <span class="tab" data-v="settle">정산<span class="n" id="sn" style="display:none"></span></span>
+    <span class="tab" data-v="report">절감 리포트</span>
+    <span class="tab" data-v="notice">공지</span>
+    <span class="tab" data-v="accounts" id="tab-accounts" style="display:none">계정 관리</span>
+    <span class="tab" data-v="mypage">내 정보</span>
+  </div>
+  <span class="sp"></span>
+  <div class="bellwrap">
+    <div class="bell" data-act="toggleBell">🔔<span class="bdot" id="bdot" style="display:none">0</span></div>
+    <div class="bellpop" id="bellPop" style="display:none"></div>
+  </div>
+  <div class="who"><span id="iname">—</span><small id="idept">—</small></div>
+  <button class="btn g sm" data-act="logout">로그아웃</button>
+</div></div>
+
+<div class="wrap" id="wrap"><div class="empty">불러오는 중…</div></div>
+<div class="modal-back" id="modalBack" data-act="modalBackdrop"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="{{ asset('leaflet/leaflet.js') }}"></script>
+<script src="{{ asset('actions.js') }}"></script>
+<script src="{{ asset('lightbox.js') }}"></script>
+<script src="{{ asset('addrpick.js') }}"></script>
+<script src="{{ asset('tray.js') }}"></script>
+<script src="{{ asset('form.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+let D=null, CSRF='', SELBID=null;
+const won = n => (n||0).toLocaleString('ko-KR');
+//  ⚠⚠ [라운드168] '(작은따옴표) 누락 — form.js 가 window.esc 에 심어 둔 더
+//    강한 판을 이 const 선언이 가린다(같은 이름 재선언은 전역 렉시컬 스코프에서
+//    window 속성보다 우선한다). 형제 판(addrpick.js 등)과 맞춘다.
+const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+//  ⚠⚠ [라운드668] round667이 정산 명세서 기본값 수정에서 todayKST()를 불렀지만
+//    이 파일엔 그 함수 자체가 정의돼 있지 않았다(admin.js·partner_portal.html
+//    형제 판만 있고, 이 파일은 그 어느 것도 <script src=...>로 안 가져온다) —
+//    RENDER.settle()·ACT.insStmtExport()를 실제로 부르는 순간(정산 탭을 열거나
+//    엑셀 버튼을 누르는 순간) ReferenceError로 그대로 깨졌다(실측: Node로 실제
+//    렌더된 스크립트를 그대로 실행해 재현). 형제 판과 완전히 같은 정의를 그대로
+//    옮긴다 — toISOString()은 UTC 기준이라 KST 00:00~09:00 사이엔 전날 날짜를
+//    돌려주는데, 서버는 전부 KST로 저장하므로 화면도 KST로 맞춰야 한다.
+const todayKST = () => new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+// ── 입찰 마감 잔여시간 (협력사 포털과 같은 계산 — 마감 문자열은 KST) ──
+//  '입찰중' 줄만 보고는 언제 승인 건이 올지 알 수 없어 담당자가 포털을 계속 새로고침한다.
+function dlLeft(dl){
+  if(!dl) return null;
+  const t = Date.parse(String(dl).replace(' ','T')+'+09:00');
+  if(isNaN(t)) return null;
+  return (t - Date.now())/3600000;
+}
+function leftText(h){
+  if(h <= 0) return '마감됨';
+  //  ⚠⚠ [라운드74] partner_portal.html 의 leftText 는 이미 이 결함을 고쳤는데
+  //    (Math.round 가 분을 60 으로 반올림해 '60분'·'N시간 60분'이 찍히는 문제),
+  //    같은 이름·같은 목적의 이 사본은 고쳐지지 않은 채 남아 있었다 — 사본이
+  //    둘이라 한쪽만 고치면 다시 갈라진다. 같은 로직으로 맞춘다.
+  if(h < 48){
+    let hh = Math.floor(h), mm = Math.round((h % 1) * 60);
+    if(mm === 60){ hh += 1; mm = 0; }
+    return hh ? (hh + '시간 ' + mm + '분') : (mm + '분');
+  }
+  return Math.floor(h/24)+'일';
+}
+// 목록 셀 — 마감 임박(12시간 미만)은 붉게. 입찰중이 아니면 마감 표시가 의미 없다.
+//  사진 없이 접수된 건은 아직 경매가 아니라 '출동 콜' 단계이므로 그 진행을 보여준다.
+function dlCell(c){
+  if(c.intake_type==='사진없음' && c.status==='접수') return dpCell(c);
+  if(c.status!=='입찰중' || !c.deadline) return '<span style="color:var(--faint)">-</span>';
+  const h = dlLeft(c.deadline);
+  const urgent = h!==null && h < 12;
+  const cnt = (c.bid_count!=null) ? `<div style="color:var(--faint);font-size:.66rem">입찰 ${c.bid_count}건</div>` : '';
+  return `<div style="font-size:.72rem;${urgent?'color:var(--red);font-weight:800':''}">`
+    + esc(String(c.deadline).slice(5,16))
+    + (h!==null?`<div style="font-size:.66rem">${leftText(h)} 남음</div>`:'')
+    + `</div>${cnt}`;
+}
+const MAJORS=['가드레일·방호울타리','교통안전시설','방음벽·휀스·펜스','유리·샷시·자동문','셔터·차단기·게이트','누수·배관·설비','지붕·판넬·캐노피','외벽·석재·담장·조적','도장·방수·미장','간판·전기·가로등','조경·수목','종합 원상복구'];
+
+//  ⚠⚠ [라운드76] 업로드가 도는 동안은 페이지를 떠나지 않게 잡는다 — 사고 현장
+//    사진은 다시 못 찍는다. partner_portal.html 은 이미 이 잠금(UP_BUSY)이 있는데
+//    보험사 화면만 없었다 — 30초 알림 폴링(loadNotifs)이 api() 를 거치므로,
+//    담당자가 사진을 올리는 도중 세션이 만료되면 그 폴링이 401 을 만나 곧바로
+//    로그인 화면으로 튕겼고, 그 강제 이동이 진행 중이던 FormData 업로드를
+//    그대로 끊어 사진이 서버에 닿지 못한 채 증발했다(화면은 이미 사라져
+//    오류를 볼 수도 없었다).
+let UP_BUSY = false;
+window.addEventListener('beforeunload', function (e) {
+  if (!UP_BUSY) return;
+  e.preventDefault();
+  e.returnValue = '사진을 올리는 중입니다. 지금 나가면 사진이 올라가지 않습니다.';
+});
+async function api(method,url,body){
+  const headers={'Content-Type':'application/json'};
+  if(method!=='GET'&&CSRF) headers['X-CSRF-Token']=CSRF;
+  const opt={method,headers,credentials:'same-origin'};
+  if(body) opt.body=JSON.stringify(body);
+  const r=await fetch(url,opt);
+  // 세션이 만료되면 CSRF 토큰도 함께 무효가 되어 403 이 먼저 떨어진다.
+  // 403 을 그냥 오류로 처리하면 사용자는 로그인 화면으로 가지 못하고 갇힌다.
+  //  ⚠ [라운드76] 업로드 중(UP_BUSY)이면 강제 이동을 미룬다 — partner_portal.html
+  //    api() 와 같은 이유·같은 방식.
+  if(r.status===401){
+    if(UP_BUSY){ throw new Error('auth-deferred'); }
+    location.href='/insurer/login'; throw new Error('auth');
+  }
+  //  ★ **403 은 두 가지다** — '세션이 끊겼다'와 '이 계정은 그 일을 할 수 없다'.
+  //    둘을 뭉쳐 로그인 화면으로 보내면, 서버가 정확히 적어 보낸 사유
+  //    ("이 작업은 중간관리자 이상만…")가 통째로 버려지고 사용자는
+  //    재로그인 → 같은 버튼 → 또 튕김 을 반복한다(계정 장애로 오인해 신고한다).
+  if(r.status===403){
+    const d0 = await r.json().catch(()=>({}));
+    if(d0.code==='FORBIDDEN' || d0.code==='PORTAL_FORBIDDEN'){
+      throw new Error(d0.error || '이 계정에는 권한이 없습니다.');
+    }
+    if(UP_BUSY){ throw new Error('auth-deferred'); }
+    location.href='/insurer/login'; throw new Error('auth');
+  }
+  //  ⚠ 서버가 오류번호(ref)를 붙여 보내는데 본문을 읽기도 전에 버리면,
+  //    문의를 받아도 로그에서 그 요청을 찾을 방법이 없다. 번호만 함께 보여 준다.
+  if(r.status>=500){
+    const d5 = await r.json().catch(()=>({}));
+    throw new Error('서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주세요.'
+                    + (d5 && d5.ref ? ` (오류번호 ${d5.ref})` : ''));
+  }
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(d.error||'요청 실패');
+  return d;
+}
+//  ⚠ 로그아웃하면 **서비스워커 사본까지** 지운다.
+//    sw 는 대시보드 응답을 URL 만 열쇠로 캐시한다 — 계정 구분이 없다.
+//    다른 협력사 계정으로 갈아탄 직후 네트워크가 잠깐 끊기면 그 사본이
+//    그대로 그려져 **이전 업체의 상세주소·계약금액**이 보인다(철칙 4).
+async function clearAppCaches(){
+  try{ if(window.caches){ const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); } }catch(e){}
+}
+async function logout(){ await api('POST','/api/insurer/logout'); await clearAppCaches(); location.href='/insurer/login'; }
+// ⚠ 모달 안 지도는 열고 닫을 때 반드시 파기한다(사라진 DOM 을 붙들면 다음 열기에서 깨진다)
+let IC_MAP=null;
+function icMapDestroy(){ if(IC_MAP){ try{ IC_MAP.remove(); }catch(e){} IC_MAP=null; } }
+function icMapDraw(){
+  icMapDestroy();
+  const el=document.getElementById('icmap');
+  if(!el || typeof L==='undefined') return;
+  const lat=parseFloat(el.dataset.lat), lng=parseFloat(el.dataset.lng);
+  if(isNaN(lat)||isNaN(lng)) return;
+  IC_MAP=L.map(el,{zoomControl:true,attributionControl:false}).setView([lat,lng],14);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(IC_MAP);
+  L.circleMarker([lat,lng],{radius:11,weight:3,color:'#fff',fillColor:'#C0392B',fillOpacity:.95})
+    .addTo(IC_MAP).bindPopup(`<div style="font-family:'Malgun Gothic',sans-serif">
+      <b>🚩 ${esc(el.dataset.label||'현장')}</b><br>
+      <span style="font-size:.76rem">${esc(el.dataset.addr||'')}</span></div>`);
+  setTimeout(()=>{ try{ IC_MAP.invalidateSize(); }catch(e){} },120);
+}
+function openModal(h){ icMapDestroy(); document.getElementById('modal').innerHTML=h; document.getElementById('modalBack').classList.add('show'); }
+function closeModal(){ document.getElementById('modalBack').classList.remove('show'); icMapDestroy(); }
+function stTag(s){
+  const m={'입찰중':'blue','승인대기':'amber','시공중':'green','검수대기':'amber','완료보고지연':'red',
+    '정산진행':'green','완료':'gray','접수':'gray','입금완료':'green','대기':'gray','이체완료':'green',
+    //  ⚠⚠ [라운드672] 정산(settlements)의 transfer_status·review_status 값인
+    //    '이체예약'·'승인'이 이 매핑에 아예 없었다 — 형제(partner_portal.html
+    //    stTag)는 이미 갖고 있다(round75가 세운 "형제 stTag 동기화" 원칙,
+    //    round644가 '시공중' 하나를 마저 맞췄던 바로 그 두 매핑인데 그때도
+    //    전체 키를 대조하진 않았다). 이 파일은 sett.transfer_status(963·964행
+    //    "업체 지급", 1639행 목록)·sett.review_status(965행 "지급 검수")를
+    //    그대로 stTag()에 넘기는데, 두 키가 없어 "매핑에 없으면 회색"이라는
+    //    기본값으로 떨어졌다 — 실측(운영 DB 읽기전용 조회): review_status=
+    //    '승인'인 정산이 지금 21/43건이라 사건 상세를 열 때마다 절반 가까이
+    //    "지급 검수: 승인"이 "대기"와 똑같은 회색으로 보인다. transfer_status=
+    //    '이체예약'은 지금 스냅샷엔 없지만 app.py(정산 검수 승인 — review_status
+    //    ='승인'과 같은 UPDATE 문에서 함께 찍힌다)가 실제로 만드는 값이라
+    //    언제든 재현된다. 형제 매핑과 같은 색으로 맞춘다.
+    '이체예약':'amber','승인':'green',
+    '재시공배정':'amber','확인중':'blue','반려':'gray',
+    // 출동 콜(사진없음 트랙) 상태
+    //  ⚠ [라운드75] '취소'가 gray 였다 — partner_portal.html stTag 는 이미
+    //    "매핑에 없으면 회색이니 취소·유찰은 구분돼야 한다"며 red 로 고쳐 놨다.
+    //    사건 취소(app.py: UPDATE cases SET status='취소')가 이 함수를 그대로
+    //    거치는데(사건 목록·상세), 회색이면 완료·접수 같은 평범한 상태와
+    //    구분이 안 된다.
+    '모집중':'amber','수배됨':'blue','도착':'green','실패':'red','취소':'red',
+    '수배중':'amber','사진확보':'green','수배실패':'red','미수선종결':'gray',
+    '유찰':'amber'};
+  return `<span class="tag ${m[s]||'gray'}">${esc(s)}</span>`;
+}
+// 출동 현황 한 줄 — 사진 없이 접수된 건은 '접수' 빈 줄만 보이면 결국 전화가 온다.
+function dpCell(c){
+  if(c.intake_type!=='사진없음') return '';
+  const d=c.dispatch;
+  if(!d) return '<span class="tag amber">수배 준비</span>';
+  const bits=[stTag(d.status)];
+  if(d.claimed_name) bits.push(`<div style="font-size:.66rem;color:var(--sub)">${esc(d.claimed_name)}</div>`);
+  if(d.status==='수배됨'&&d.due_at){
+    const h=dlLeft(d.due_at);
+    bits.push(`<div style="font-size:.66rem;${h!==null&&h<=0?'color:var(--red);font-weight:800':''}">`
+      +(h!==null?(h<=0?'도착 기한 초과':leftText(h)+' 내 도착'):'')+`</div>`);
+  }
+  if(d.arrived_at) bits.push(`<div style="font-size:.66rem;color:var(--green)">사진 ${d.photo_count||0}장 확보</div>`);
+  if(d.outcome==='미수선종결') bits.push('<div style="font-size:.66rem;color:var(--faint)">현장 미수선 종결</div>');
+  if(d.status==='실패'&&d.fail_reason) bits.push(`<div style="font-size:.66rem;color:var(--red)">${esc(d.fail_reason)}</div>`);
+  return bits.join('');
+}
+
+// 화면이 안 뜨면 왜 안 뜨는지 말해줘야 한다.
+// 예전엔 boot() 가 catch 에서 그냥 return 해서 "불러오는 중…"이 영원히 남았고,
+// 서버가 낡아 API 가 404 인 상황과 화면 버그를 구분할 수 없었다.
+function bootFail(e){
+  var msg = (e && e.message) ? String(e.message) : String(e);
+  var stale = /찾을 수 없|404|Not Found/i.test(msg);
+  var w = document.getElementById('wrap');
+  if(!w) return;
+  w.innerHTML = '<div class="card" style="padding:20px">'
+    + '<div style="font-weight:800;margin-bottom:8px">화면을 불러오지 못했습니다</div>'
+    + '<div class="sub" style="line-height:1.6">' + esc(msg)
+    + (stale ? '<br><br><b>서버가 예전 코드로 실행 중일 수 있습니다.</b> 서버를 다시 실행해 주세요.' : '')
+    + '</div>'
+    + '<div style="margin-top:14px"><a class="btn" href="">다시 시도</a></div>'
+    + '</div>';
+}
+async function boot(){
+  try{
+    const me=await api('GET','/api/insurer/me');
+    CSRF=me.csrf||'';
+    if(me.is_owner){ const t=document.getElementById('tab-accounts'); if(t) t.style.display=''; }
+  }catch(e){ bootFail(e); return; }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>show(t.dataset.v)));
+  await reload();
+  document.getElementById('iname').textContent=D.me.name;
+  document.getElementById('idept').textContent=(D.me.dept||'')+' · '+(D.me.manager||'');
+  show('home');
+  loadNotifs();
+  setInterval(loadNotifs, 30000);   // 30초마다 새 알림 확인
+}
+async function reload(){
+  D=await api('GET','/api/insurer/dashboard');
+  const open=D.kpi.defect_open;
+  const dn=document.getElementById('dn');
+  if(open>0){ dn.textContent=open; dn.style.display='inline-block'; } else dn.style.display='none';
+  // 완료 승인 대기도 탭에서 바로 보이게 — 알림은 지나가지만 배지는 남는다
+  const dwn=doneWaiting().length, sn=document.getElementById('sn');
+  if(sn){ if(dwn>0){ sn.textContent=dwn; sn.style.display='inline-block'; }
+          else sn.style.display='none'; }
+}
+function show(v){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  //  ★ 폰에서는 탭바가 화면보다 넓어 뒤쪽 탭이 밖에 있다. 활성 표시만 바꾸면
+  //    본문은 바뀌는데 탭바는 엉뚱한 곳을 보여 줘, 지금 어디인지 알 수 없다.
+  //    협력사 포털과 같은 처리를 둔다.
+  try{
+    const _cur = document.querySelector('.tab.on');
+    if(_cur && _cur.scrollIntoView) _cur.scrollIntoView({block:'nearest', inline:'center'});
+  }catch(e){}
+  RENDER[v]();
+  window.scrollTo(0,0);
+}
+
+const RENDER={};
+
+// 공사 완료 승인을 기다리는 정산 — **운영 콘솔과 같은 술어**를 쓴다.
+//  ⚠ `!insurer_approved` 만 걸면 안 된다. 이미 이체까지 끝난 옛 건(시드 포함)이
+//    승인 플래그 없이 남아 있어, 영원히 줄지 않는 빨간 숫자가 된다 → 늑대소년.
+//    데모 데이터도 뺀다(운영 콘솔 집계는 빼고 있어 숫자가 어긋난다).
+function doneWaiting(){
+  return (D.settlements||[]).filter(
+    s => !s.insurer_approved && s.transfer_status !== '이체완료' && !s.is_demo);
+}
+
+/*  ── 처음 들어온 발주처에게 ──────────────────────────────────
+    사건이 하나도 없으면 화면이 0으로만 채워진다. 무엇부터 눌러야 하는지,
+    누른 뒤에 무슨 일이 생기는지 알려 준다.
+    ⚠ **금액을 정하는 것은 발주처**라고 분명히 적는다(철칙 1·2).
+      복구온은 업체를 모아 경쟁시키고 진행을 관리할 뿐이다.  */
+function insurerStartPanel(){
+  const k = D.kpi || {};
+  //  누적이 0건일 때만 — 한 번이라도 등록해 본 뒤에는 자리를 차지하면 안 된다
+  if((k.total || 0) > 0) return '';
+  return `<div class="panel">
+    <div class="ph"><span class="pt">복구온에 오신 것을 환영합니다</span></div>
+    <p style="font-size:.87rem;line-height:1.9;margin:2px 0 0">
+      <b>사건을 등록</b>하시면 공고가 열리고, 공종·권역이 맞는 시공 업체들이 금액을 냅니다.
+      들어온 금액은 <b>귀사가 승인</b>하셔야 낙찰됩니다 —
+      복구온이 금액을 정하거나 협상하지 않습니다.</p>
+    <div class="tbl-wrap" style="margin-top:12px"><table class="tbl">
+      <tr><th style="width:74px">1</th><td>사건 등록 — 공종·주소·연락처를 넣습니다. 사진이 없어도 접수됩니다.</td></tr>
+      <tr><th>2</th><td>공고가 열리고 업체들이 금액을 제출합니다.</td></tr>
+      <tr><th>3</th><td><b>귀사가 승인</b>하면 낙찰됩니다. 승인 전에는 아무것도 확정되지 않습니다.</td></tr>
+      <tr><th>4</th><td>시공 → 사진 검수 → <b>귀사의 완료 승인</b> → 정산.</td></tr>
+    </table></div>
+    <div class="notice" style="margin-top:12px">
+      피해자 연락처를 함께 넣으시면 <b>진행 상황 조회 링크</b>가 나갑니다 —
+      그만큼 콜센터로 오지 않는 문의입니다.</div>
+    <div style="margin-top:14px">
+      <button class="btn p" data-act="show" data-arg="newcase">첫 사건 등록하기</button>
+      <a class="btn g" href="/docs/insurer-api" target="_blank" rel="noopener"
+         style="margin-left:6px">전산 연동 안내서 ↗</a>
+    </div>
+  </div>`;
+}
+
+RENDER.home = () => {
+  const k=D.kpi;
+  const wait=D.cases.filter(c=>c.status==='승인대기');
+  const dw=doneWaiting();
+  const active=D.cases.filter(c=>c.status!=='완료').slice(0,8);
+  document.getElementById('wrap').innerHTML=`
+    ${insurerStartPanel()}
+    <div class="krow">
+      <div class="kc hero"><div class="k">진행중 사건</div><div class="v">${k.active}<small>건</small></div><div class="d">누적 ${k.total}건</div></div>
+      <div class="kc ${k.approve_wait>0?'alert':''}" ${k.approve_wait>0?`data-act="show" data-arg="cases"`:''}>
+        <div class="k">낙찰 승인 대기</div><div class="v" style="${k.approve_wait>0?'color:var(--red)':''}">${k.approve_wait}<small>건</small></div>
+        <div class="d">${k.approve_wait>0?'클릭해 승인하세요':'대기 없음'}</div></div>
+      <div class="kc gold"><div class="k">누적 절감액</div><div class="v" style="color:${(k.saved||0)>=0?"":"var(--red)"}">${won(k.saved)}<small>원</small></div>${/*  ⚠ 부호를 글자로 박으면 음수일 때 "−-33.3%" 가 된다. 값에서 뽑는다. */""}<div class="d">비교 기준 대비 ${(k.saved_rate||0)>=0?"−":"+"}${Math.abs(k.saved_rate||0)}%</div></div>
+      <div class="kc"><div class="k">지급 완료</div><div class="v">${won(k.paid)}<small>원</small></div><div class="d">미지급 ${won(k.pending_pay)}원</div></div>
+      ${/*  ⚠ **'보낸 건수' 가 아니라 '열어 본 건수'** 다. 링크를 보낸 것과 고객이
+             실제로 확인한 것은 다르고, 발주처에게 의미 있는 것은 후자다 —
+             그만큼 콜센터로 오지 않은 전화라는 뜻이다.
+             수치가 아직 없으면 카드를 아예 안 그린다(0%는 아무 말도 못 한다). */''}
+      ${(D.track && D.track.issued) ? `<div class="kc">
+        <div class="k">피해자 직접 확인</div>
+        <div class="v">${D.track.opened}<small>건</small></div>
+        <div class="d">안내 ${D.track.issued}건 중 ${D.track.rate}% · 조회 ${D.track.views}회</div></div>` : ''}
+      <div class="kc ${dw.length?'alert':''}" ${dw.length?`data-act="show" data-arg="settle"`:''}>
+        <div class="k">공사 완료 승인 대기</div>
+        <div class="v" style="${dw.length?'color:var(--red)':''}">${dw.length}<small>건</small></div>
+        <div class="d">${dw.length?'승인해야 대금 절차가 시작됩니다':'대기 없음'}</div></div>
+      <div class="kc"><div class="k">진행중 하자</div><div class="v" style="${k.defect_open>0?'color:var(--red)':''}">${k.defect_open}<small>건</small></div><div class="d">A/S 처리 현황</div></div>
+    </div>
+    ${faPanel()}
+    ${dw.length?`<div class="panel" style="border:1.5px solid var(--red)">
+      <div class="ph"><span class="pt">공사 완료 승인이 필요합니다</span>
+        <span class="tag red">${dw.length}건</span></div>
+      <div class="notice">시공이 끝나 검수를 마친 건입니다. <b>귀사가 완료를 승인해야</b>
+        대금 입금 확인과 시행사 지급 절차가 시작됩니다. 승인 전까지 그 사건은 멈춰 있습니다.</div>
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>접수번호</th><th>시행사</th><th class="r">공사대금</th><th class="r">경과</th><th class="r">액션</th></tr>
+        ${dw.map(s=>{
+          //  ⚠ created_at 은 KST 문자열이다. 오프셋을 안 붙이면 브라우저 로컬
+          //    시각으로 읽혀 경과가 9시간 어긋나고, 3일 이상 붉게 표시하는 기준이
+          //    하루씩 밀린다. 같은 파일 209행(입찰 마감)은 이미 붙이고 있었다.
+          const _ct = s.created_at ? Date.parse(String(s.created_at).replace(' ','T')+'+09:00') : NaN;
+          const d = isNaN(_ct) ? null : Math.max(0, Math.floor((Date.now()-_ct)/86400000));
+          return `<tr><td class="em">${esc(s.case_no)}</td><td>${esc(s.partner_name||'-')}</td>
+          <td class="r em">${won(s.amount)}원</td>
+          <td class="r" style="${d>=3?'color:var(--red);font-weight:800':''}">${d===null?'-':d+'일'}</td>
+          <td class="r">${canAct() ? `<button class="btn a sm" data-act="approveDone" data-arg="${s.id}">완료 승인</button>`
+            : '<span class="sub">중간관리자 이상</span>'}</td>
+          </tr>`;}).join('')}
+      </table></div>
+    </div>`:''}
+    ${wait.length?`<div class="panel" style="border:1.5px solid var(--amber)">
+      <div class="ph"><span class="pt">낙찰 승인이 필요합니다</span><span class="tag amber">${wait.length}건</span></div>
+      ${wait.some(c=>c.auction_round===2)?`<div class="notice">
+        <b>2차 공고 건이 섞여 있습니다.</b> 사진 없이 접수돼 저희 출동 업체가 현장을 확인한 건입니다.
+        현장에서 확인된 실제 규모가 최초 가견적보다 큰 경우가 있어, 이 건들은
+        <b>가견적이 아니라 표준단가 개산</b>과 비교해 보여드립니다.
+        (최초 가견적은 최저 입찰 하한으로만 쓰였습니다)</div>`:''}
+      <div class="tbl-wrap"><table class="tbl">
+        <tr><th>접수번호</th><th>공종</th><th>지역</th><th class="r">비교 기준</th><th class="r">최저 입찰가</th><th class="r">예상 절감</th><th class="r">액션</th></tr>
+        ${wait.map(c=>`<tr><td class="em">${esc(c.case_no)}
+            ${c.auction_round===2?'<br><span class="tag blue">2차 · 현장확인 후</span>':''}</td>
+          <td class="cat">${esc(c.category)}</td><td>${esc(c.region||'-')}</td>
+          <td class="r">${won(c.saving_base||c.est_price)}
+            ${c.auction_round===2?`<br><small style="font-weight:400;color:var(--faint)">표준단가 개산</small>
+              <br><small style="font-weight:400;color:var(--sub)">현장 실견적 ${won(c.field_ref)}</small>`:''}</td>
+          <td class="r em" style="color:var(--amber-text)">${won(c.low_price)}</td>
+          ${/*  ⚠ 서버의 c.saving 은 **확정가(award_amount) 기준**이라, 승인 전에는
+               반드시 0 이다. 그걸 그대로 찍어 이 표의 모든 행이 녹색 「−0%」로 보였다
+               (운영 DB 실측 37건 전부). 승인을 누를지 말지 판단하는 유일한 화면에서
+               숫자가 죽어 있었다. 여기서는 **최저 입찰가 기준의 예상치**를 낸다 —
+               열 이름을 '예상 절감' 으로 바꿔 확정가가 아님을 분명히 한다.
+               (0 으로 나누지 않는다 — 비교 기준이 없으면 '-' 로 둔다) */''}
+          ${(()=>{ const b=+(c.saving_base||c.est_price||0), lo=+(c.low_price||0);
+            if(!b || !lo) return '<td class="r"><span class="hint">-</span></td>';
+            const r=(1-lo/b)*100;
+            return `<td class="r" style="color:${r>=0?'var(--green)':'var(--red)'};font-weight:800">${r>=0?'−':'+'}${Math.abs(r).toFixed(1)}%</td>`;
+          })()}
+          <td class="r"><button class="btn a sm" data-act="awardView" data-arg="${c.id}">입찰 보기</button></td></tr>`).join('')}
+      </table></div></div>`:''}
+    <div class="panel">
+      <div class="ph"><span class="pt">진행중 사건 <small>최근 8건</small></span>
+        <button class="btn p sm" data-act="show" data-arg="newcase">+ 사건 등록</button></div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>접수번호</th><th>공종</th><th>지역</th><th>상태</th><th>입찰 마감</th><th>시행사</th><th class="r">가견적</th><th class="r">낙찰가</th><th class="r">액션</th></tr>
+        ${active.length?active.map(c=>`<tr class="rowclick" data-act="caseDetail" data-arg="${c.id}">
+          <td class="em">${esc(c.case_no)}${c.urgent?' <span class="tag red">긴급</span>':''}</td>
+          <td class="cat">${esc(c.category)}</td><td>${esc(c.region||'-')}</td><td>${stTag(c.status)}</td>
+          <td>${dlCell(c)}</td>
+          <td>${esc(c.partner_name||'-')}</td><td class="r">${won(c.est_price)}</td>
+          ${/*  ⚠ **확정가와 현재 최저가를 같은 이름으로 찍지 않는다.**
+               예전에는 low_price 를 '낙찰가' 열에 그대로 넣어, 아직 승인도 안 한
+               사건에 낙찰가가 찍혔다(실측 37건 — 전부 '승인대기'). 청구는
+               award_amount 로 나가므로 그 숫자는 청구액이 아니고, 투찰이 하나만
+               더 들어와도 바뀐다. 확정 전에는 '최저' 라고 분명히 적는다. */''}
+          <td class="r em">${c.award_amount ? won(c.award_amount)
+            : (c.low_price ? `<span style="font-weight:600;color:var(--faint)">최저 ${won(c.low_price)}</span>` : '-')}</td>
+          ${/*  유찰 건은 "재공고 여부를 검토해 주세요" 알림을 받고도 누를 것이 없었다 */''}
+          <td class="r">${c.status==='승인대기'?`<button class="btn a sm" data-act="awardView" data-arg="${c.id}">승인</button>`
+            :(c.status==='완료'||c.status==='정산진행')?`<button class="btn g sm" data-act="defectForm" data-arg="${c.id}">하자 접수</button>`
+            :(c.status==='유찰'&&canAct())?`<button class="btn a sm" data-act="rejectBids" data-arg="${c.id}">재공고 요청</button>`:'-'}</td>
+        </tr>`).join(''):'<tr><td colspan="9" class="empty">진행중 사건이 없습니다</td></tr>'}
+      </table></div>
+    </div>`;
+};
+
+let CF = {status:'', region:'', cat:'', sort:'recent', q:''};
+function uniq(arr){ return [...new Set(arr.filter(Boolean))].sort(); }
+function filteredCases(){
+  let list = (D.cases||[]).slice();
+  if(CF.status) list = list.filter(c=>c.status===CF.status);
+  if(CF.region) list = list.filter(c=>(c.region||'')===CF.region);
+  if(CF.cat)    list = list.filter(c=>(c.category||'').includes(CF.cat));
+  //  ⚠ 담당자는 사건을 접수번호가 아니라 **피해자 이름**으로 기억한다.
+  //    피해자가 전화해도 이름으로 찾을 수가 없어 목록을 위에서부터 열어봐야 했다.
+  if(CF.q){
+    const q = CF.q.trim().toLowerCase();
+    list = list.filter(c => [c.case_no, c.victim_name, c.victim_phone, c.address,
+                             c.region, c.category, c.partner_name]
+      .some(v => String(v||'').toLowerCase().includes(q)));
+  }
+  const s=CF.sort;
+  list.sort((a,b)=>{
+    //  ⚠ [라운드75] 표에 그리는 금액(위 589행)은 award_amount||low_price 인데
+    //    정렬은 low_price 만 봤다(admin.js sortCasesList 와 같은 결함). 경매 없이
+    //    확정되는 1차합의 건은 입찰이 없어 low_price 가 비어 있어, 확정 금액이
+    //    가장 큰 건이 '높은순' 맨 아래로 밀렸다 — 보이는 열과 다른 기준으로 정렬하면
+    //    발주처가 고액 사건을 놓친다. 화면과 같은 값으로 정렬한다.
+    const _amt = (x) => (x.award_amount || x.low_price || 0);
+    if(s==='award')  return _amt(b) - _amt(a);
+    if(s==='saving') return (b.saving||0)-(a.saving||0);
+    if(s==='status') return (a.status||'').localeCompare(b.status||'','ko');
+    return (b.id||0)-(a.id||0);
+  });
+  return list;
+}
+RENDER.cases = () => {
+  const statuses = uniq((D.cases||[]).map(c=>c.status));
+  const regions  = uniq((D.cases||[]).map(c=>c.region));
+  const cats      = uniq((D.cases||[]).map(c=>c.category));
+  const opt = (arr,sel)=>['<option value="">전체</option>'].concat(arr.map(v=>`<option ${v===sel?'selected':''}>${esc(v)}</option>`)).join('');
+  const list = filteredCases();
+  document.getElementById('wrap').innerHTML=`
+    <div class="panel">
+      <div class="ph"><span class="pt">내 사건 <small>${list.length}건 / 전체 ${(D.cases||[]).length}건</small></span>
+        <button class="btn p sm" data-act="show" data-arg="newcase">+ 사건 등록</button></div>
+      <div class="filterbar">
+        <input id="f_q" value="${esc(CF.q||'')}" placeholder="🔍 접수번호·피해자·주소·업체"
+               style="min-width:210px" data-act-enter="doCaseSearch">
+        <label>상태 <select id="f_status">${opt(statuses,CF.status)}</select></label>
+        <label>지역 <select id="f_region">${opt(regions,CF.region)}</select></label>
+        <label>공종 <select id="f_cat">${opt(cats,CF.cat)}</select></label>
+        <label>정렬 <select id="f_sort">
+          <option value="recent" ${CF.sort==='recent'?'selected':''}>최신순</option>
+          <option value="award" ${CF.sort==='award'?'selected':''}>낙찰가 높은순</option>
+          <option value="saving" ${CF.sort==='saving'?'selected':''}>절감률 높은순</option>
+          <option value="status" ${CF.sort==='status'?'selected':''}>상태순</option>
+        </select></label>
+        <button class="btn p sm" data-act="doCaseSearch">검색</button>
+        ${(CF.q||CF.status||CF.region||CF.cat||CF.sort!=='recent')?'<button class="btn g sm" id="f_clear">필터 해제</button>':''}
+      </div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>접수번호</th><th>공종</th><th>지역</th><th>상태</th><th>입찰 마감</th><th>시행사</th><th class="r">가견적</th><th class="r">낙찰가</th><th class="r">절감</th><th class="r">액션</th></tr>
+        ${list.length?list.map(c=>`<tr class="rowclick" data-act="caseDetail" data-arg="${c.id}">
+          <td class="em">${esc(c.case_no)}${c.urgent?' <span class="tag red">긴급</span>':''}${c.is_composite?' <span class="tag amber">복합</span>':''}</td>
+          <td class="cat">${esc(c.category)}</td><td>${esc(c.region||'-')}</td><td>${stTag(c.status)}</td>
+          <td>${dlCell(c)}</td>
+          <td>${esc(c.partner_name||'-')}</td><td class="r">${won(c.est_price)}</td>
+          ${/*  ⚠ **확정가와 현재 최저가를 같은 이름으로 찍지 않는다.**
+               예전에는 low_price 를 '낙찰가' 열에 그대로 넣어, 아직 승인도 안 한
+               사건에 낙찰가가 찍혔다(실측 37건 — 전부 '승인대기'). 청구는
+               award_amount 로 나가므로 그 숫자는 청구액이 아니고, 투찰이 하나만
+               더 들어와도 바뀐다. 확정 전에는 '최저' 라고 분명히 적는다. */''}
+          <td class="r em">${c.award_amount ? won(c.award_amount)
+            : (c.low_price ? `<span style="font-weight:600;color:var(--faint)">최저 ${won(c.low_price)}</span>` : '-')}</td>
+          <td class="r" style="color:${(c.saving||0)>=0?'var(--green)':'var(--red)'};font-weight:800">${c.saving?((c.saving>0?'−':'+')+Math.abs(c.saving)+'%'):'-'}</td>
+          ${/*  유찰 건은 "재공고 여부를 검토해 주세요" 알림을 받고도 누를 것이 없었다 */''}
+          <td class="r">${c.status==='승인대기'?`<button class="btn a sm" data-act="awardView" data-arg="${c.id}">승인</button>`
+            :(c.status==='완료'||c.status==='정산진행')?`<button class="btn g sm" data-act="defectForm" data-arg="${c.id}">하자 접수</button>`
+            :(c.status==='유찰'&&canAct())?`<button class="btn a sm" data-act="rejectBids" data-arg="${c.id}">재공고 요청</button>`:'-'}</td>
+        </tr>`).join(''):'<tr><td colspan="10" class="empty">조건에 맞는 사건이 없습니다</td></tr>'}
+      </table></div>
+    </div>`;
+  const bind=(id,key)=>{ const el=document.getElementById(id); if(el) el.addEventListener('change',()=>{ CF[key]=el.value; RENDER.cases(); }); };
+  bind('f_status','status'); bind('f_region','region'); bind('f_cat','cat'); bind('f_sort','sort');
+  const clr=document.getElementById('f_clear');
+  if(clr) clr.addEventListener('click',()=>{ CF={status:'',region:'',cat:'',sort:'recent',q:''}; RENDER.cases(); });
+};
+
+RENDER.newcase = () => {
+  //  ⚠⚠ [라운드198] 이 폼을 열 때마다 새 열쇠를 하나 발급해 둔다 — CASE_LOCK
+  //    (아래 createCase)은 같은 페이지가 떠 있는 동안의 중복 클릭만 막고,
+  //    새로고침·새 탭·응답을 못 받은 뒤의 재제출에는 전혀 작동하지 않는다
+  //    (형제 API 연동, /api/v1/cases 의 Idempotency-Key 와 같은 문제의식 —
+  //    그쪽은 이미 서버가 열쇠로 재제출을 막는데 포털만 빠져 있었다).
+  //    이 폼을 다시 열 때(=새 사건을 등록할 때)만 새 열쇠로 바뀐다.
+  window.CASE_IDEM_KEY = (window.crypto && crypto.randomUUID)
+    ? crypto.randomUUID() : (Date.now() + '-' + Math.random());
+  document.getElementById('wrap').innerHTML=`
+    <div class="panel" style="max-width:820px">
+      <div class="ph"><span class="pt">사건 등록 <small>등록 즉시 시행사에 통값 입찰 공고가 발송됩니다</small></span></div>
+      <div class="notice">담당자가 하실 일은 <b>등록 1회 + 낙찰 승인 1회</b>뿐입니다. 이미 출동했던 담당자의 사진으로 <b>가견적</b>만 내면 곧바로 입찰이 열리고, <b>현장 실측·실견적은 낙찰받은 시행사 1곳</b>이 직접 수행하므로 별도의 현장 출동을 기다리실 필요가 없습니다.</div>
+      <div class="field"><label>접수번호 <span style="color:var(--faint);font-weight:600">(비우면 자동 채번)</span></label><input id="c_no" placeholder="예: 26-08123" style="max-width:300px"></div>
+      <div class="field"><label>피해물 공종 * <span style="color:var(--faint);font-weight:600">(여러 개 선택 = 복합 현장으로 자동 등록)</span></label>
+        ${/*  ⚠ 개산 근거(레시피)가 없는 공종에 표를 단다. 서버가 need_est_majors 로
+               내려 준다 — 화면이 규칙을 다시 쓰면 관리자 콘솔과 경고가 갈린다. */''}
+        <div id="c_cats" class="catgrid">${MAJORS.map(m=>`<label class="catck"><input type="checkbox" value="${esc(m)}" data-act-change="catCoverageIns"> ${esc(m)}${(D.need_est_majors||[]).includes(m)?' <span style="color:#8A5A00;font-weight:700">⚠</span>':''}</label>`).join('')}</div>
+        <div id="cov_warn_ins" style="display:none;margin-top:7px;background:#FFF7E6;border:1px solid #F0D18C;
+             border-radius:9px;padding:9px 11px;font-size:.75rem;color:#8A5A00;line-height:1.55"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>지역</label><input id="c_region" placeholder="예: 인천 남동"></div>
+        <div class="field"><label>가견적 (원) · 입찰 시작가(상한)<br><small style="font-weight:400;color:var(--faint)">사진 없이 접수해 현장 확인이 먼저 필요한 건은, 이 금액이 2차 공고에서 <b>최소 금액</b>이 됩니다</small></label><input id="c_est" type="number" placeholder="예: 3600000" inputmode="numeric" data-act-input="estRead">
+        <div id="c_est_read" style="font-size:.78rem;font-weight:700;margin-top:5px;min-height:1.2em"></div></div>
+      </div>
+      <div class="field"><label>현장 주소</label>
+        <input id="c_addr" placeholder="도로명·건물명·지번으로 검색 (예: 올림픽로 300)" autocomplete="off">
+        <input id="c_addr_detail" placeholder="상세주소 — 동·호수·현장 표식 (선택)" autocomplete="off" style="margin-top:6px"></div>
+      <div class="grid2">
+        <div class="field"><label>피해자 성함 <span style="color:var(--faint);font-weight:600">(선택)</span></label><input id="c_vname" placeholder="예: 홍길동" autocomplete="off"></div>
+        <div class="field"><label>피해자 연락처 <span style="color:var(--faint);font-weight:600">(선택 — 진행 상황 안내에 씁니다)</span></label><input id="c_vphone" placeholder="010-0000-0000" inputmode="tel" autocomplete="off"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--faint);margin:-4px 0 8px">연락처를 넣으시면 업체 선정·공사 완료 시점에 피해자에게 진행 안내가 나갑니다. 넣지 않으셔도 접수는 정상 진행됩니다.</div>
+      <div class="field"><label>추가 전달사항 <span style="color:var(--faint);font-weight:600">(현장 특이사항·주의사항 — 낙찰 시행사에게 함께 전달됩니다)</span></label>
+        <textarea id="c_note" placeholder="예: 야간 작업 필요 · 차선 2개 통제 중 · 위층 누수 동반" style="min-height:74px"></textarea></div>
+      <div class="field"><label>피해 현장 사진 <span style="color:var(--faint);font-weight:600">(출동 담당자 사진 — 가견적 근거 · AI 파손 분석에 사용)</span></label>
+        <input type="file" id="c_photos" accept="image/*" multiple>
+        <div style="font-size:.7rem;color:var(--faint);margin-top:4px">여러 장 선택 가능 · JPG·PNG·HEIC · 등록 후 AI가 파손 정도를 개략 분석합니다.</div></div>
+      <div class="field"><label>옵션</label>
+        <div style="display:flex;gap:20px;margin-top:4px;flex-wrap:wrap">
+          <label class="check" style="font-size:.84rem"><input type="checkbox" id="c_urgent"> 긴급 (2시간 내 출동)</label>
+          <label class="check" style="font-size:.84rem"><input type="checkbox" id="c_nophoto" data-act-change="toggleNoPhoto">
+            📷 사진 없음 — 인근 업체 출동으로 현장 사진부터 확보</label>
+        </div>
+        <div id="nophoto-hint" style="display:none;font-size:.74rem;color:var(--amber-text);margin-top:6px;line-height:1.6">
+          사진이 없으면 가견적 없이 접수됩니다. 복구온이 인근 업체를 <b>선착순 출동</b>시켜
+          30분 내 현장 사진·실측 견적을 확보한 뒤 견적 협의 또는 경쟁 입찰로 진행합니다.</div>
+      </div>
+      <div class="modal-foot"><button class="btn p" data-act="createCase">사건 등록 · 입찰 공고 발송</button></div>
+    </div>`;
+  //  폼이 그려진 뒤에 붙인다. 주소를 골라야 지도·출동 거리 계산이 현장을 가리킨다.
+  if(window.AddrPick) AddrPick.attach({input:'#c_addr', region:'#c_region', detail:'#c_addr_detail'});
+};
+
+//  금액을 사람이 읽는 단위로 — "3600000" 은 자릿수를 못 세지만 "360만" 은 센다.
+function estWords(v){
+  v = Math.floor(Number(v)||0);
+  const eok = Math.floor(v/100000000), man = Math.floor((v%100000000)/10000), rest = v%10000;
+  const p = [];
+  if(eok) p.push(eok.toLocaleString()+'억');
+  if(man) p.push(man.toLocaleString()+'만');
+  if(rest || !p.length) p.push(rest.toLocaleString());
+  return p.join(' ');
+}
+
+async function createCase(){
+  const cats=[...document.querySelectorAll('#c_cats input:checked')].map(x=>x.value);
+  if(!cats.length){ toast('피해물 공종을 1개 이상 선택해 주세요.'); return; }
+  const noPhoto=document.getElementById('c_nophoto').checked;
+  const body={case_no:document.getElementById('c_no').value.trim(),categories:cats,
+    region:document.getElementById('c_region').value.trim(),
+    //  상세주소(동·호수)는 주소 검색 결과에 없다 — 고른 주소 뒤에 붙여 한 줄로 보낸다
+    address:[document.getElementById('c_addr').value.trim(),
+             (document.getElementById('c_addr_detail')||{value:''}).value.trim()]
+              .filter(Boolean).join(' '),
+    //  고른 주소의 좌표 — 있으면 출동 수배가 진짜 거리로 가까운 업체를 부른다
+    ...(window.AddrPick ? AddrPick.coords('#c_addr') : {}),
+    est_price:document.getElementById('c_est').value,urgent:document.getElementById('c_urgent').checked,
+    no_photo:noPhoto,
+    victim_name:(document.getElementById('c_vname')||{value:''}).value.trim(),
+    victim_phone:(document.getElementById('c_vphone')||{value:''}).value.trim(),
+    note:document.getElementById('c_note').value.trim(),
+    //  ⚠⚠ [라운드198] RENDER.newcase 가 이 폼을 열 때 발급한 열쇠 — 새로고침·
+    //    새 탭·재제출에도 서버가 "같은 사건"으로 알아보게 한다.
+    idempotency_key:window.CASE_IDEM_KEY||''};
+  //  ⚠ 이 금액이 그대로 입찰 상한(2차는 하한)이 되어 공고로 나간다.
+  //     되돌리려면 사건을 취소하거나 시행사들에게 재공고를 돌려야 한다 — 보내기 전에 한 번 읽어 준다.
+  const _est = Number(body.est_price);
+  if(_est > 0){
+    const NL = String.fromCharCode(10);
+    const odd = (_est < 100000) ? (NL + '⚠ 10만 원 미만입니다 — 자릿수를 빠뜨리지 않으셨나요?')
+              : (_est >= 100000000) ? (NL + '⚠ 1억 원 이상입니다 — 0 을 더 치지 않으셨나요?') : '';
+    if(!confirm('가견적 ' + estWords(_est) + '원 (' + _est.toLocaleString() + ')' + NL
+                + '이 금액으로 공고를 냅니다. 맞습니까?' + odd)) return;
+  }
+  //  ★ 중복 제출을 막는다. 종전에는 버튼을 두 번 누르면 **사건이 두 건** 생겼다
+  //    (접수번호를 비우면 서버가 매번 새로 뽑으므로 UNIQUE 도 안 걸린다).
+  //    같은 사고가 두 건이면 공고도 두 번 나가고 정산도 두 벌이 된다.
+  //    협력사 입찰 쪽에는 이미 같은 잠금이 있었다(BID_LOCK).
+  if(window.CASE_LOCK) return;
+  window.CASE_LOCK = true;
+  const _btn = document.querySelector('[data-act="createCase"]');
+  const _txt = _btn ? _btn.textContent : '';
+  if(_btn){ _btn.disabled = true; _btn.textContent = '접수 중…'; }
+  try{
+    const r=await api('POST','/api/insurer/cases',body);
+    toast(r.no_photo
+      ? `사건 <b>${esc(r.case_no)}</b> 접수 완료 — 사진 없는 사고로 접수되어, 인근 업체 출동으로 현장 사진을 먼저 확보합니다`
+      : `사건 <b>${esc(r.case_no)}</b> 등록 완료 — 시행사 <b>${r.matched}곳</b>에 입찰 공고가 발송되었습니다`);
+    // 피해 사진이 선택돼 있으면 업로드 → AI 파손 분석
+    const fin=document.getElementById('c_photos');
+    //  ⚠ 사진 업로드 실패를 **조용히 삼키면 안 된다.**
+    //    출동 담당자가 찍어 온 사고 현장 사진은 다시 받을 수 없다. 예전에는
+    //    if(pd.ok) 에 else 가 없고 catch 가 비어 있어, 용량 초과·장수 초과로 실패해도
+    //    화면은 아무 말 없이 사건 목록으로 넘어갔다 — 담당자는 첨부된 줄 알고 닫는다.
+    //    (같은 응답을 운영자 화면[admin.js]은 이미 제대로 읽고 있었다)
+    let photoFail = false;
+    if(fin && fin.files && fin.files.length){
+      const total = fin.files.length;
+      const fd=new FormData();
+      for(const f of fin.files) fd.append('photos', f);
+      toast(`피해 사진 ${total}장 올리는 중…`);
+      //  ⚠ [라운드76] 이 구간이 도는 동안은 세션만료로 인한 강제이동을 미룬다
+      //    (위 api() 주석 참조) — 반드시 아래 try/catch 를 다 벗어난 뒤 끈다.
+      UP_BUSY = true;
+      try{
+        const pr=await fetch('/api/insurer/cases/'+r.id+'/photos',{method:'POST',headers:{'X-CSRF-Token':CSRF},credentials:'same-origin',body:fd});
+        const pd=await pr.json().catch(()=>({}));
+        if(pd.ok){
+          const n = (typeof pd.count === 'number') ? pd.count : total;
+          //  ⚠ **중복은 실패가 아니다.** 그 사진은 이미 이 사건에 붙어 있다.
+          //    이걸 '빠졌다'고 말하면 담당자는 같은 파일을 계속 다시 올리는데,
+          //    올릴 때마다 또 중복이라 0/3장이 되는 무한 루프가 된다.
+          const dupN = (pd.duplicates && pd.duplicates.length) || 0;
+          if(n + dupN >= total && dupN){
+            toast(`사진 <b>${n}장</b> 등록 완료 · 이미 등록된 사진 ${dupN}장은 건너뛰었습니다.`);
+          } else if(n < total){
+            //  부분 성공 — 몇 장이 왜 빠졌는지 서버가 말해 준다
+            photoFail = true;
+            toast(`사진 <b>${n}/${total}장</b>만 등록됐습니다. ` +
+                  (dupN ? `(이미 등록됨 ${dupN}장) ` : '') +
+                  ((pd.errors && pd.errors[0]) ? esc(pd.errors[0]) : '나머지는 다시 올려 주세요.'));
+          } else {
+            toast(pd.ai_report?`사진 등록 완료 — <b>AI 분석:</b> ${esc(pd.ai_report)}`:(pd.message || '사진을 등록했습니다.'));
+          }
+        } else {
+          photoFail = true;
+          toast('사진을 올리지 못했습니다 — ' + esc(pd.error || `서버 응답 ${pr.status}`));
+        }
+      }catch(e){
+        photoFail = true;
+        toast('사진 전송 중 통신이 끊겼습니다. 사건은 접수됐으니 상세 화면에서 다시 올려 주세요.');
+      } finally {
+        UP_BUSY = false;
+      }
+    }
+    await reload();
+    //  실패했으면 사건 상세를 바로 열어 준다 — 거기서 다시 붙일 수 있다.
+    if(photoFail && r.id){ show('cases'); setTimeout(()=>{ try{ caseDetail(r.id); }catch(e){} }, 200); }
+    else { show('cases'); }
+  }catch(e){ toast(e.message); }
+  finally{
+    //  ⚠ 성공·실패 어느 쪽이든 반드시 푼다 — 안 그러면 실패한 뒤 다시 못 낸다.
+    window.CASE_LOCK = false;
+    if(_btn){ _btn.disabled = false; _btn.textContent = _txt; }
+  }
+}
+
+// ── 사건 상세 (행 클릭) ──
+function progBar(p){
+  if(!p) return '';
+  const s=p.stages||{};
+  return `<div class="prog"><i style="width:${p.percent||0}%"></i></div>
+    <div class="pstage"><b style="color:var(--sub)">진행율 ${p.percent||0}%</b>
+      <span class="${s['착공전']?'on':''}">착공 전</span>
+      <span class="${s['시공중']?'on':''}">시공 중</span>
+      <span class="${s['완료']?'on':''}">완료</span></div>`;
+}
+async function caseDetail(cid){
+  let r, ph={construction:[],receipts:[],unclassified:[],total:0};
+  try{ r=await api('GET','/api/insurer/cases/'+cid+'/detail'); }
+  catch(e){ toast(e.message); return; }
+  try{ ph=await api('GET','/api/cases/'+cid+'/photos'); }catch(e){}
+  const c=r.case, sett=r.settlement, p=r.progress;
+  const allPhotos=[...(ph.construction||[]),...(ph.unclassified||[]),...(ph.receipts||[])];
+  //  ⚠ 12장까지만 그린다 — 그 사실을 적지 않으면 "사진이 12장뿐"으로 읽힌다.
+  const photoHtml = allPhotos.length ? `<div class="dphotos">${allPhotos.slice(0,12).map(x=>
+      `<a href="${x.url}" target="_blank" rel="noopener"><img src="${x.url}" alt="${esc(x.kind||'사진')}"><div class="pl">${esc(x.kind||'미분류')}</div></a>`).join('')}</div>
+    <div style="font-size:.7rem;color:var(--faint);margin-top:5px">
+      사진을 누르면 크게 보고 좌우로 넘길 수 있습니다.${allPhotos.length>12
+        ? ` (전체 ${allPhotos.length}장 중 12장 표시)` : ''}</div>`
+    : '<div style="font-size:.78rem;color:var(--faint)">아직 등록된 시공 사진이 없습니다.</div>';
+  const bids=r.bids||[];
+  openModal(`
+    <h3>${esc(c.case_no)} ${stTag(c.status)}</h3>
+    <div class="msub">${esc(c.category)} · ${esc(c.region||'-')}</div>
+    ${(c.status==='입찰중'&&c.deadline)?(()=>{const h=dlLeft(c.deadline);const u=h!==null&&h<12;
+      return `<div style="margin:10px 0;padding:9px 13px;border-radius:9px;font-size:.82rem;font-weight:700;
+        background:${u?'#FDF3F3':'var(--mist)'};color:${u?'#8A2B2B':'var(--sub)'}">
+        ⏱ 입찰 마감 ${esc(String(c.deadline).slice(5,16))}${h!==null?` · ${leftText(h)} 남음`:''}
+        ${bids.length?` · 현재 입찰 ${bids.length}건`:' · 아직 입찰 없음'}</div>`;})():''}
+    ${progBar(p)}
+    <div class="dgrid">
+      <div class="di"><span class="l">가견적</span><span class="v">${won(c.est_price)}원</span></div>
+      <div class="di"><span class="l">낙찰가</span><span class="v">${c.low_price?won(c.low_price)+'원':'-'}</span></div>
+      <div class="di"><span class="l">절감률</span><span class="v" style="color:${(c.saving||0)>=0?'var(--green)':'var(--red)'}">${c.saving?((c.saving>0?'−':'+')+Math.abs(c.saving)+'%'):'-'}</span></div>
+      <div class="di"><span class="l">시행사</span><span class="v">${esc(c.partner_name||'미정')}</span></div>
+      <div class="di"><span class="l">현장주소</span><span class="v">${esc(c.address||'-')}</span></div>
+      ${/*  ⚠ 접수 때 입력받은 피해자 연락처가 어느 화면에도 다시 안 나왔다.
+             해피콜·중간 안내를 하려면 담당자가 이 자리에서 봐야 한다. */''}
+      ${(c.victim_name||c.victim_phone)?`<div class="di"><span class="l">피해자</span>
+        <span class="v">${esc(c.victim_name||'-')}${c.victim_phone?` · ${esc(c.victim_phone)}`:''}</span></div>`:''}
+      <div class="di"><span class="l">등록일</span><span class="v">${esc((c.created_at||'').slice(0,10))}</span></div>
+    </div>
+    ${c.map_lat!=null?`<div class="dsec"><div class="st">🗺️ 현장 위치
+        <small style="color:var(--faint);font-weight:600">${esc(c.map_src||'개략 위치')}</small></div>
+      <div id="icmap" data-lat="${c.map_lat}" data-lng="${c.map_lng}" data-label="${esc(c.case_no)}"
+           data-addr="${esc(c.address||'')}"
+           style="height:210px;border-radius:8px;border:1px solid var(--line)"></div>
+      <div class="hint" style="margin-top:4px">등록하신 주소를 지도에 올린 것입니다. 위치가 다르면 주소를 확인해 주세요.</div></div>`:''}
+    ${c.note?`<div class="dsec"><div class="st">📌 전달사항</div><div class="dnote">${esc(c.note)}</div></div>`:''}
+    ${c.ai_report?`<div class="dsec"><div class="st">🤖 AI 파손 분석</div><div class="dnote">${esc(c.ai_report)}</div></div>`:''}
+    ${r.dispatch?(()=>{const d=r.dispatch;const h=d.due_at?dlLeft(d.due_at):null;
+      return `<div class="dsec"><div class="st">🚨 출동 현황 <small style="color:var(--faint);font-weight:600">${d.round}차 수배</small></div>
+      <div class="dgrid" style="margin:0">
+        <div class="di"><span class="l">상태</span><span class="v">${stTag(d.status)}</span></div>
+        <div class="di"><span class="l">출동 업체</span><span class="v">${esc(d.claimed_name||'배정 대기')}</span></div>
+        <div class="di"><span class="l">도착 기한</span><span class="v">${d.due_at
+          ? esc(String(d.due_at).slice(5,16)) + (h!==null&&!d.arrived_at?` <small style="${h<=0?'color:var(--red)':''}">${h<=0?'초과':leftText(h)+' 남음'}</small>`:'') : '-'}</span></div>
+        <div class="di"><span class="l">도착·사진</span><span class="v">${d.arrived_at
+          ? esc(String(d.arrived_at).slice(5,16))+` · ${d.photo_count||0}장` : '미도착'}</span></div>
+      </div>
+      ${d.outcome==='미수선종결'?`<div class="hint" style="margin-top:4px">현장에서 <b>미수선으로 종결</b>되었습니다${d.no_repair_reason?' — '+esc(d.no_repair_reason):''}.</div>`:''}
+      ${d.status==='실패'?`<div class="hint" style="margin-top:4px;color:var(--red)">출동 수배가 중단되었습니다${d.fail_reason?' — '+esc(d.fail_reason):''}. 복구온 운영팀이 다시 수배합니다.</div>`:''}
+      <div class="hint" style="margin-top:4px">사진 없이 접수된 사건은 인근 시공업체가 선착순으로 출동해 현장 사진과 견적을 확보합니다.</div></div>`;})():''}
+    ${r.change_order?(()=>{const o=r.change_order;
+      //  ⚠ [라운드78] 원 낙찰가를 `combined_amount - requested_amount` 로 역산했었다.
+      //    실제 관계는 combined_amount = incumbent_amount + add_low(추가분 경매
+      //    낙찰가) — requested_amount(협력사 자기신고 예상액)와는 무관해서, 실제
+      //    추가 최저가가 신고액과 다르면 원 낙찰가가 틀리게 나오고, 합산 전(0/NULL)
+      //    이면 음수를 0으로 접어 원 낙찰가가 0원으로 보였다. 서버가 이제 주는
+      //    incumbent_amount 를 그대로 쓴다(admin.js 변경건 목록과 같은 값).
+      return `<div class="dsec" style="border:1px solid var(--amber);border-radius:9px;padding:10px">
+      <div class="st">🔁 추가공사 요청 <small style="color:var(--faint);font-weight:600">${esc(o.status||'')}</small></div>
+      <div class="dgrid" style="margin:0">
+        <div class="di"><span class="l">원 낙찰가</span><span class="v">${won(o.incumbent_amount)}원</span></div>
+        <div class="di"><span class="l">추가 예상액</span><span class="v" style="color:var(--amber-text)">+${won(o.requested_amount)}원</span></div>
+        <div class="di"><span class="l">합산가</span><span class="v em">${o.combined_amount?won(o.combined_amount)+'원':'-'}</span></div>
+        <div class="di"><span class="l">요청일</span><span class="v">${esc((o.created_at||'').slice(0,10))}</span></div>
+      </div>
+      ${o.reason?`<div class="dnote" style="margin-top:6px">${esc(o.reason)}</div>`:''}
+      ${/*  ⚠ **확인은 그 금액에만 유효하다.** 종전에는 값이 있기만 하면 회신칸을 숨겨서,
+             합산가가 바뀌면 서버는 '확인 무효'로 409 를 내는데 화면에는 다시 확인할
+             방법이 없었다 — 그 사건은 영원히 확정되지 않는다.
+             '부동의' 를 한 번 누른 뒤 마음을 바꾸는 것도 막혀 있었다.
+             (가견적 경보 확인[est-ack]이 이미 '금액이 바뀌면 자동 무효' 다 — 같은 방식) */''}
+      ${(o.insurer_ack && Number(o.insurer_ack_amount||0) === Number(o.combined_amount||0))
+        ? `<div class="hint" style="margin-top:6px;color:${o.insurer_ack==='확인'?'var(--green)':'var(--red)'}">
+            ${esc(o.insurer_ack)} — ${esc(o.insurer_ack_by||'')} · ${esc((o.insurer_ack_at||'').slice(0,16))}
+            ${o.insurer_ack_note?'<div>'+esc(o.insurer_ack_note)+'</div>':''}
+            ${o.insurer_ack==='부동의'?'<div class="sub">마음이 바뀌셨다면 아래에서 다시 회신하실 수 있습니다.</div>':''}
+          </div>` : ''}
+      ${/*  ⚠ **합산 금액이 정해지기 전에는 회신 칸을 열지 않는다.**
+             추가분 경매가 아직 안 끝난 단계(combined_amount 0/NULL)에서도
+             `!o.insurer_ack` 만 보고 '확인했습니다' 버튼을 그렸다. 그런데 서버는
+             NO_AMOUNT 로 409 를 준다 — 눌러도 아무 일이 없고, 바로 아래에는
+             '경매가 마감되면 확인을 요청드립니다' 안내가 같이 떠 있었다.
+             한 화면이 '지금 확인하라'와 '아직 금액이 없다'를 동시에 말했다. */''}
+      ${/*  ⚠⚠ [라운드113] 위 배지 조건과 정확히 반대로만 열면("확인 있음+금액일치"
+             아니면 열기), 배지가 "부동의 뒤 마음이 바뀌면 아래에서 다시 회신"
+             이라고 말하는 바로 그 경우(부동의+금액일치)에 폼이 절대 안 뜬다 —
+             서버는 재회신을 받아 주는데 화면에 입구가 없다. 부동의는 금액이
+             그대로여도 다시 열어 준다(확인은 이미 맞는 상태이므로 그대로 둔다). */''}
+      ${(Number(o.combined_amount||0) > 0
+         && (!o.insurer_ack || Number(o.insurer_ack_amount||0) !== Number(o.combined_amount||0)
+             || o.insurer_ack === '부동의'))
+        ? `<div style="margin-top:8px">
+          ${o.insurer_ack && Number(o.insurer_ack_amount||0) !== Number(o.combined_amount||0)?`<div class="hint" style="color:var(--amber-text);margin-bottom:6px">
+            이전 회신(${esc(o.insurer_ack)} · ${won(o.insurer_ack_amount)}원)은
+            <b>금액이 바뀌어 무효</b>입니다 — 다시 회신해 주세요.</div>`:''}
+          ${o.insurer_ack === '부동의' && Number(o.insurer_ack_amount||0) === Number(o.combined_amount||0)?`<div class="hint" style="color:var(--amber-text);margin-bottom:6px">
+            이전에 <b>부동의</b>로 회신하셨습니다(${won(o.insurer_ack_amount)}원). 마음이 바뀌셨다면 다시 회신해 주세요.</div>`:''}
+          <input id="co_note" placeholder="확인 메모 또는 부동의 사유" style="width:100%;margin-bottom:6px">
+          ${/*  ⚠⚠ [라운드115] 서버는 이 두 버튼도 중간관리자 이상으로 잠그는데
+                 (@require_portal_role, app.py 11908행 근처 — "낙찰 승인·완료 승인과
+                 같은 문턱") 여기만 canAct() 가 없었다 — 같은 포털의 형제
+                 컨트롤(완료승인·낙찰승인·현장견적 승인·가견적 경보 확인)은 전부
+                 사전에 가려서 안내하는데, 여기만 '조회' 등급이 확인창까지 통과한
+                 뒤 403 을 봤다. */''}
+          ${canAct() ? `
+          <button class="btn a sm" data-act="coAck" data-arg="${o.id}" data-arg2="1">확인했습니다</button>
+          <button class="btn g sm" data-act="coAck" data-arg="${o.id}" data-arg2="0">부동의</button>`
+          : `<span class="hint">확인·부동의는 <b>중간관리자 이상</b>만 할 수 있습니다.</span>`}
+          <div class="hint" style="margin-top:4px">이 <b>확인이 있어야</b> 시공사가 합산 금액을 확정할 수 있습니다.
+            금액이 다시 바뀌면 확인은 무효가 되고 여기서 다시 회신하시게 됩니다.</div>
+        </div>` : ''}
+      ${(!o.insurer_ack && !Number(o.combined_amount||0))
+        ? `<div class="hint" style="margin-top:6px">추가분 경매가 마감되면 합산 금액과 함께 확인을 요청드립니다.</div>` : ''}</div>`;})():''}
+    <div class="dsec" id="ebsec"><div class="st">🔎 가견적 점검</div>
+      <div id="ebbox" class="hint">불러오는 중…</div></div>
+    <div class="dsec"><div class="st">📷 시공 사진 <small style="color:var(--faint);font-weight:600">${allPhotos.length}장</small></div>${photoHtml}</div>
+    ${/*  ⚠ 접수 때 사진이 실패하면 다시 붙일 곳이 아예 없었다.
+           출동 담당자가 찍어 온 사고 현장 사진은 다시 받을 수 없으므로,
+           사건이 진행 중인 동안에는 언제든 추가할 수 있어야 한다. */''}
+    ${['접수','입찰중','승인대기','시공중'].includes(c.status) ? `
+    <div class="dsec"><div class="st">➕ 피해 사진 추가</div>
+      <div class="hint" style="margin-bottom:8px">접수할 때 못 올렸거나 나중에 받은 현장 사진을 여기서 붙일 수 있습니다.
+        붙이면 AI 파손 분석이 함께 돌아갑니다.</div>
+      <label class="btn g sm" style="cursor:pointer">사진 고르기
+        <input type="file" accept="image/*" multiple hidden id="ic_addph"></label>
+      <span id="ic_addph_msg" class="hint" style="margin-left:8px"></span></div>` : ''}
+    ${sett?`<div class="dsec"><div class="st">💰 정산</div>
+      <div class="dgrid" style="margin:0">
+        <div class="di"><span class="l">공사대금</span><span class="v">${won(sett.amount)}원</span></div>
+        <div class="di"><span class="l">보험사 입금</span><span class="v">${stTag(sett.insurer_paid)}</span></div>
+        <div class="di"><span class="l">업체 지급</span><span class="v">${stTag(sett.transfer_status)}</span></div>
+        <div class="di"><span class="l">지급 검수</span><span class="v">${stTag(sett.review_status)}</span></div>
+      </div></div>`:''}
+    ${bids.length?`<div class="dsec"><div class="st">🏷️ 입찰 현황 <small style="color:var(--faint);font-weight:600">${bids.length}건</small></div>
+      <div class="tbl-wrap"><table class="tbl"><tr><th>순위</th><th>시행사</th><th class="r">입찰가</th><th class="r">공기</th></tr>
+      ${bids.slice(0,6).map((b,i)=>`<tr><td>${i+1}</td><td>${esc(b.partner_name||'-')}</td><td class="r em">${won(b.amount)}</td><td class="r">${b.days||'-'}일</td></tr>`).join('')}
+      </table></div></div>`:''}
+    ${r.defects&&r.defects.length?`<div class="dsec"><div class="st">🔧 하자·A/S</div>
+      <div class="tbl-wrap"><table class="tbl"><tr><th>하자번호</th><th>제목</th><th>심각도</th><th>상태</th></tr>
+      ${r.defects.map(d=>`<tr><td class="em">${esc(d.defect_no)}</td><td>${esc(d.title)}</td><td>${esc(d.severity)}</td><td>${stTag(d.status)}</td></tr>`).join('')}
+      </table></div></div>`:''}
+    <div class="modal-foot">
+      ${c.status==='승인대기'?`<button class="btn a" data-act="awardView" data-arg="${cid}">낙찰 승인</button>`:''}
+      ${/*  ⚠ 잘못 등록한 사건(가견적 오타·주소 오선택)을 되돌릴 창구가 없었다.
+             입찰이 들어오기 전까지만 스스로 접을 수 있게 한다. */''}
+      ${(['접수','입찰중'].includes(c.status) && !bids.length && canAct())
+        ? `<button class="btn g" data-act="cancelCase" data-arg="${cid}"
+             title="입찰이 들어오기 전까지만 취소할 수 있습니다">사건 취소</button>` : ''}
+      <span style="flex:1"></span><button class="btn g" data-act="closeModal">닫기</button>
+    </div>`);
+  icMapDraw();
+  //  피해 사진 추가 — 고르는 즉시 올리고, 결과를 그 자리에 남긴다(토스트는 스쳐 지나간다)
+  const _ap = document.getElementById('ic_addph');
+  if(_ap) _ap.addEventListener('change', async () => {
+    const msg = document.getElementById('ic_addph_msg');
+    if(!_ap.files || !_ap.files.length) return;
+    const total = _ap.files.length;
+    const fd = new FormData();
+    for(const f of _ap.files) fd.append('photos', f);
+    if(msg){ msg.textContent = `${total}장 올리는 중…`; msg.style.color = 'var(--sub)'; }
+    //  ⚠ [라운드76] 위 createCase 와 같은 이유 — 이 구간이 도는 동안은
+    //    세션만료로 인한 강제이동을 미룬다.
+    UP_BUSY = true;
+    try{
+      const pr = await fetch('/api/insurer/cases/' + cid + '/photos',
+        {method:'POST', headers:{'X-CSRF-Token':CSRF}, credentials:'same-origin', body:fd});
+      const pd = await pr.json().catch(()=>({}));
+      if(pd.ok){
+        const n = (typeof pd.count === 'number') ? pd.count : total;
+        //  ⚠ 재업로드가 바로 이 루프의 진입점이다 — '다시 올려 주세요' 를 따르면
+        //    전부 중복이라 0/3장이 뜨고, 그걸 보고 또 다시 올린다.
+        const dupN = (pd.duplicates && pd.duplicates.length) || 0;
+        if(msg){
+          if(n + dupN >= total && dupN){
+            msg.textContent = n
+              ? `${n}장 등록 완료 · 이미 등록된 ${dupN}장은 건너뛰었습니다`
+              : `이미 등록된 사진입니다(${dupN}장) — 다시 올려도 같은 결과입니다`;
+            msg.style.color = 'var(--green)';
+          } else {
+            msg.textContent = n < total
+              ? `${n}/${total}장만 등록됐습니다 — ${(pd.errors && pd.errors[0]) || '나머지를 다시 시도해 주세요'}`
+              : `${n}장 등록 완료`;
+            msg.style.color = n < total ? 'var(--red)' : 'var(--green)';
+          }
+        }
+        _ap.value = '';
+        if(n) setTimeout(()=>caseDetail(cid), 900);      // 목록 갱신
+      } else {
+        if(msg){ msg.textContent = pd.error || `서버 응답 ${pr.status}`; msg.style.color='var(--red)'; }
+      }
+    }catch(e){
+      if(msg){ msg.textContent = '통신이 끊겼습니다. 다시 시도해 주세요.'; msg.style.color='var(--red)'; }
+    } finally {
+      UP_BUSY = false;
+    }
+  });
+  loadEstBasis(cid, c.status);
+  //  시공 사진은 86px 썸네일이라 그 크기로는 마감 상태를 판단할 수 없다 — 눌러서 크게 본다.
+  if(window.Lightbox) Lightbox.bind(document.querySelector('#modal .dphotos'),
+    {caption: img => img.alt ? `<b>${esc(img.alt)}</b>` : ''});
+}
+
+// ── 현장 견적 승인 (경매 없이 확정하는 경로) ────────────────────
+//  ★ 금액은 현장에 출동한 시공업체가 제출한 견적 그대로다. 복구온은 조정하지 않으며,
+//    승인·부동의는 **귀사가 단독으로** 결정한다. 그 결정은 로그인 계정으로 기록된다.
+function faPanel(){
+  const list = D.field_agreements || [];
+  if(!list.length) return '';
+  return `<div class="panel" style="border:1.5px solid var(--blue)">
+    <div class="ph"><span class="pt">현장 견적 승인이 필요합니다</span><span class="tag blue">${list.length}건</span></div>
+    <div class="notice">사진 없이 접수된 사건에서 <b>먼저 도착한 시공업체가 현장 견적을 제출</b>했습니다.
+      승인하면 경매 없이 그 업체가 시공하고, 부동의하면 확보된 현장 사진으로 2차 경매가 열립니다.
+      <b>금액은 업체가 낸 견적 원문이며 복구온이 조정하지 않습니다.</b></div>
+    <div style="overflow:auto"><table class="tbl">
+      <tr><th>접수번호</th><th>공종</th><th>지역</th><th>출동 업체</th><th class="r">현장 견적</th><th class="r">표준단가 개산</th><th class="r">액션</th></tr>
+      ${list.map(f=>`<tr>
+        <td class="em">${esc(f.case_no)}</td><td class="cat">${esc(f.category||'')}</td>
+        <td>${esc(f.region||'-')}</td><td>${esc(f.partner_name||'-')}</td>
+        <td class="r em">${won(f.field_amount)}원</td>
+        <td class="r" style="font-size:.72rem;color:var(--sub)">${(f.engine_low||f.engine_high)
+          ? won(f.engine_low)+'~'+won(f.engine_high)+'원' : '<span style="color:var(--faint)">근거 없음</span>'}</td>
+        <td class="r"><button class="btn a sm" data-act="faView" data-arg="${f.case_id}">검토</button></td>
+      </tr>`).join('')}
+    </table></div></div>`;
+}
+async function faView(cid){
+  let r;
+  try{ r = await api('GET','/api/insurer/cases/'+cid+'/field-agreement'); }
+  catch(e){ toast(e.message); return; }
+  const a = r.agreement;
+  if(!a){ toast(r.note||'승인 요청된 견적이 없습니다.'); return; }
+  const b = r.engine_basis;
+  const gap = (a.engine_high && a.field_amount)
+    ? Math.round((a.field_amount / a.engine_high - 1) * 100) : null;
+  //  확인창이 읽을 값 — 화면에 보이는 것과 **같은 출처**를 쓴다(다시 조회하지 않는다)
+  window.FA_VIEW = {case_no: r.case.case_no, amount: a.field_amount,
+                    partner: a.partner_name || ''};
+  openModal(`<h3>현장 견적 승인 — ${esc(r.case.case_no)}</h3>
+    <div class="msub">${esc(r.case.category||'')} · ${esc(r.case.region||'')} · 출동 업체 ${esc(a.partner_name||'-')}</div>
+    <div class="notice" style="margin:10px 0">${esc(r.notice)}</div>
+    <div class="dgrid">
+      <div class="di"><span class="l">현장 견적(업체 제출)</span><span class="v" style="font-size:1.05rem">${won(a.field_amount)}원</span></div>
+      <div class="di"><span class="l">표준단가 개산 구간</span><span class="v">${(a.engine_low||a.engine_high)?won(a.engine_low)+' ~ '+won(a.engine_high)+'원':'근거 없음'}</span></div>
+      <div class="di"><span class="l">가견적(${r.case.auction_round===2?'2차 최소금액':'상한'})</span><span class="v">${won(r.case.auction_round===2?(r.case.est_price||a.engine_low):r.case.est_price)}원</span></div>
+      ${r.case.auction_round===2?`<div class="di"><span class="l">현장 실견적</span><span class="v">${won(r.case.field_ref)}원</span></div>`:''}
+      <div class="di"><span class="l">현장 사진</span><span class="v">${(r.photos||[]).length}장</span></div>
+    </div>
+    ${gap!==null?`<div class="hint" style="margin-top:6px">현장 견적은 개산 상한 대비 ${gap>0?'+':''}${gap}% 입니다.
+      ${gap>20?'<b style="color:var(--red)">구간을 크게 벗어납니다 — 부동의 후 2차 경매를 고려하세요.</b>':''}</div>`:''}
+    ${b?`<details style="margin-top:10px"><summary style="cursor:pointer;font-size:.78rem;color:var(--blue)">개산 근거 상세 (패턴·수량·단가)</summary>
+      <div style="font-size:.74rem;margin-top:6px">
+        <div>수선 유형: <b>${esc(b.name||a.engine_pattern||'')}</b> · 엔진 ${esc(a.engine_ver||'-')}</div>
+        <div>직접공사비 ${won(b.direct_cost)}원 · 할증 ${(b.markup||[]).join('~')}배 · ${esc(b.gate||'')}</div>
+        <div class="tbl-wrap"><table class="tbl" style="margin-top:6px"><tr><th>품명</th><th class="r">수량</th><th class="r">단가</th><th class="r">금액</th></tr>
+        ${(b.lines||[]).map(l=>`<tr><td>${esc(l.item||l.name||'')}</td><td class="r">${esc(String(l.qty??''))}</td>
+          <td class="r">${won(l.unit_price||l.price)}</td><td class="r">${won(l.amount)}</td></tr>`).join('')}
+        </table></div>
+        <div class="hint" style="margin-top:4px">${esc(b.disclaimer||'')}</div>
+      </div></details>`:'<div class="hint" style="margin-top:8px">표준단가 개산 근거가 첨부되지 않았습니다(수선 유형 미선택 또는 입력 부족).</div>'}
+    <div class="field" style="margin-top:12px"><label>부동의 사유 (부동의 시 필수)</label>
+      <input id="fa_reason" placeholder="예: 견적 금액이 통상 복구 범위를 초과"></div>
+    <div class="modal-foot">
+      ${/*  ⚠ 서버는 이 두 버튼을 중간관리자 이상으로 잠근다
+             (@require_portal_role("insurer","중간관리자")). 그런데 화면에는
+             등급 검사가 없어 '조회' 등급이 확인창까지 통과한 뒤 403 을 봤다.
+             같은 포털의 완료승인·낙찰승인은 canAct() 로 이미 가려져 있어,
+             한 화면 안에서 규칙이 다르게 보였다. */''}
+      ${canAct() ? `
+      <button class="btn a" data-act="faDecide" data-arg="${cid}" data-arg2="1">✅ 승인 — 이 금액으로 시공</button>
+      <button class="btn g" data-act="faDecide" data-arg="${cid}" data-arg2="0">⛔ 부동의 — 2차 경매로</button>`
+      : `<span class="hint">승인·부동의는 <b>중간관리자 이상</b>만 할 수 있습니다.</span>`}
+      <span style="flex:1"></span><button class="btn g" data-act="closeModal">닫기</button>
+    </div>`);
+}
+async function faDecide(cid, approve){
+  approve = Number(approve)===1;
+  const reason = (document.getElementById('fa_reason')||{value:''}).value.trim();
+  if(!approve && !reason){ toast('부동의 사유를 입력해 주세요.'); return; }
+  //  ★ **무엇을 확정하는지 확인창이 말한다.** 종전에는 "이 금액으로 승인하시겠습니까?"
+  //    뿐이라, 목록에서 다른 건을 열었다 닫은 뒤 누르면 어느 사건·얼마인지 모른 채
+  //    확정했다. 이건 계약 성립이고 경매를 건너뛰는 결정이라 되돌릴 수 없다.
+  if(approve){
+    const _fa = window.FA_VIEW || {};
+    const _amt = Number(_fa.amount || 0);
+    if(!confirm('[' + (_fa.case_no || ('사건 ' + cid)) + ']'
+                + String.fromCharCode(10)
+                + (_fa.partner ? _fa.partner + ' · ' : '')
+                + _amt.toLocaleString('ko-KR') + '원으로 승인합니다.'
+                + String.fromCharCode(10) + String.fromCharCode(10)
+                + '승인하면 경매 없이 이 업체가 바로 시공을 시작하고,'
+                + String.fromCharCode(10)
+                + '이 금액이 계약금액이 됩니다. 되돌릴 수 없습니다.')) return;
+  }
+  try{
+    const r = await api('POST','/api/insurer/cases/'+cid+'/field-agreement/decision',
+      {approve, reason});
+    toast(r.message); closeModal(); await reload(); show('home');
+  }catch(e){
+    //  [라운드477] 승인 경합에서 진 경우 서버는 최신 상태를 담아 알려주는데,
+    //    화면은 토스트만 띄우고 모달은 낡은 데이터를 그대로 보여주고 있었다 —
+    //    성공 분기와 같이 닫고 새로고침한다.
+    toast(esc(e.message)); closeModal(); await reload(); show('home');
+  }
+}
+
+// 추가공사 증액 확인·부동의 (기록 전용 — 금액은 바뀌지 않는다)
+async function coAck(coid, ack){
+  ack = Number(ack)===1;
+  const note = (document.getElementById('co_note')||{value:''}).value.trim();
+  if(!ack && !note){ toast('부동의 사유를 입력해 주세요.'); return; }
+  try{
+    const r = await api('POST','/api/insurer/change-orders/'+coid+'/ack',{ack, note});
+    toast(r.message); closeModal(); await reload(); show('cases');
+  }catch(e){
+    //  [라운드479] 모달을 연 채로 시간이 지나 그 사이 변경건이 종결(CO_CLOSED 등)
+    //    되면 실패 토스트만 뜨고 낡은 확인·부동의 버튼이 그대로 남았다 — 성공
+    //    분기와 같이 닫고 새로고침한다(477라운드가 세운 패턴).
+    toast(e.message); closeModal(); await reload(); show('cases');
+  }
+}
+
+// ── 가견적 점검 (과다·과소 경보) ────────────────────────────────
+//  ⚠ 이 화면은 **시공 개산가(제안 상한)** 를 점검한다. 보험금·손해액을 산정하지 않는다.
+//    판정 주체는 사람(보상 담당자)이고, 시스템은 대조 결과와 근거만 보여준다.
+const EB_COLOR = {'정상':'green','금액과다':'red','금액과소':'amber','판정없음':'amber',
+  '기준없음':'gray','복합미대조':'gray','사진없음':'red'};
+let EB_CASE = null;
+async function loadEstBasis(cid, status){
+  EB_CASE = cid;
+  const box = document.getElementById('ebbox');
+  if(!box) return;
+  let b;
+  try{ b = await api('GET','/api/insurer/cases/'+cid+'/est-basis'); }
+  catch(e){ box.textContent = '점검 결과를 불러오지 못했습니다.'; return; }
+  // 파손 정도·확인 버튼은 입찰이 끝나기 전에만 의미가 있다(서버 가드와 일치)
+  const editable = ['접수','입찰중','승인대기'].includes(status);
+  const warn = b.code !== '정상';
+  box.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <span class="tag ${EB_COLOR[b.code]||'gray'}">${esc(b.code)}</span>
+      <span style="font-size:.78rem;color:var(--ink)">${esc(b.note||'')}</span>
+    </div>
+    <div class="dgrid" style="margin:0 0 8px">
+      <div class="di"><span class="l">가견적</span><span class="v">${won(b.est_price)}원</span></div>
+      <div class="di"><span class="l">파손 정도</span><span class="v">${esc(b.severity||'미정')}
+        <small style="color:var(--faint)">(${esc(b.severity_src||'')})</small></span></div>
+      <div class="di"><span class="l">점검 구간</span><span class="v">${b.band
+        ? won(b.band.min_price)+' ~ '+won(b.band.max_price)+'원' : '기준 미등록'}</span></div>
+      <div class="di"><span class="l">현장 사진</span><span class="v">${b.photo_count||0}장</span></div>
+    </div>
+    ${b.band&&b.band.src?`<div class="hint" style="margin-bottom:6px">구간 근거: ${esc(b.band.src)}</div>`:''}
+    ${editable?`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px">
+      <span style="font-size:.72rem;color:var(--faint)">파손 정도 직접 확정:</span>
+      ${['경미','보통','중대'].map(s=>`<button class="btn g sm" data-act="setSeverity" data-arg="${cid}" data-arg2="${s}"
+        ${b.severity===s?'style="border-color:var(--blue);color:var(--blue);font-weight:800"':''}>${s}</button>`).join('')}
+    </div>`:''}
+    ${/*  서버가 중간관리자 이상으로 잠근 버튼이다(app.py est-ack) — 화면도 같은 문턱. */''}
+    ${(warn && editable && !b.acked && !canAct())?`<div class="hint" style="margin-top:6px">
+      경보 확인은 <b>중간관리자 이상</b>만 할 수 있습니다.</div>`:''}
+    ${(warn && editable && !b.acked && canAct())?`<div style="margin-top:6px">
+      <input id="eb_reason" placeholder="이 금액이 맞다고 보는 이유 (선택)" style="width:100%;margin-bottom:6px">
+      <button class="btn a sm" data-act="estAck" data-arg="${cid}">경보 확인 — 이 금액으로 진행</button>
+      <div class="hint" style="margin-top:4px">금액은 바뀌지 않습니다. 경보를 보고도 이 금액으로 정했다는 <b>기록</b>만 남습니다.</div>
+    </div>`:''}
+    ${b.acked?`<div class="hint" style="color:var(--green)">✓ 확인 완료 — ${esc(b.ack_by||'')} · ${esc((b.ack_at||'').slice(0,16))}
+      <span style="color:var(--faint)">(가견적이 바뀌면 확인은 자동으로 무효가 됩니다)</span></div>`:''}
+    ${(b.ref_items&&b.ref_items.length)?`<details style="margin-top:8px">
+      <summary style="font-size:.74rem;cursor:pointer;color:var(--blue)">표준 단가 참고 ${b.ref_items.length}항목</summary>
+      <div class="tbl-wrap"><table class="tbl" style="margin-top:6px"><tr><th>항목</th><th>규격</th><th>단위</th><th class="r">단가</th><th>근거</th></tr>
+      ${b.ref_items.map(x=>`<tr><td>${esc(x.item)}</td><td>${esc(x.spec||'')}</td><td>${esc(x.unit||'')}</td>
+        <td class="r">${won(x.ref_price)}</td><td style="font-size:.68rem">${esc(x.price_src||'')}</td></tr>`).join('')}
+      </table></div>
+      <div class="hint" style="margin-top:4px">${esc(b.ref_note||'')}</div></details>`:''}`;
+}
+async function setSeverity(cid, sev){
+  try{
+    await api('POST','/api/insurer/cases/'+cid+'/severity',{severity:sev});
+    toast('파손 정도를 <b>'+esc(sev)+'</b>로 확정했습니다.');
+    const c = D.cases.find(x=>x.id===Number(cid));
+    loadEstBasis(cid, c?c.status:'입찰중');
+  }catch(e){ toast(e.message); }
+}
+async function estAck(cid){
+  const reason = (document.getElementById('eb_reason')||{value:''}).value.trim();
+  try{
+    await api('POST','/api/insurer/cases/'+cid+'/est-ack',{reason});
+    toast('경보를 <b>확인</b> 처리했습니다. 금액은 변경되지 않았습니다.');
+    const c = D.cases.find(x=>x.id===Number(cid));
+    loadEstBasis(cid, c?c.status:'입찰중');
+  }catch(e){ toast(e.message); }
+}
+
+// ── 실시간 알림 벨 ──
+let NOTIFS=[], BELL_OPEN=false, NOTI_SEEN=null;   // null = 아직 기준선 없음
+async function loadNotifs(){
+  try{
+    const r=await api('GET','/api/insurer/notifications');
+    NOTIFS=r.notifications||[];
+    const dot=document.getElementById('bdot');
+    if(dot){ if(r.unread>0){ dot.textContent=r.unread>99?'99+':r.unread; dot.style.display='flex'; } else dot.style.display='none'; }
+    if(BELL_OPEN) renderBell();
+    // 새 알림은 화면 우측 아래에 띄운다 — 사건 등록 중에도 승인 요청을 놓치지 않게.
+    //  (첫 조회는 기준선만 잡고 아무것도 띄우지 않는다)
+    if(window.Tray) NOTI_SEEN = Tray.feed(NOTIFS, NOTI_SEEN, n=>goNotif(n.id));
+  }catch(e){}
+}
+function renderBell(){
+  const pop=document.getElementById('bellPop');
+  if(!pop) return;
+  pop.innerHTML=`<div class="bh"><span>알림</span>${NOTIFS.some(n=>!n.read_at)?'<a data-act="readAll">모두 읽음</a>':''}</div>`+
+    (NOTIFS.length?NOTIFS.map(n=>`<div class="bi ${n.read_at?'':'un'}" ${n.url?`data-act="goNotif" data-arg="${n.id}"`:''}>
+        <div><span class="bty">${esc(n.ntype||'')}</span>${esc(n.message||'')}</div>
+        <div class="bt">${esc((n.created_at||'').slice(5,16))}</div></div>`).join('')
+      :'<div class="bi" style="color:var(--faint)">알림이 없습니다</div>');
+}
+function toggleBell(){
+  const pop=document.getElementById('bellPop');
+  BELL_OPEN=!BELL_OPEN;
+  pop.style.display=BELL_OPEN?'block':'none';
+  if(BELL_OPEN) renderBell();
+}
+async function readAll(){
+  try{ await api('POST','/api/insurer/notifications/read',{}); await loadNotifs(); }catch(e){}
+}
+// 알림 종류 → 가야 할 탭. url 문자열이 아니라 **종류**가 목적지를 정한다.
+//  (예전에는 전부 '홈'으로만 보내서, 눌러도 아무 일이 없는 것처럼 느껴졌다)
+const NOTI_TAB = {
+  '사건접수':'cases', '공고오픈':'cases', '공고재개':'cases', '재공고':'cases',
+  '낙찰승인요청':'home', '합의승인요청':'home', '완료승인요청':'settle',
+  '완료승인독촉':'settle', '완료승인':'settle',
+  '낙찰':'cases', '낙찰확정':'cases', '낙찰취소':'cases', '유찰':'cases',
+  '저가경보':'cases', '변경견적':'cases', '재경매':'cases',
+  '정산':'settle', '정산취소':'settle',
+  '하자접수':'defects', '하자완료':'defects', '하자반려':'defects', '재시공배정':'defects',
+  '사진업로드':'cases', '사진확보':'cases', '완료보고':'cases',
+  '보안':'mypage',
+  //  ⚠ 서버가 실제로 보내는데 여기 없던 것들. 키가 없으면 `|| 'home'` 으로 떨어져
+  //    알림을 눌러도 일이 있는 화면으로 가지 않는다.
+  //    ('미수선종결' 은 22라운드에 알림을 새로 만들면서 이 표를 안 고친 것이다)
+  '낙찰승인독촉':'home', '출동배정':'cases',
+  '미수선종결':'cases', '사건재개':'cases', '사건종결':'cases',
+  //  ⚠⚠ [라운드136] 보험사 상태변경 알림을 새로 만들면서 이 표를 안 고치면
+  //    22라운드의 '미수선종결'과 같은 결함이 그대로 재발한다 — 협력사 쪽
+  //    '업체상태변경' 과 같게 mypage 로 보낸다(계정 상태는 마이페이지 소관).
+  '보험사상태변경':'mypage',
+};
+async function goNotif(id){
+  const n=NOTIFS.find(x=>x.id===id);
+  try{ await api('POST','/api/insurer/notifications/read',{id}); }catch(e){}
+  BELL_OPEN=false; document.getElementById('bellPop').style.display='none';
+  await loadNotifs();
+  if(!n) return;
+  show(NOTI_TAB[n.ntype] || 'home');
+  if(n.case_id && typeof caseDetail === 'function'){
+    setTimeout(()=>{ try{ caseDetail(n.case_id); }catch(e){} }, 60);
+  }
+}
+document.addEventListener('click',(e)=>{
+  if(BELL_OPEN && !e.target.closest('.bellwrap')){ BELL_OPEN=false; const p=document.getElementById('bellPop'); if(p)p.style.display='none'; }
+});
+
+//  추천 점수를 실제로 어떤 비중으로 냈는지 그대로 적는다.
+//   ⚠ 문구를 고정해 두면 복구온이 설정을 바꿨을 때 화면이 거짓말을 한다.
+const W_LABEL = {price:'가격', days:'공기', rating:'평점', region:'지역', defect:'하자'};
+function weightText(w){
+  if(!w) return '가격·공기·평점·지역·하자 가중 평가';
+  return '가중치 ' + Object.keys(W_LABEL)
+    .filter(k => w[k] !== undefined)
+    .map(k => W_LABEL[k] + ' ' + Math.round(Number(w[k])*100) + '%')
+    .join(' · ');
+}
+
+let AW_BIDS = [];
+//  이 계정이 회사를 대신해 '확정'을 누를 수 있는 등급인가.
+//   ⚠ 하위관리자(조회·접수)로 발급된 계정이 낙찰을 승인하면 내부 결재를 통째로 우회한다.
+const canAct = () => !(D && D.me && D.me.portal_role === '하위관리자');
+
+async function awardView(cid){
+  try{
+    const r=await api('GET','/api/insurer/cases/'+cid+'/bids');
+    const c=r.case, bids=r.bids;
+    AW_BIDS = bids;                       // 확인창에서 업체·금액을 되읽기 위해 보관
+    //  ⚠ 기본 선택을 두지 않는다. 추천 1위가 미리 골라져 있으면 담당자가 그냥 누르게 되고,
+    //     그건 사실상 자동화가 낙찰을 정하는 것이다(철칙 위반). 고르는 행위를 반드시 거치게 한다.
+    SELBID = null;
+    openModal(`<h3>낙찰 승인 — ${esc(c.case_no)}</h3>
+      <div class="msub">${esc(c.category)} · ${esc(c.region||'')} · 가견적 ${won(c.est_price)}원</div>
+      ${/*  ⚠ **특정 업체를 지목하지 않는다.** 종전에는 여기에 '🏆 ○○ 추천 — 종합 95.4점'
+             배너가 떠서, 복구온이 승자를 가리킨 화면에서 발주처가 승인 버튼을 눌렀다.
+             우리 수수료는 낙찰가 정률이라 '비싼 업체를 밀수록 우리 수입이 는다' —
+             '참고 표시일 뿐' 이라는 한 줄로는 방어가 되지 않는다(철칙 5·7). */''}
+      ${bids.length?`<div class="reco">입찰 <b>${bids.length}개사</b> — <b>가격순</b>으로 보여 드립니다
+        <div style="font-weight:600;color:var(--sub);font-size:.76rem;margin-top:4px">
+          ${weightText(r.weights)}${r.weights_default===false?' <b style="color:var(--warn,#B7791F)">· 기본값에서 조정된 가중치입니다</b>':''}</div>
+        <div style="font-weight:600;color:var(--faint);font-size:.72rem;margin-top:3px">
+          점수는 <b>판단을 돕는 참고값</b>일 뿐입니다. 복구온은 어느 업체도 추천하지 않으며,
+          <b>낙찰은 귀사가 선택·승인</b>하십니다.</div></div>`:''}
+      <div id="bidlist">
+        ${bids.length?bids.map((b,i)=>`
+          <div class="rank" id="bid${b.id}" data-act="pickBid" data-arg="${b.id}">
+            <div class="no">${i+1}</div>
+            <div style="flex:1">
+              <div class="a">${esc(b.partner_name)}
+                ${b.is_lowest?'<span class="tag amber">최저가</span>':''}</div>
+              <div class="b">평점 ${b.rating||'-'} ★ · 이행 ${b.jobs_done||0}건 · 하자 ${b.defect_count||0}건 · ${esc(b.p_region||'')}</div>
+              <div class="sbar">${['가격','공기','평점','지역','하자'].map(k=>
+                `<span title="${k} ${(b.score_parts||{})[k]||0}점">${k} ${(b.score_parts||{})[k]||0}</span>`).join('')}</div>
+            </div>
+            <div class="prc"><div class="a">${won(b.amount)}원</div>
+              <div class="b">공기 ${b.days||'-'}일</div>
+              <div class="scr">${b.score}점</div></div>
+          </div>`).join(''):'<div class="empty">아직 입찰이 없습니다</div>'}
+      </div>
+      ${bids.length?`<p style="font-size:.68rem;color:var(--faint);margin-top:8px;line-height:1.6">
+        목록은 <b>가격순</b>입니다. 점수는 <b>가격 50 · 공기 15 · 평점 15 · 지역 10 · 하자 10</b>
+        가중치로 계산한 100점 환산 <b>참고값</b>이며, 순서를 정하지 않습니다.
+        평점은 <b>해피콜이 있는 업체만</b> 표시되고(없으면 「-」), 점수에서는 중간값으로 봅니다.
+        <b>최종 선택은 담당자가 하며</b>, 최저가가 아닌 업체를 고르면 사유가 기록됩니다.</p>`:''}
+      ${bids.length?`<div class="field" style="margin-top:14px"><label>최저가가 아닌 업체 선택 시 사유 <span style="color:var(--faint);font-weight:600">(선정 근거로 기록됩니다)</span></label>
+        <input id="aw_reason" placeholder="예: 공기 단축 필요, 인근 시공 실적 우수"></div>`:''}
+      <div class="modal-foot">
+        ${bids.length?(canAct()
+            ? `<button class="btn a" data-act="doAward" data-arg="${cid}">낙찰 승인</button>`
+            : '<span class="sub" style="font-size:.75rem">조회 전용 계정입니다 — 승인은 상위 등급만 가능합니다</span>'):''}
+        ${/*  ⚠ 예전에는 '승인' 아니면 '닫기'뿐이었다. 값이 전부 예산을 넘어도,
+               업체가 미덥지 않아도 담당자가 누를 것이 없어 사건이 그대로 멈췄다. */''}
+        ${canAct() ? `<button class="btn g" data-act="rejectBids" data-arg="${cid}"
+          title="이 입찰들을 받지 않고 다시 공고하도록 요청합니다">전부 반려 · 재공고 요청</button>` : ''}
+        <span style="flex:1"></span><button class="btn g" data-act="closeModal">닫기</button>
+      </div>`);
+  }catch(e){ toast(e.message); }
+}
+//  들어온 입찰을 받지 않겠다는 의사 표시 — 재공고 요청.
+//   ⚠ 이 버튼은 사건 상태·금액을 바꾸지 않는다. 유찰 확정·재공고는 운영팀 권한이다.
+//     담당자가 "값이 안 맞는다"고 말할 창구가 없어 사건이 그대로 멈추던 것을 연다.
+async function rejectBids(cid){
+  const NL = String.fromCharCode(10);
+  const reason = prompt('이 입찰들을 받지 않고 다시 공고하도록 요청합니다.' + NL + NL +
+    '사유를 5자 이상 적어 주세요 (예: 전 건 예산 초과, 공기 과다).' + NL +
+    '· 사건 상태는 바뀌지 않습니다 — 복구온 운영팀이 확인 후 처리합니다.');
+  if(reason === null) return;
+  if(reason.trim().length < 5){ toast('사유를 5자 이상 적어 주세요.'); return; }
+  try{
+    const r = await api('POST', `/api/insurer/cases/${cid}/reject-bids`, {reason: reason.trim()});
+    toast(r.message || '재공고 요청을 접수했습니다.');
+    closeModal(); reload().then(()=>show('cases'));
+  }catch(e){
+    //  [라운드479] 이 버튼은 doAward()와 같은 낙찰승인 모달 안에 나란히 있다 —
+    //    누군가 먼저 낙찰을 승인해 시공중으로 넘어간 뒤 이 버튼을 누르면 실패
+    //    토스트만 뜨고 이미 끝난 사건의 낙찰승인 모달이 그대로 남았다(477라운드가
+    //    doAward() 자신엔 이미 고친 것과 같은 결함). 성공 분기와 같이 처리한다.
+    toast(e.message); closeModal(); reload().then(()=>show('cases'));
+  }
+}
+
+//  잘못 등록한 사건 접기 — 입찰이 들어오기 전까지만.
+async function cancelCase(cid){
+  const NL = String.fromCharCode(10);
+  const reason = prompt('이 사건을 취소합니다.' + NL + NL +
+    '사유를 5자 이상 적어 주세요 (예: 가견적 자릿수 오기, 중복 등록).' + NL +
+    '· 입찰이 들어온 뒤에는 취소할 수 없습니다.' + NL +
+    '· 취소해도 기록은 남습니다. 올바른 내용으로 다시 등록해 주세요.');
+  if(reason === null) return;
+  if(reason.trim().length < 5){ toast('사유를 5자 이상 적어 주세요.'); return; }
+  try{
+    const r = await api('POST', `/api/insurer/cases/${cid}/cancel`, {reason: reason.trim()});
+    toast(r.message || '사건을 취소했습니다.');
+    closeModal(); reload().then(()=>show('cases'));
+  }catch(e){
+    //  [라운드479] 이 버튼은 입찰 0건일 때만 보인다 — 취소 사유를 입력하는 사이
+    //    입찰이 들어오면 서버는 HAS_BIDS로 막는데 화면은 "입찰 없음" 낡은 모달을
+    //    그대로 보여줬다. 성공 분기와 같이 닫고 새로고침한다(477라운드 패턴).
+    toast(e.message); closeModal(); reload().then(()=>show('cases'));
+  }
+}
+
+function pickBid(id){
+  SELBID=id;
+  document.querySelectorAll('#bidlist .rank').forEach(r=>r.classList.remove('sel'));
+  document.getElementById('bid'+id).classList.add('sel');
+}
+async function doAward(cid){
+  const reason=document.getElementById('aw_reason')?document.getElementById('aw_reason').value.trim():'';
+  //  ⚠ 낙찰 승인은 곧 계약 성립이다. 누르는 즉시 시공이 시작되고 탈락 업체 전원에게
+  //     통지가 나가며, 되돌리는 경로는 이 화면에 없다(운영팀 권한). 한 번 되읽어 준다.
+  const _b = (AW_BIDS||[]).find(x=>x.id===SELBID);
+  if(_b){
+    const NL = String.fromCharCode(10);
+    if(!confirm('낙찰 승인' + NL + NL
+                + '업체: ' + _b.partner_name + NL
+                + '금액: ' + Number(_b.amount||0).toLocaleString('ko-KR') + '원'
+                + (_b.days ? (NL + '공기: ' + _b.days + '일') : '') + NL + NL
+                + '승인하면 이 업체가 시공을 시작하고, 나머지 업체에는 탈락이 통지됩니다.' + NL
+                + '되돌리려면 복구온 운영팀에 연락하셔야 합니다. 진행할까요?')) return;
+  }
+  try{
+    await api('POST','/api/insurer/cases/'+cid+'/award',{bid_id:SELBID,reason});
+    closeModal(); toast('낙찰이 <b>승인</b>되었습니다 — 선정 근거가 자동 기록되었습니다');
+    await reload(); show('cases');
+  }catch(e){
+    //  [라운드477] 낙찰승인 경합에서 진 경우도 같은 문제 — 실패 분기만
+    //    모달을 안 닫고 새로고침도 안 해 낡은 화면이 남았다.
+    toast(e.message); closeModal(); await reload(); show('cases');
+  }
+}
+
+//  보험사가 고른 지적 사진 — {photo_id: 사유}
+let DEFECT_MARKS = {};
+
+//  완료 사진을 불러와 **사진마다 체크 + 사유**를 달 수 있게 한다.
+//   글자 한 줄("방수 마감 불량")만 넘기면 시행사는 어느 지점인지 모른 채 현장에 간다.
+async function loadDefectPhotos(cid){
+  const box = document.getElementById('d_photos');
+  if(!box) return;
+  box.innerHTML = '<div class="sub" style="padding:8px">완료 사진 불러오는 중…</div>';
+  let d;
+  try{ d = await api('GET', `/api/cases/${cid}/photos`); }
+  catch(e){ box.innerHTML = `<div class="sub" style="padding:8px">사진을 불러오지 못했습니다 (${esc(e.message)})</div>`; return; }
+  const list = [].concat(d.construction||[], d.unclassified||[]);
+  if(!list.length){ box.innerHTML = '<div class="sub" style="padding:8px">이 사건에는 등록된 사진이 없습니다.</div>'; return; }
+  box.innerHTML = `<div class="pgrid">${list.map(p=>`
+    <figure class="pcell dmark" data-pid="${p.id}">
+      <img src="${p.url}" alt="${esc(p.kind||'시공')} 사진" style="cursor:pointer">
+      <figcaption style="padding:6px 8px">
+        <label class="check" style="font-size:.76rem;display:flex;gap:5px;align-items:center">
+          <input type="checkbox" data-mark="${p.id}" style="width:auto"> ${esc(p.kind||'기타')} — 하자 지적
+        </label>
+        <input data-marknote="${p.id}" placeholder="이 사진의 어디가 문제인가요" hidden
+               style="margin-top:5px;font-size:.76rem;padding:5px 7px">
+      </figcaption>
+    </figure>`).join('')}</div>`;
+  box.querySelectorAll('[data-mark]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const note = box.querySelector(`[data-marknote="${cb.dataset.mark}"]`);
+      note.hidden = !cb.checked;
+      cb.closest('.pcell').style.outline = cb.checked ? '2.5px solid var(--red)' : '';
+      if(cb.checked) note.focus(); else delete DEFECT_MARKS[cb.dataset.mark];
+    });
+  });
+  box.querySelectorAll('[data-marknote]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ DEFECT_MARKS[inp.dataset.marknote] = inp.value; });
+  });
+  //  ⚠ 하자를 잡아내려면 **크게 봐야 한다.** 썸네일로는 실링 벌어짐이 안 보인다.
+  //    확대 화면에서 넘겨 보다가 문제 사진을 찾으면 닫고 체크한다.
+  if(window.Lightbox) Lightbox.bind(box, {caption: img =>
+    `${esc(img.alt||'')} <span style="opacity:.7">— 닫고 체크한 뒤 사유를 적어 주세요</span>`});
+}
+
+function defectForm(cid){
+  const c=D.cases.find(x=>x.id===cid);
+  DEFECT_MARKS = {};
+  //  ⚠⚠ [라운드289] "하자보증 24개월" 고정 표시였다 — 실제 판정(warranty_ok)은
+  //    사건별 c.warranty_months 로 서버가 따로 계산해(app.py _warranty_left) 접수
+  //    직후 토스트로 알려주는데, 접수 전 이 안내문은 늘 24개월이라 값이 다른
+  //    사건(0=무보증 등)에서는 접수 전후 안내가 서로 다른 말을 했다. 형제 화면
+  //    (partner_portal.html)이 이미 쓰는 것과 같은 표기(0 은 유효값 — ??24)로 맞춘다.
+  openModal(`<h3>하자 접수 — ${esc(c.case_no)}</h3>
+    <div class="msub">${esc(c.category)} · 시행사 ${esc(c.partner_name||'-')} · 하자보증 ${c.warranty_months??24}개월</div>
+    <div class="field"><label>하자 제목 *</label><input id="d_title" placeholder="예: 가드레일 지주 유격 발생"></div>
+    <div class="field"><label>하자 내용</label><textarea id="d_content" placeholder="발생 시점, 증상, 요청 사항을 적어주세요."></textarea></div>
+    <div class="field"><label>심각도</label>
+      <select id="d_sev"><option>경미</option><option selected>보통</option><option>중대</option></select></div>
+    <div class="field"><label>하자 사진 지정 <span style="color:var(--faint);font-weight:600">— 문제 있는 사진을 체크하고 어디가 문제인지 적어 주세요</span></label>
+      <div style="font-size:.74rem;color:var(--faint);margin-bottom:6px">
+        여기서 고른 사진과 사유가 <b>그대로 시행사에게 전달</b>됩니다. 시행사는 무엇을 고쳐야 하는지 알고 현장에 나갑니다.</div>
+      <div id="d_photos"></div></div>
+    <div class="notice" style="margin:14px 0 0">접수 시 시행사에 자동 통보되며, 복구온이 재시공을 배정·관리합니다. 하자보증 기간 내 건은 <b>시행사 비용 부담</b>으로 처리됩니다.</div>
+    <div class="modal-foot"><button class="btn p" data-act="submitDefect" data-arg="${cid}">하자 접수</button>
+      <span style="flex:1"></span><button class="btn g" data-act="closeModal">취소</button></div>`);
+  loadDefectPhotos(cid);      // 모달이 그려진 뒤에 채운다
+}
+async function submitDefect(cid){
+  const title=document.getElementById('d_title').value.trim();
+  if(!title){ toast('하자 제목을 입력해 주세요.'); return; }
+  try{
+    //  체크된 사진 + 사진별 사유를 함께 보낸다
+    const marks = [...document.querySelectorAll('[data-mark]:checked')].map(cb=>({
+      photo_id: Number(cb.dataset.mark), note: (DEFECT_MARKS[cb.dataset.mark]||'').trim()}));
+    const r=await api('POST','/api/defects',{case_id:cid,title,
+      content:document.getElementById('d_content').value.trim(),
+      severity:document.getElementById('d_sev').value, photos: marks});
+    closeModal();
+    const pn = r.marked_photos ? ` · 지적 사진 <b>${r.marked_photos}장</b> 전달` : '';
+    toast((r.warranty_ok?'하자가 <b>접수</b>되었습니다 — 시행사에 통보되었습니다'
+      :'하자가 접수되었습니다 (⚠ 보증기간 경과 — 비용 부담 협의 필요)') + pn);
+    await reload(); show('defects');
+  }catch(e){ toast(e.message); }
+}
+
+RENDER.defects = () => {
+  const ds=D.defects;
+  document.getElementById('wrap').innerHTML=`
+    <div class="panel">
+      <div class="ph"><span class="pt">하자·A/S 현황 <small>${ds.length}건</small></span></div>
+      <div class="notice">복구온은 준공 후 하자 발생 시 <b>재시공을 책임 주선</b>합니다. 접수 → 확인 → 재시공 배정 → 완료 단계로 진행되며, 모든 이력이 기록됩니다.</div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>하자번호</th><th style="min-width:190px">사건 <span style="font-weight:600;color:var(--faint)">— 어떤 공사였나</span></th><th>제목</th><th>심각도</th><th>시행사</th><th>상태</th><th>보수 사진</th><th>기한</th></tr>
+        ${ds.length?ds.map(d=>`<tr>
+          <td class="em">${esc(d.defect_no)}</td><td>${caseBrief(d)}</td>
+          <td>${esc(d.title)}</td>
+          <td><span class="tag ${d.severity==='중대'?'red':d.severity==='보통'?'amber':'gray'}">${esc(d.severity)}</span></td>
+          <td>${esc(d.partner_name||'-')}</td><td>${stTag(d.status)}</td>
+          <td>${d.marked_photos
+              ? `<button class="btn ${d.fixed_photos>=d.marked_photos?'g':'a'} sm" data-act="defectCompare" data-arg="${d.id}">
+                   ${d.fixed_photos}/${d.marked_photos}곳 대조</button>`
+              : '<span class="hint">지적 사진 없음</span>'}</td>
+          <td>${esc(d.due_date||'-')}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">접수된 하자가 없습니다</td></tr>'}
+      </table></div>
+      <p class="hint" style="margin-top:8px">「대조」를 누르면 <b>지적한 사진 옆에 고친 사진</b>을 나란히 봅니다 — 재방문 없이 확인하실 수 있습니다.</p>
+    </div>`;
+};
+
+//  하자 목록의 「사건」 칸 — 접수번호만 있으면 어떤 현장인지 알 수 없어 하나씩 열어 봐야 했다.
+function caseBrief(d){
+  const place = (d.case_address||'').trim() || d.case_region || '';
+  return `<div style="font-weight:800;color:var(--blue)">${esc(d.case_no||'-')}</div>
+    <div style="font-size:.72rem;color:var(--sub);line-height:1.5">
+      ${d.case_category?`<b>${esc(d.case_category)}</b>`:''}${d.case_category&&place?' · ':''}
+      ${place?`<span title="${esc(place)}">${esc(place.length>24?place.slice(0,24)+'…':place)}</span>`:''}</div>
+    ${d.case_amount?`<div style="font-size:.7rem;color:var(--faint)">공사금액 ${won(d.case_amount)}원${
+      d.case_completed_at?` · 완료 ${esc(String(d.case_completed_at).slice(0,10))}`:''}</div>`:''}`;
+}
+
+//  지적 ↔ 보수 대조 — 내가 짚은 자리가 실제로 고쳐졌는지 나란히 본다.
+async function defectCompare(did){
+  const d = (D.defects||[]).find(x=>x.id===did) || {};
+  let r;
+  try{ r = await api('GET', `/api/defects/${did}/photos`); }
+  catch(e){ toast(e.message); return; }
+  const marked = r.marked || [];
+  openModal(`<h3>지적 ↔ 보수 대조 — ${esc(d.defect_no||'')}</h3>
+    <div class="msub">${esc(d.case_no||'')} · ${esc(d.title||'')} · ${esc(d.partner_name||'')}</div>
+    <div class="notice" style="margin:10px 0;${r.all_fixed?'':'border-color:var(--amber)'}">
+      지적 <b>${marked.length}곳</b> 중 보수 사진이 올라온 곳 <b>${r.fixed_count||0}곳</b>
+      ${r.all_fixed?' — 모두 대조 가능합니다.':' — 나머지는 아직 사진이 없습니다.'}</div>
+    ${marked.map(m=>{
+      const fx=(m.fixes||[])[0];
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;border:1px solid var(--mist);
+                   border-radius:12px;padding:10px;margin-bottom:10px">
+        <figure class="pcell" style="outline:2.5px solid var(--red);margin:0">
+          <img src="${esc(m.url)}" alt="지적 사진">
+          <figcaption style="padding:7px 9px"><div style="font-size:.7rem;color:var(--faint)">지적</div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--red);line-height:1.5">
+              ${m.note?esc(m.note):'(사유 미기재)'}</div></figcaption></figure>
+        ${fx?`<figure class="pcell" style="outline:2.5px solid #1F8A55;margin:0">
+          <img src="${esc(fx.url)}" alt="보수 사진">
+          <figcaption style="padding:7px 9px"><div style="font-size:.7rem;color:var(--faint)">보수</div>
+            <div style="font-size:.75rem;color:var(--sub)">${esc((fx.created_at||'').slice(0,16))} · ${esc(fx.uploader||'')}</div>
+          </figcaption></figure>`
+        :`<div class="empty" style="display:grid;place-items:center;min-height:120px">아직 보수 사진 없음</div>`}
+      </div>`;}).join('') || '<div class="empty">지적된 사진이 없습니다.</div>'}
+    <div class="hint">사진을 누르면 크게 보고 좌우로 넘길 수 있습니다.</div>
+    <div class="modal-foot"><span style="flex:1"></span>
+      <button class="btn g" data-act="closeModal">닫기</button></div>`);
+  if(window.Lightbox){
+    const noteBy = {};
+    marked.forEach(m=>{
+      noteBy[`/api/photos/${m.id}/file`] = m.note ? `<b>지적 사유</b> — ${esc(m.note)}` : '';
+      (m.fixes||[]).forEach(f=>{ noteBy[`/api/photos/${f.id}/file`] =
+        `<b>보수 사진</b> — ${esc(m.note||'지적 지점')}`; });
+    });
+    Lightbox.bind(document.getElementById('modal'), {
+      caption: img => noteBy[new URL(img.src, location.origin).pathname] || ''
+    });
+  }
+}
+
+RENDER.settle = () => {
+  const ss=D.settlements;
+  // 승인이 필요한 건을 위로 올린다 — 카운트는 원본 ss 를 그대로 쓴다(숫자가 흔들리면 안 된다)
+  const ssView=[...ss].sort((a,b)=>(a.insurer_approved?1:0)-(b.insurer_approved?1:0));
+  //  ⚠ 정산은 마감 다음 달에 뽑는다(서버 _stmt_period_args 문서 — "없으면 지난달").
+  //    그런데 이 화면의 월 선택은 여태 '이번 달'이 기본이었다 — 아래 <select> 가
+  //    매번 값을 명시해서 보내므로 서버의 그 기본값은 실제로는 한 번도 안 타고,
+  //    사람은 열 때마다 아직 안 끝난 이번 달의 미완성 숫자를 먼저 보게 됐다.
+  //    KST 기준으로 지난달을 계산해 기본 선택값 자체를 맞춘다(todayKST() 와 같은
+  //    이유로, 브라우저 시간대와 무관하게 정확해야 한다).
+  const [_ty, _tm] = todayKST().split('-').map(Number);
+  const lastY = _tm === 1 ? _ty - 1 : _ty, lastM = _tm === 1 ? 12 : _tm - 1;
+  document.getElementById('wrap').innerHTML=`
+    <div class="krow" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kc hero"><div class="k">지급 완료</div><div class="v">${won(D.kpi.paid)}<small>원</small></div><div class="d">누적</div></div>
+      <div class="kc gold"><div class="k">지급 예정</div><div class="v">${won(D.kpi.pending_pay)}<small>원</small></div><div class="d">청구 후 미입금</div></div>
+      <div class="kc"><div class="k">정산 건수</div><div class="v">${ss.length}<small>건</small></div><div class="d">수수료는 시행사 부담</div></div>
+    </div>
+    <div class="notice">정산 흐름: <b>①공사 완료 승인(귀사)</b> → ②복구온 계좌 입금 → ③복구온 입금 확인·더블 체크 → ④수수료 공제 후 시행사 지급. <b>귀사가 하실 일은 완료 승인과 대금 입금뿐</b>입니다.</div>
+    <div class="panel">
+      <div class="ph"><span class="pt">📄 월 정산 명세서 <small>발주 사건·지급·절감 한 달치를 엑셀로</small></span>
+        <span style="flex:1"></span>
+        <a class="btn g sm" href="/report/billing" target="_blank" rel="noopener">📘 청구 항목 설명서</a></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="ins_st_year" style="width:auto">${[0,1,2].map(k=>{const y=_ty-k;return `<option value="${y}" ${y===lastY?'selected':''}>${y}년</option>`;}).join('')}</select>
+        <select id="ins_st_month" style="width:auto">${Array.from({length:12},(_,i)=>i+1).map(m=>`<option value="${m}" ${m===lastM?'selected':''}>${m}월</option>`).join('')}</select>
+        <button class="btn a sm" data-act="insStmtExport">엑셀 내려받기</button>
+        <span class="hint">해당 월에 생성된 정산 건이 명세서에 담깁니다.</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">정산 내역 <small>${ss.length}건</small></span></div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>사건</th><th>시행사</th><th class="r">공사대금</th><th>완료 승인</th><th>귀사 입금</th><th>업체 지급</th><th class="r">처리</th></tr>
+        ${ss.length?ssView.map(s=>`<tr class="rowclick" data-act="caseDetail" data-arg="${s.case_id}">
+          <td class="em">${esc(s.case_no)}</td><td>${esc(s.partner_name)}</td>
+          <td class="r em">${won(s.amount)}</td>
+          <td>${s.insurer_approved?'<span class="tag green">승인완료</span>':'<span class="tag amber">대기</span>'}</td>
+          <td>${stTag(s.insurer_paid)}</td><td>${stTag(s.transfer_status)}</td>
+          <td class="r">${!s.insurer_approved
+            ? (canAct() ? `<button class="btn a sm" data-act="approveDone" data-arg="${s.id}">완료 승인</button>`
+                        : '<span class="sub">중간관리자 이상</span>')
+            : '-'}</td>
+        </tr>`).join('')
+          :'<tr><td colspan="7" class="empty">정산 내역이 없습니다</td></tr>'}
+      </table></div>
+      <p style="font-size:.7rem;color:var(--faint);margin-top:10px">※ 플랫폼 수수료는 계약 요율에 따라 낙찰 시행사가 부담하며, 귀사에는 별도 비용이 청구되지 않습니다.</p>
+    </div>`;
+};
+async function approveDone(sid){
+  if(!confirm('이 건의 공사 완료를 승인하시겠습니까?\n승인하면 복구온이 대금 입금을 확인하고 시행사 지급 절차를 진행합니다.')) return;
+  try{
+    const r=await api('POST','/api/insurer/settlements/'+sid+'/approve');
+    toast(r.message||'완료 승인되었습니다.');
+    await reload(); show('settle');
+  }catch(e){ toast(e.message); }
+}
+
+// ── 절감 리포트 (기간 선택 + 엑셀 내려받기) ─────────────────────
+//  ⚠ 집계는 서버가 한다(브라우저 합산 금지). 어드민 운영 KPI 와 **같은 계산 코어**를 써서
+//    두 화면의 절감 숫자가 갈라지지 않게 한다. 기준은 '완료·확정가'다.
+let RP = {from:'', to:''};
+RENDER.report = async () => {
+  const wrap = document.getElementById('wrap');
+  wrap.innerHTML = '<div class="panel"><div class="empty">집계 중…</div></div>';
+  const qs = new URLSearchParams();
+  if(RP.from) qs.set('from', RP.from);
+  if(RP.to) qs.set('to', RP.to);
+  let d;
+  try{ d = await api('GET','/api/insurer/report'+(qs.toString()?'?'+qs:'')); }
+  catch(e){ wrap.innerHTML=`<div class="panel"><div class="empty">${esc(e.message)}</div></div>`; return; }
+  const S = d.saving || {}, list = S.by_category || [];
+  //  ⚠ **엑셀과 같은 식으로 낸다.** 서버는 절감액을 사건별 max(0, 기준−확정) 로
+  //    클램프해 내려주는데(app.py: SUM(MAX(0, …))), 화면만 합계끼리
+  //    (1 − 확정/기준) 으로 다시 계산했다. 2차 낙찰이 기준선을 넘는 공종에서는
+  //    그 값이 음수가 되어 `−${rt.toFixed(1)}%` 템플릿과 겹쳐 **"−-30.0%"** 로
+  //    찍히고, 막대 너비도 음수가 된다. 같은 표를 두 곳이 다르게 말하면 안 된다.
+  const rate = r => (r.est_sum ? ((r.saved || 0) * 100 / r.est_sum) : 0);
+  const maxRate = Math.max(...list.map(rate), 1);
+  wrap.innerHTML=`
+    <div class="panel" style="margin-bottom:12px">
+      <div class="ph"><span class="pt">절감 리포트 <small>${esc(d.period.label)}</small></span>
+        <span style="flex:1"></span>
+        <label style="font-size:.72rem;color:var(--faint)">기간</label>
+        <input id="rp_from" type="date" value="${esc(RP.from)}" style="width:auto">
+        <span style="color:var(--faint)">~</span>
+        <input id="rp_to" type="date" value="${esc(RP.to)}" style="width:auto">
+        <button class="btn a sm" data-act="rpApply">적용</button>
+        ${(RP.from||RP.to)?'<button class="btn g sm" data-act="rpClear">전체</button>':''}
+        <button class="btn g sm" data-act="rpExport">엑셀 내려받기</button>
+        <button class="btn g sm" data-act="printPage">인쇄</button>
+      </div>
+    </div>
+    <div class="krow" style="grid-template-columns:repeat(4,1fr)">
+      ${/*  ⚠ '가견적' 이라고 쓰지 않는다. 2차 경매 건의 비교 기준은 보상담당자
+             가견적이 아니라 **복구온이 계산한 표준단가 개산 상단**이다. 그걸
+             '가견적' 이라고 인쇄하면 우리 계산값이 발주처가 낸 금액인 것처럼
+             읽힌다(철칙 2). 자매 산출물(월 명세서·리포트 엑셀)은 이미
+             '비교 기준' 으로 고쳤는데 화면만 남아 있었다. */''}
+      <div class="kc gold"><div class="k">절감액</div><div class="v">${won(S.saved_amount)}<small>원</small></div><div class="d">비교 기준 대비</div></div>
+      <div class="kc hero"><div class="k">평균 절감률</div><div class="v">−${S.avg_rate||0}<small>%</small></div><div class="d">확정가 기준</div></div>
+      <div class="kc"><div class="k">집계 건수</div><div class="v">${S.done||0}<small>건</small></div><div class="d">완료·확정 건</div></div>
+      <div class="kc"><div class="k">경매 생략</div><div class="v">${(d.agreement||{}).ok||0}<small>건</small></div><div class="d">현장 견적 승인 ${(d.agreement||{}).total||0}건 중</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">공종별 절감 효과 <small>비교 기준 대비 확정 공사대금</small></span></div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>공종</th><th class="r">건수</th><th class="r">비교 기준 합계</th><th class="r">확정 공사대금</th><th class="r">절감액</th><th style="width:180px">절감률</th></tr>
+        ${list.length?list.map(r=>{const rt=rate(r);return `<tr><td class="em">${esc(r.category||'-')}</td><td class="r">${r.n}건</td>
+          <td class="r">${won(r.est_sum)}</td><td class="r">${won(r.award_sum)}</td>
+          <td class="r em" style="color:var(--green)">${won(r.saved)}</td>
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:8px;border-radius:99px;background:var(--mist);overflow:hidden">
+              <div style="height:100%;width:${Math.round(rt/maxRate*100)}%;background:linear-gradient(90deg,var(--blue),#3E9BDD)"></div></div>
+            <span style="font-weight:800;font-size:.76rem;color:var(--green);width:46px;text-align:right">−${rt.toFixed(1)}%</span>
+          </div></td></tr>`;}).join(''):'<tr><td colspan="6" class="empty">해당 기간에 완료·확정된 사건이 없습니다</td></tr>'}
+      </table></div>
+      <p style="font-size:.7rem;color:var(--faint);margin-top:12px">※ ${esc(d.basis||'')} 귀사 사건만 집계한 실데이터입니다.</p>
+    </div>`;
+};
+function rpApply(){
+  RP={from:(document.getElementById('rp_from')||{}).value||'', to:(document.getElementById('rp_to')||{}).value||''};
+  RENDER.report();
+}
+function rpClear(){ RP={from:'',to:''}; RENDER.report(); }
+function rpExport(){
+  const qs=new URLSearchParams();
+  if(RP.from) qs.set('from',RP.from);
+  if(RP.to) qs.set('to',RP.to);
+  window.open('/api/insurer/report/export'+(qs.toString()?'?'+qs:''),'_blank');
+}
+
+// ── 공지사항 ──
+//  ⚠⚠ [라운드90] 이 화면 자체가 없었다 — /api/notices 는 진작부터 보험사
+//    대상(audience='보험사') 공지를 골라내는 코드까지 갖췄는데(app.py
+//    api_notices), 이 포털엔 부를 탭도 화면도 없어 보험사 대상 공지는
+//    한 번도 화면에 뜬 적이 없다. 협력사 포털의 같은 화면을 그대로 옮긴다.
+RENDER.notice = async () => {
+  let ns=[];
+  try{ ns = await api('GET','/api/notices'); }catch(e){}
+  document.getElementById('wrap').innerHTML = `
+    <div class="panel">
+      <div class="ph"><span class="pt">공지사항</span></div>
+      ${ns.length?ns.map(n=>`<div style="padding:14px 0;border-bottom:1px solid var(--mist)">
+        <div style="font-weight:800;font-size:.9rem">${n.pinned?'📌 ':''}${esc(n.title)}</div>
+        <div style="font-size:.72rem;color:var(--faint);margin-top:3px">${esc((n.created_at||'').slice(0,10))}</div>
+        <div style="font-size:.8rem;color:var(--sub);margin-top:8px;line-height:1.7">${esc(n.body||'')}</div></div>`).join(''):'<div class="empty">공지 없음</div>'}
+    </div>`;
+};
+
+// ── 계정 관리 (조직 하위계정) ──
+RENDER.accounts = async () => {
+  let subs=[];
+  try{ const r=await api('GET','/api/insurer/subaccounts'); subs=r.subaccounts||[]; }catch(e){ toast(e.message); }
+  document.getElementById('wrap').innerHTML=`
+    <div class="panel">
+      <div class="ph"><span class="pt">담당자 계정 발급 <small>최고관리자(원계정)만 발급할 수 있습니다</small></span></div>
+      <div class="notice">부서 담당자에게 <b>중간관리자</b>(사건·낙찰·정산 등 일상 업무)·<b>하위관리자</b>(조회·접수) 등급 아이디를 발급하세요. 계좌·요율 등 민감 설정은 원계정만 가능합니다.</div>
+      <div class="grid2" style="align-items:end">
+        <div class="field"><label>새 아이디 *</label><input id="sa_id" placeholder="영문 소문자·숫자 4자 이상"></div>
+        <div class="field"><label>담당자 이름</label><input id="sa_name" placeholder="예: 김보상"></div>
+      </div>
+      <div class="grid2" style="align-items:end">
+        <div class="field"><label>등급</label><select id="sa_role"><option value="중간관리자">중간관리자 (일상 업무)</option><option value="하위관리자" selected>하위관리자 (조회·접수)</option></select></div>
+        <div class="field"><button class="btn p" data-act="subCreate">계정 발급</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">발급된 계정 <small>${subs.length}개</small></span></div>
+      <div style="overflow:auto"><table class="tbl">
+        <tr><th>아이디</th><th>이름</th><th>등급</th><th>상태</th><th>발급일</th><th class="r">관리</th></tr>
+        ${subs.length?subs.map(s=>`<tr>
+          <td class="em">${esc(s.login_id)}</td><td>${esc(s.name||'-')}</td><td>${esc(s.role)}</td>
+          <td>${s.status==='활성'?'<span class="tag green">활성</span>':'<span class="tag gray">정지</span>'}</td>
+          <td>${esc((s.created_at||'').slice(0,10))}</td>
+          <td class="r">
+            <button class="btn g sm" data-act="subReset" data-arg="${s.id}">비번재발급</button>
+            <button class="btn g sm" data-act="subToggle" data-arg="${s.id}" data-st="${esc(s.status)}">${s.status==='활성'?'정지':'활성화'}</button>
+            <button class="btn g sm" data-act="subDel" data-arg="${s.id}">삭제</button>
+          </td></tr>`).join(''):'<tr><td colspan="6" class="empty">발급된 계정이 없습니다</td></tr>'}
+      </table></div>
+    </div>`;
+};
+function subCredModal(title, r){
+  openModal(`<h3>${title}</h3><div class="msub">임시 비밀번호는 지금 한 번만 표시됩니다.</div>
+    <div class="dgrid" style="grid-template-columns:1fr">
+      <div class="di"><span class="l">아이디</span><span class="v">${esc(r.login_id)}</span></div>
+      <div class="di"><span class="l">임시 비밀번호</span><span class="v" style="font-family:monospace;font-size:1rem">${esc(r.temp_password)}</span></div>
+      ${r.role?`<div class="di"><span class="l">등급</span><span class="v">${esc(r.role)}</span></div>`:''}
+    </div>
+    <div class="dnote">${esc(r.note||'담당자에게 안전하게 전달하고, 첫 로그인 시 비밀번호를 변경하도록 안내해 주세요.')}</div>
+    <div class="modal-foot"><span style="flex:1"></span><button class="btn g" data-act="closeModal">닫기</button></div>`);
+}
+async function subCreate(){
+  const login_id=(document.getElementById('sa_id').value||'').trim();
+  const name=(document.getElementById('sa_name').value||'').trim();
+  const role=document.getElementById('sa_role').value;
+  try{ const r=await api('POST','/api/insurer/subaccounts',{login_id,name,role});
+    subCredModal('계정 발급 완료', r); await RENDER.accounts();
+  }catch(e){ toast(e.message); }
+}
+async function subReset(id){
+  if(!confirm('이 계정의 비밀번호를 재발급하시겠습니까?')) return;
+  try{ const r=await api('POST','/api/insurer/subaccounts/'+id+'/reset-pw'); subCredModal('비밀번호 재발급', r); }
+  catch(e){ toast(e.message); }
+}
+async function subToggle(id, el){
+  const next=(el&&el.getAttribute('data-st'))==='활성'?'정지':'활성';
+  try{ await api('PATCH','/api/insurer/subaccounts/'+id,{status:next}); toast('상태를 변경했습니다.'); await RENDER.accounts(); }
+  catch(e){ toast(e.message); }
+}
+async function subDel(id){
+  if(!confirm('이 계정을 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
+  try{ await api('DELETE','/api/insurer/subaccounts/'+id); toast('삭제했습니다.'); await RENDER.accounts(); }
+  catch(e){ toast(e.message); }
+}
+
+// ── 내 정보 (마이페이지) ──
+RENDER.mypage = async () => {
+  let i={};
+  try{ i = await api('GET','/api/insurer/profile'); }catch(e){}
+  const val = id => (document.getElementById(id)||{}).value || '';
+  document.getElementById('wrap').innerHTML=`
+    <div class="panel">
+      <div class="ph"><span class="pt">내 정보 <small>담당자·연락처는 직접 수정할 수 있습니다</small></span></div>
+      <div class="mp-grid">
+        <div class="mp-ro"><label>기관명</label><div class="mp-fixed">${esc(i.name||'')}</div></div>
+        <div class="mp-ro"><label>구분</label><div class="mp-fixed">${esc(i.org_type||'-')}</div></div>
+        <div class="mp-ro"><label>담당자</label><input id="mi_mgr" value="${esc(i.manager||'')}"></div>
+        <div class="mp-ro"><label>부서</label><input id="mi_dept" value="${esc(i.dept||'')}"></div>
+        <div class="mp-ro"><label>연락처</label><input id="mi_phone" value="${esc(i.phone||'')}"></div>
+        <div class="mp-ro"><label>이메일</label><input id="mi_email" value="${esc(i.email||'')}"></div>
+      </div>
+      <button class="btn p" id="mi_save" style="margin-top:12px">정보 저장</button>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">비밀번호 변경</span></div>
+      <div class="mp-grid">
+        <div class="mp-ro"><label>현재 비밀번호</label><input id="mi_cur" type="password" autocomplete="current-password"></div>
+        <div class="mp-ro"><label>새 비밀번호</label><input id="mi_new" type="password" autocomplete="new-password"></div>
+        <div class="mp-ro"><label>새 비밀번호 확인</label><input id="mi_new2" type="password" autocomplete="new-password"></div>
+      </div>
+      <button class="btn a" id="mi_pw" style="margin-top:12px">비밀번호 변경</button>
+    </div>`;
+  document.getElementById('mi_save').addEventListener('click', async ()=>{
+    try{ await api('PATCH','/api/insurer/profile',{manager:val('mi_mgr'),dept:val('mi_dept'),phone:val('mi_phone'),email:val('mi_email')}); toast('정보를 저장했습니다.'); }
+    catch(e){ toast(e.message); }
+  });
+  document.getElementById('mi_pw').addEventListener('click', async ()=>{
+    const cur=val('mi_cur'), nw=val('mi_new'), nw2=val('mi_new2');
+    if(!cur||!nw){ toast('현재·새 비밀번호를 입력하세요.'); return; }
+    if(nw!==nw2){ toast('새 비밀번호가 서로 다릅니다.'); return; }
+    try{ await api('POST','/api/change-password',{current:cur,new:nw}); toast('비밀번호를 변경했습니다.'); }
+    catch(e){ toast(e.message); }
+  });
+};
+
+boot();
+
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  ACT.awardView = (a, el, ev, b) => awardView(_n(a), _n(b), el, ev);
+  ACT.closeModal = (a, el, ev, b) => closeModal(_n(a), _n(b), el, ev);
+  ACT.createCase = (a, el, ev, b) => createCase(_n(a), _n(b), el, ev);
+  // 사진 없음 토글 — 가견적 칸을 잠그고 안내를 띄운다(사진 없이는 가견적을 낼 수 없다)
+  //  ★ 고른 공종에 개산 근거가 없으면 그 자리에서 알린다. 금액은 만들지 않는다(철칙 3).
+  //    판정은 서버가 준 need_est_majors 하나만 본다.
+  ACT.catCoverageIns = () => {
+    const box = document.getElementById('cov_warn_ins');
+    if(!box) return;
+    const need = (D.need_est_majors || []);
+    const picked = [...document.querySelectorAll('#c_cats input:checked')].map(x=>x.value);
+    const hit = picked.filter(m => need.includes(m));
+    if(!hit.length){ box.style.display='none'; box.innerHTML=''; return; }
+    box.style.display = 'block';
+    box.innerHTML = `<b>${hit.map(esc).join(' · ')}</b> 은(는) 표준단가 개산 근거가 없습니다.<br>
+      사진 없이 접수해 <b>2차 공고</b>로 가면 최소 금액(하한)을 만들 근거가
+      <b>가견적뿐</b>입니다 — 아래 가견적을 꼭 적어 주세요.`;
+  };
+
+  ACT.toggleNoPhoto = () => {
+    const on = document.getElementById('c_nophoto').checked;
+    const est = document.getElementById('c_est');
+    const hint = document.getElementById('nophoto-hint');
+    //  ⚠⚠ **잠그지 않는다.** 종전에는 '사진 없음' 을 켜면 가견적 칸을 비우고
+    //    disabled 로 잠갔다. 그런데 바로 그 칸의 라벨이 "사진 없이 접수해 현장
+    //    확인이 먼저 필요한 건은, 이 금액이 2차 공고에서 **최소 금액**이 됩니다"
+    //    라고 말한다 — 화면이 스스로 모순됐다.
+    //    더 나쁜 결과: 발주처로 들어온 사진없음 접수는 100% est_price=0 이 되고,
+    //    개산 레시피가 없는 3공종(방음벽·휀스·펜스 / 조경·수목 / 종합 원상복구)과
+    //    겹치면 2차 하한을 만들 근거가 둘 다 없어 공고가 영구히 막힌다
+    //    (가견적 수정은 '입찰중' 전용이라 그때는 이미 늦다).
+    //    서버는 이 라운드에 값을 **보존하도록** 고쳐 놨는데 화면이 막고 있었다.
+    //    형제인 어드민 콘솔은 잠그지 않고 경고만 띄운다 — 같게 맞춘다.
+    if(est){ est.disabled = false; est.style.background = ''; }
+    if(hint) hint.style.display = on ? '' : 'none';
+  };
+  //  ⚠ 가견적은 **입찰 상한**(2차에서는 하한)이 된다. 0 하나 더 치면 그대로 공고가 나간다.
+  //     숫자만 보고는 자릿수를 못 센다 — 옆에 한글로 읽어 준다.
+  ACT.estRead = () => {
+    const el = document.getElementById('c_est'), out = document.getElementById('c_est_read');
+    if(!el || !out) return;
+    const v = Number(el.value);
+    if(!el.value || !isFinite(v) || v <= 0){ out.textContent=''; out.style.color=''; return; }
+    let msg = estWords(v) + '원';
+    let color = 'var(--faint)';
+    if(v < 100000){ msg += ' — 10만 원 미만입니다. 자릿수를 확인해 주세요.'; color = 'var(--warn,#B7791F)'; }
+    else if(v >= 100000000){ msg += ' — 1억 원 이상입니다. 자릿수를 확인해 주세요.'; color = 'var(--warn,#B7791F)'; }
+    out.textContent = msg; out.style.color = color;
+  };
+  ACT.defectForm = (a, el, ev, b) => defectForm(_n(a), _n(b), el, ev);
+  ACT.defectCompare = (a) => defectCompare(_n(a));   // 지적 ↔ 보수 나란히 보기
+  ACT.rejectBids = (a) => rejectBids(_n(a));         // 전부 반려 · 재공고 요청
+  ACT.cancelCase = (a) => cancelCase(_n(a));         // 잘못 등록한 사건 취소
+  ACT.doCaseSearch = () => { const el=document.getElementById('f_q');
+    CF.q = el ? el.value : ''; RENDER.cases(); };
+  ACT.doAward = (a, el, ev, b) => doAward(_n(a), _n(b), el, ev);
+  ACT.logout = (a, el, ev, b) => logout(_n(a), _n(b), el, ev);
+  ACT.modalBackdrop = (a, el, ev) => { if (ev.target === el) closeModal(); };
+  ACT.pickBid = (a, el, ev, b) => pickBid(_n(a), _n(b), el, ev);
+  ACT.printPage = () => window.print();
+  ACT.show = (a, el, ev, b) => show(_n(a), _n(b), el, ev);
+  ACT.submitDefect = (a, el, ev, b) => submitDefect(_n(a), _n(b), el, ev);
+  ACT.caseDetail = (a, el, ev, b) => caseDetail(_n(a), _n(b), el, ev);
+  ACT.approveDone = (a, el, ev, b) => approveDone(_n(a), _n(b), el, ev);
+  ACT.setSeverity = (a, el, ev, b) => setSeverity(_n(a), b);
+  ACT.estAck = (a) => estAck(_n(a));
+  ACT.faView = (a) => faView(_n(a));
+  ACT.faDecide = (a, el, ev, b) => faDecide(_n(a), _n(b));
+  ACT.coAck = (a, el, ev, b) => coAck(_n(a), _n(b));
+  ACT.rpApply = () => rpApply();
+  ACT.rpClear = () => rpClear();
+  ACT.rpExport = () => rpExport();
+  ACT.insStmtExport = () => {
+    //  ⚠ <select> 가 없을 때만 쓰는 방어적 기본값이다 — 실제 화면에선 위 select 가
+    //    이미 지난달을 선택해 두므로 평소엔 이 폴백을 안 탄다(RENDER.settle 참고).
+    const [_fy, _fm] = todayKST().split('-').map(Number);
+    const _flastY = _fm === 1 ? _fy - 1 : _fy, _flastM = _fm === 1 ? 12 : _fm - 1;
+    var y = (document.getElementById('ins_st_year') || {}).value || _flastY;
+    var m = (document.getElementById('ins_st_month') || {}).value || _flastM;
+    window.open('/api/insurer/statement/export?year=' + y + '&month=' + m, '_blank');
+  };
+  ACT.subCreate = () => subCreate();
+  ACT.subReset = (a, el, ev, b) => subReset(_n(a));
+  ACT.subToggle = (a, el, ev, b) => subToggle(_n(a), el);
+  ACT.subDel = (a, el, ev, b) => subDel(_n(a));
+  ACT.toggleBell = (a, el, ev) => { ev.stopPropagation(); toggleBell(); };
+  ACT.readAll = (a, el, ev) => { ev.stopPropagation(); readAll(); };
+  ACT.goNotif = (a, el, ev, b) => goNotif(_n(a), _n(b), el, ev);
+})();
+
+</script>
+</body>
+</html>

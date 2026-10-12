@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>연동 안내서 — 복구온</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style nonce="{{ csp_nonce }}">
+  /*  발주처 담당자·개발자에게 그대로 건네는 문서다. 인쇄해서 회의에 들고 갈 수도 있다.
+      ⚠ 예시 값은 **실제 라우트에서 만들어** 넣는다. 손으로 적으면 코드가 바뀔 때
+        문서만 옛말이 되고, 그 사실을 아무도 모른다.  */
+  body{background:#EEF3F8;margin:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    font-family:'Malgun Gothic','맑은 고딕',sans-serif;color:#12283F}
+  .sheet{max-width:900px;margin:22px auto;background:#fff;padding:34px 38px;
+    border-radius:14px;box-shadow:0 10px 34px rgba(6,26,48,.10)}
+  .top{display:flex;align-items:flex-start;gap:14px;border-bottom:2.5px solid #0064B2;padding-bottom:15px}
+  .top h1{margin:0;font-size:1.36rem;letter-spacing:-.02em}
+  .top .sub{font-size:.83rem;color:#5B6D80;margin-top:5px}
+  .brand{margin-left:auto;text-align:right;font-size:.76rem;color:#5B6D80;line-height:1.6}
+  .brand b{display:block;font-size:1rem;color:#0064B2}
+  h2{font-size:.98rem;margin:26px 0 9px;padding-left:9px;border-left:4px solid #E8A33D}
+  p,li{font-size:.86rem;line-height:1.85}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:6px}
+  th,td{border:1px solid #D9E2EC;padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#F4F8FC;font-weight:700;color:#33475B;white-space:nowrap}
+  code{background:#F2F6FA;border:1px solid #E1E9F1;border-radius:5px;padding:1px 5px;
+    font-family:Consolas,monospace;font-size:.82em}
+  pre{background:#12283F;color:#E8F1F8;border-radius:10px;padding:14px 16px;overflow-x:auto;
+    font-family:Consolas,monospace;font-size:.78rem;line-height:1.65}
+  pre b{color:#7FC4F5;font-weight:600}
+  .note{background:#F7FAFD;border:1px solid #D9E2EC;border-radius:9px;padding:12px 14px;
+    font-size:.83rem;line-height:1.8;margin-top:10px}
+  .warn{background:#FDF3E2;border:1px solid #F0C36D;color:#7A5410;border-radius:9px;
+    padding:12px 14px;font-size:.83rem;line-height:1.8;margin-top:10px}
+  .foot{margin-top:30px;border-top:1px solid #D9E2EC;padding-top:13px;
+    font-size:.74rem;color:#6B7C8F;line-height:1.7}
+  .bar{display:flex;gap:8px;max-width:900px;margin:0 auto;padding:0 38px}
+  .bar button{font:600 .82rem 'Malgun Gothic',sans-serif;padding:8px 15px;border-radius:9px;
+    border:1px solid #CBD6E2;background:#fff;cursor:pointer}
+  @media print{ body{background:#fff} .bar{display:none}
+    .sheet{box-shadow:none;margin:0;max-width:none;border-radius:0;padding:0}
+    pre{background:#fff;color:#12283F;border:1px solid #D9E2EC} }
+</style>
+</head>
+<body>
+<div class="bar"><button id="printBtn">인쇄 / PDF 저장</button></div>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <h1>발주처 연동 안내서</h1>
+      <div class="sub">복구온 사건 접수·조회 연동 · {{ insurer_name or '발주처' }}</div>
+    </div>
+    <div class="brand"><b>복구온</b>㈜올림포스네트웍스<br>출력 {{ now }}</div>
+  </div>
+
+  <h2>1. 무엇을 하는 연동인가</h2>
+  <p>발주처 시스템에서 <b>기타피해물 복구 건을 접수</b>하고, 그 건의
+  <b>진행 상태와 확정 금액을 조회</b>합니다. 화면에서 직접 등록하셔도 되고,
+  연동으로 넣으셔도 됩니다 — 둘은 같은 사건이 됩니다.</p>
+  <div class="warn">
+    복구온은 <b>시공 업체를 모아 경쟁시키고 진행을 관리</b>합니다.
+    금액을 확정하거나 협상하지 않으며, 손해액을 산정하지 않습니다.
+    낙찰 승인은 언제나 발주처가 하십니다.
+  </div>
+
+  <h2>2. 인증</h2>
+  <p>서버 대 서버 호출이며 <b>API 키</b>로 인증합니다. 브라우저 쿠키를 쓰지 않습니다.
+  키는 복구온 담당자가 발급해 전달합니다.</p>
+  <table>
+    <tr><th>헤더</th><td><code>X-API-Key: 발급받은키</code></td></tr>
+    <tr><th>기준 주소</th><td><code>{{ base }}</code></td></tr>
+    <tr><th>형식</th><td>요청·응답 모두 <code>application/json</code> (UTF-8)</td></tr>
+  </table>
+  <div class="note">키가 노출되었다고 판단되면 즉시 알려 주세요. 폐기하고 새 키를 드립니다.
+  폐기된 키로 온 요청은 <code>401</code> 로 거절됩니다.</div>
+
+  <h2>3. 연동 확인 (가장 먼저 해보실 것)</h2>
+  <pre>curl -H "X-API-Key: <b>발급받은키</b>" {{ base }}/api/v1/ping</pre>
+  <p><code>{"ok": true}</code> 가 오면 키와 통신이 정상입니다.</p>
+
+  <h2>4. 사건 접수</h2>
+  <pre>POST {{ base }}/api/v1/cases
+Content-Type: application/json
+X-API-Key: <b>발급받은키</b>
+
+{
+  "category": "가드레일·방호울타리",
+  "address": "서울시 강남구 …",
+  "est_price": "1000000",
+  "victim_name": "홍길동",
+  "victim_phone": "010-0000-0000",
+  "note": "야간 사고, 통행 지장 있음"
+}</pre>
+  <p>응답에 <b>접수번호</b>가 담겨 옵니다. 이후 조회는 이 번호로 하십니다.</p>
+  <table>
+    <tr><th>category</th><td>공종. 정해진 12개 명칭 중 하나를 정확히 보내야 합니다 — 예: 가드레일·방호울타리 · 유리·샷시·자동문 · 셔터·차단기·게이트 · 누수·배관·설비</td></tr>
+    <tr><th>address</th><td>현장 주소. 업체 배정과 거리 계산에 씁니다.</td></tr>
+    <tr><th>est_price</th><td>가견적(원). <b>필수</b> — 입찰 상한 기준입니다. 숫자만 보내거나 콤마를 섞어도 됩니다(예: "1000000", "1,000,000").</td></tr>
+    <tr><th>victim_name / victim_phone</th><td>연락처를 주시면 피해자에게 진행조회 링크가 나갑니다. 없으면 생략하셔도 됩니다.</td></tr>
+    <tr><th>note</th><td>현장 전달사항. 업체에게 그대로 전달됩니다.</td></tr>
+  </table>
+
+  <h2>5. 진행 조회</h2>
+  <pre>GET {{ base }}/api/v1/cases/<b>접수번호</b>
+X-API-Key: <b>발급받은키</b></pre>
+  <p>현재 상태 · 확정 공사대금 · 진행율 · 정산 상태가 내려옵니다.
+  목록은 <code>GET {{ base }}/api/v1/cases</code> 입니다.</p>
+  <div class="note">이 응답의 금액은 <b>시공 도급 금액</b>입니다.
+  보험금 지급액이나 손해액이 아닙니다.</div>
+
+  <h2>6. 변경 알림 받기 (선택)</h2>
+  <p>상태가 바뀔 때 발주처 주소로 알려 드릴 수 있습니다. 받으실 주소를 알려 주시면 등록합니다.</p>
+  <table>
+    <tr><th>보내는 사건</th><td>{{ events|join(' · ') }}</td></tr>
+    <tr><th>형식</th><td><code>{"event": "…", "case_no": "…", "occurred_at": "…", "data": { … }}</code></td></tr>
+  </table>
+  <p>모든 요청에는 본문 위·변조를 확인할 수 있도록 서명이 함께 옵니다. 웹훅 주소를 등록할 때
+  드리는 <b>서명 비밀키</b>로 직접 재계산해 대조하십시오.</p>
+  <table>
+    <tr><th>서명 헤더</th><td><code>X-Bokguon-Signature: sha256=&lt;서명값&gt;</code></td></tr>
+    <tr><th>계산 방법</th><td><code>HMAC-SHA256(비밀키, 요청 본문 원문)</code> 의 16진수 표현</td></tr>
+  </table>
+  <div class="note">비밀키가 노출되었다고 판단되면 알려 주세요. 웹훅 주소를 다시 저장하시면
+  같은 값을 다시 확인하실 수 있습니다(주소를 바꾸지 않아도 값은 그대로입니다).</div>
+
+  <h2>7. 오류 응답</h2>
+  <table>
+    <tr><th>401</th><td>키가 없거나 폐기되었습니다.</td></tr>
+    <tr><th>400</th><td>필수 값이 빠졌거나 형식이 맞지 않습니다. 어떤 항목인지 함께 알려 드립니다.</td></tr>
+    <tr><th>403</th><td>전산 연동이 잠시 꺼져 있습니다. 복구온 담당자에게 문의해 주세요.</td></tr>
+    <tr><th>404</th><td>그 접수번호의 사건이 없습니다.</td></tr>
+    <tr><th>429</th><td>짧은 시간에 요청이 너무 많습니다. 잠시 뒤 다시 보내 주세요.</td></tr>
+  </table>
+
+  <h2>8. 연동 시작 순서</h2>
+  <ol>
+    <li>복구온에서 <b>키 발급</b> — 담당자에게 요청하십니다.</li>
+    <li><b>ping 확인</b> — 위 3번.</li>
+    <li><b>시험 사건 1건 접수</b> — 실제 현장이 아닌 건으로 넣고, 화면에서 보이는지 함께 확인합니다.</li>
+    <li><b>조회 확인</b> — 접수번호로 상태가 오는지 봅니다.</li>
+    <li>이상 없으면 <b>실사건 전환</b>.</li>
+  </ol>
+
+  <div class="foot">
+    문의 — ㈜올림포스네트웍스 전략사업실 유경탁 파트장<br>
+    출력 {{ now }} · 이 문서는 복구온 서버가 실제 연동 경로에서 만들어 냅니다.
+  </div>
+</div>
+<script nonce="{{ csp_nonce }}">
+//  ⚠⚠ [라운드319] onclick="..." 은 nonce 를 붙일 자리가 없어 CSP 가
+//    무조건 차단한다(actions.js 독스트링과 같은 이유) — 이 버튼만을
+//    위해 addEventListener 로 직접 연결한다.
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>

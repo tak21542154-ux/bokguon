@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>청구 항목 설명서 — 복구온</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style nonce="{{ csp_nonce }}">
+  body{background:#EEF3F8;margin:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);font-family:'Malgun Gothic','맑은 고딕',sans-serif;color:#12283F}
+  .sheet{max-width:900px;margin:22px auto;background:#fff;padding:34px 38px;
+    border-radius:14px;box-shadow:0 10px 34px rgba(6,26,48,.10);line-height:1.75}
+  .top{border-bottom:2.5px solid #0064B2;padding-bottom:14px;display:flex;align-items:flex-start;gap:14px}
+  .top h1{margin:0;font-size:1.32rem;letter-spacing:-.02em}
+  .top .sub{font-size:.83rem;color:#5B6D80;margin-top:4px}
+  .brand{margin-left:auto;text-align:right;font-size:.76rem;color:#5B6D80;line-height:1.6}
+  .brand b{display:block;font-size:1rem;color:#0064B2}
+  h2{font-size:1rem;margin:26px 0 9px;padding-left:9px;border-left:4px solid #E8A33D}
+  h3{font-size:.88rem;margin:16px 0 6px}
+  p,li{font-size:.85rem}
+  table{width:100%;border-collapse:collapse;font-size:.83rem;margin:8px 0}
+  th,td{border:1px solid #D9E2EC;padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#F4F8FC;font-weight:700;color:#33475B}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .key{background:#EAF4FD;border:1px solid #BFDDF5;border-radius:10px;padding:13px 16px;margin:12px 0}
+  .warn{background:#FDF3E2;border:1px solid #F0D9AE;border-radius:10px;padding:13px 16px;margin:12px 0}
+  .ex{background:#F7FAFD;border:1px solid #D9E2EC;border-radius:10px;padding:14px 16px;margin:10px 0}
+  .ex .line{display:flex;justify-content:space-between;padding:4px 0;font-size:.86rem}
+  .ex .line.tot{border-top:1.5px solid #0064B2;margin-top:6px;padding-top:8px;font-weight:800}
+  code{background:#F1F5F9;border-radius:5px;padding:1px 6px;font-size:.82rem}
+  .foot{margin-top:28px;border-top:1px solid #D9E2EC;padding-top:13px;font-size:.74rem;color:#6B7C8F}
+  .bar{display:flex;gap:8px;max-width:900px;margin:0 auto;padding:0 38px}
+  .bar button{font:600 .82rem 'Malgun Gothic',sans-serif;padding:8px 15px;border-radius:9px;
+    border:1px solid #CBD6E2;background:#fff;cursor:pointer}
+  @media print{ body{background:#fff} .sheet{box-shadow:none;margin:0;max-width:none;padding:0;border-radius:0} .bar{display:none} }
+</style>
+</head>
+<body>
+<div class="bar"><button id="pr">🖨 인쇄 · PDF 저장</button></div>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <h1>청구 항목 설명서</h1>
+      <div class="sub">복구온 정산서·세금계산서에 적히는 각 항목이 <b>무엇이고 어떻게 계산되는지</b></div>
+    </div>
+    <div class="brand"><b>복구온</b>㈜올림포스네트웍스<br>기준일 {{ now }}</div>
+  </div>
+
+  <div class="key">
+    <b>한 줄 요약</b> — 발주처가 내는 돈은 <b>낙찰금액 하나</b>입니다.
+    복구온은 그 안에서 <b>중개수수료 {{ fee_pct }}%</b>를 떼고 나머지를 시공사에 지급합니다.
+    발주처에 <b>별도로 청구하는 비용은 없습니다</b>(출동비·중개비·시스템 이용료 없음).
+  </div>
+
+  <h2>1. 항목별 뜻</h2>
+  <table>
+    <tr><th style="width:132px">항목</th><th style="width:118px">누가 내나</th><th>무엇인가</th></tr>
+    <tr><td><b>가견적</b></td><td>—</td>
+        <td>보상 담당자가 사진을 보고 적은 개략 복구비. <b>1차 입찰의 상한</b>이며,
+            사진 없이 접수해 현장 확인이 먼저 필요했던 건은 <b>2차 입찰의 하한</b>이 됩니다.
+            청구 금액이 아니라 <b>기준선</b>입니다.</td></tr>
+    <tr><td><b>낙찰금액</b></td><td>발주처</td>
+        <td>경쟁 입찰로 확정된 <b>계약금액</b>. 실제로 지급되는 금액이며 총액(통값)입니다.
+            자재·인건비·장비·폐기물 처리를 모두 포함합니다.</td></tr>
+    <tr><td><b>중개수수료</b></td><td>시공사 부담</td>
+        <td>낙찰금액의 <b>{{ fee_pct }}%</b>. 발주처가 <b>추가로 내는 돈이 아니라</b>
+            낙찰금액 안에서 복구온이 받는 몫입니다.</td></tr>
+    <tr><td><b>지급액</b></td><td>—</td>
+        <td>낙찰금액 − 중개수수료. 시공사 계좌로 이체되는 금액입니다.</td></tr>
+    <tr><td><b>부가가치세</b></td><td>—</td>
+        <td>수수료에 포함된 세액(부가가치세법 §30, {{ vat }}%). 세금계산서에는
+            <b>공급가액과 세액을 나눠</b> 적습니다.</td></tr>
+    <tr><td><b>절감액</b></td><td>—</td>
+        <td>비교 기준 − 낙찰금액. 기준은 1차는 <b>보상담당자 가견적</b>,
+            2차는 <b>표준단가 개산</b>입니다(청구 항목이 아니라 성과 지표).</td></tr>
+  </table>
+
+  <h2>2. 계산 방법</h2>
+  <p>수수료율은 발주처별 계약으로 정하며, 정하지 않으면 기본 {{ fee_pct }}%입니다.
+     내부적으로는 <code>bp</code>(만분율)로 다룹니다 — {{ fee_pct }}% = {{ fee_bp }}bp.</p>
+  <table>
+    <tr><th style="width:132px">수수료</th><td><code>낙찰금액 × 요율(bp) ÷ 10000</code> — <b>원 미만은 버립니다</b>(회사가 손해 보는 방향).</td></tr>
+    <tr><th>지급액</th><td><code>낙찰금액 − 수수료</code> — <b>수수료 + 지급액 = 낙찰금액</b>이 항상 성립합니다.</td></tr>
+    <tr><th>부가세 분리</th><td>
+      {% if vat_included %}계약 요율이 <b>부가세를 포함</b>한 값입니다 —
+        공급가액 = 수수료 ÷ 1.{{ vat }}, 세액 = 수수료 − 공급가액.
+        이 기준에서는 <b>시공사 지급액이 바뀌지 않습니다.</b>
+      {% else %}계약 요율이 <b>공급가액 기준</b>이며 세액을 따로 더합니다 —
+        청구 총액이 수수료 × 1.{{ vat }} 로 늘어 <b>시공사 수령액이 줄어듭니다.</b>
+      {% endif %}</td></tr>
+  </table>
+
+  <h3>예시 — 낙찰금액 {{ '{:,}'.format(ex_amount) }}원, 요율 {{ fee_pct }}%</h3>
+  <div class="ex">
+    <div class="line"><span>발주처가 지급하는 금액 (낙찰금액)</span><b>{{ '{:,}'.format(ex_amount) }}원</b></div>
+    <div class="line"><span>└ 복구온 중개수수료 ({{ fee_pct }}%)</span><span>{{ '{:,}'.format(ex_fee) }}원</span></div>
+    <div class="line" style="padding-left:18px;color:#5B6D80"><span>공급가액 / 부가세</span>
+      <span>{{ '{:,}'.format(ex_supply) }} / {{ '{:,}'.format(ex_vat) }}원</span></div>
+    <div class="line"><span>└ 시공사 지급액</span><span>{{ '{:,}'.format(ex_payout) }}원</span></div>
+    <div class="line tot"><span>발주처 추가 부담</span><span>0원</span></div>
+  </div>
+
+  <h2>3. 돈이 움직이는 순서</h2>
+  <table>
+    <tr><th style="width:44px">①</th><td><b>공사 완료 보고</b> — 시공사가 완료 사진과 함께 보고합니다.</td></tr>
+    <tr><th>②</th><td><b>복구온 검수</b> — 사진 검수(착공전·시공중·완료)를 통과해야 정산이 생깁니다.</td></tr>
+    <tr><th>③</th><td><b>발주처 완료 승인</b> — 발주처가 승인해야 다음으로 갑니다. <b>승인은 발주처 단독</b>입니다.</td></tr>
+    <tr><th>④</th><td><b>발주처 입금</b> — 낙찰금액을 복구온 계좌로 입금합니다.</td></tr>
+    <tr><th>⑤</th><td><b>지급 검수</b> — 하자 접수 여부·계좌 등록을 확인합니다.</td></tr>
+    <tr><th>⑥</th><td><b>시공사 이체</b> — 수수료를 뺀 지급액을 시공사에 보냅니다.</td></tr>
+  </table>
+
+  <h2>4. 자주 묻는 것</h2>
+  <h3>현장 출동은 따로 청구하나요?</h3>
+  <p>아닙니다. 사진이 없어 인근 업체가 현장을 확인한 경우에도 <b>출동비를 별도로 청구하지 않습니다.</b>
+     그 확인은 입찰을 열기 위한 준비이며, 비용은 낙찰 후 수수료로 회수합니다.
+     현장 확인만 하고 <b>공사 없이 종결(미수선)</b>되면 청구되는 금액은 없습니다.</p>
+
+  <h3>실측했더니 금액이 늘면 어떻게 되나요?</h3>
+  <p>낙찰가가 곧 계약금액이므로 임의 증액은 없습니다. 사진으로 알 수 없던 사정이 드러난 경우에만
+     <b>변경 견적</b> 절차로 올리고, 그 증액분은 <b>발주처 승인</b>을 다시 받습니다.
+     승인 없이 진행되는 증액은 없습니다.</p>
+
+  <h3>하자가 생기면 비용은요?</h3>
+  <p>하자 담보 기간(기본 {{ warranty }}개월) 안의 재시공은 <b>시공사 부담</b>이며 발주처에 추가 청구하지 않습니다.
+     귀책이 다투어지면 복구온이 자료를 정리해 양측에 제시하되, <b>판단은 사람이 합니다.</b></p>
+
+  <h3>세금계산서는 누가 누구에게 발행하나요?</h3>
+  <p>복구온은 <b>중개수수료</b>에 대해 시공사에 발행합니다. 공사대금 자체에 대한 계산서는
+     <b>시공사가 발주처에</b> 발행합니다. 복구온은 공사의 당사자가 아닙니다.</p>
+
+  <div class="warn">
+    <b>복구온이 하지 않는 일</b> — 복구온은 중개 플랫폼입니다.
+    <b>손해액을 사정하지 않고, 금액을 확정·협상하지 않습니다.</b>
+    금액의 승인은 발주처가 단독으로 하며, 표준단가 개산은 판단을 돕는 참고 자료입니다.
+    (보험업법상 손해사정 업무에 해당하는 행위를 하지 않습니다)
+  </div>
+
+  <div class="foot">
+    이 문서는 복구온이 실제로 사용하는 계산 규칙을 그대로 옮긴 것입니다.
+    요율은 발주처별 계약에 따라 다를 수 있으며, 계약 요율이 우선합니다.<br>
+    ㈜올림포스네트웍스 전략사업실 · 문서 생성 {{ now }}
+  </div>
+</div>
+<script nonce="{{ csp_nonce }}">
+  document.getElementById('pr').addEventListener('click', function(){ window.print(); });
+</script>
+</body>
+</html>

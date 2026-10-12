@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="../static/fonts.css">
+<title>사업자 정보 — 복구온</title>
+<meta name="description" content="전자상거래법 제10조에 따른 표시 · 복구온 ㈜올림포스네트웍스">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="../static/favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --blue:#0064B2; --blue-deep:#004E8C; --blue-ink:#003A69;
+  --amber:#E8A33D; --amber-deep:#D18A1F;
+  --paper:#FFFFFF; --mist:#F3F7FB; --line:#DCE6F0;
+  --ink:#12202E; --sub:#4A5B6C; --faint:#5C6E82;   /* [접근성] AA 통과 (기존 #8698A9 는 2.97:1 미달) */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-sans);
+  color:var(--ink); background:var(--mist); line-height:1.72; word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue); text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber); outline-offset:2px; border-radius:4px}
+
+/* ── 상단 ─────────────────────────────────────────── */
+.top{background:var(--blue-ink); color:#fff; padding:0}
+.top .in{max-width:980px; margin:0 auto; padding:18px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+.logo{font-size:19px; font-weight:800; letter-spacing:-.02em; color:#fff}
+.logo b{color:var(--amber)}
+.top nav{margin-left:auto; display:flex; gap:6px; flex-wrap:wrap}
+.top nav a{
+  color:#CBDDEC; font-size:13.5px; padding:7px 13px; border-radius:999px;
+  border:1px solid transparent; white-space:nowrap;
+}
+.top nav a:hover{background:rgba(255,255,255,.09); text-decoration:none}
+.top nav a[aria-current="page"]{background:var(--blue); color:#fff; border-color:rgba(255,255,255,.25); font-weight:700}
+
+/* ── 본문 ─────────────────────────────────────────── */
+main{max-width:980px; margin:0 auto; padding:0 24px 72px}
+.head{padding:44px 0 26px}
+.head h1{font-size:clamp(26px,4.2vw,36px); font-weight:800; letter-spacing:-.03em; line-height:1.28}
+.head .sub{margin-top:9px; color:var(--sub); font-size:14.5px}
+.sheet{
+  background:var(--paper); border:1px solid var(--line); border-radius:20px;
+  padding:clamp(24px,4vw,48px); box-shadow:0 2px 20px rgba(18,32,46,.05);
+}
+.sheet .lead{
+  font-size:15.5px; color:var(--sub); background:var(--mist); border-left:4px solid var(--blue);
+  padding:16px 20px; border-radius:0 10px 10px 0; margin-bottom:34px;
+}
+.sheet h3{
+  font-size:18.5px; font-weight:800; letter-spacing:-.02em; color:var(--blue-deep);
+  margin:38px 0 14px; padding-bottom:9px; border-bottom:2px solid var(--line);
+}
+.sheet h3:first-of-type{margin-top:0}
+.sheet h4{font-size:16px; font-weight:750; margin:26px 0 10px; color:var(--ink)}
+.sheet p{font-size:14.8px; margin:11px 0}
+.sheet ol,.sheet ul{margin:11px 0 11px 21px; font-size:14.8px}
+.sheet li{margin:6px 0; padding-left:3px}
+.sheet b{font-weight:700; color:var(--blue-ink)}
+.note{
+  font-size:13.6px!important; color:var(--sub); background:#FAFCFE;
+  border:1px dashed var(--line); border-radius:10px; padding:13px 16px; margin-top:14px!important;
+}
+.eff{margin-top:34px!important; padding-top:18px; border-top:2px solid var(--line); font-weight:700}
+
+/* ── 표 ───────────────────────────────────────────── */
+.tw{overflow-x:auto; margin:14px 0; -webkit-overflow-scrolling:touch}
+table.ltbl{width:100%; border-collapse:collapse; font-size:14px; min-width:520px}
+table.ltbl th,table.ltbl td{border:1px solid var(--line); padding:11px 13px; text-align:left; vertical-align:top}
+table.ltbl th{background:var(--mist); font-weight:700; color:var(--blue-ink)}
+table.ltbl tr:nth-child(even) td{background:#FCFDFE}
+
+/* ── 미기재 자리표시자 ────────────────────────────── */
+.ph{
+  background:#FFF4DC; color:#8A5A00; border:1px dashed var(--amber-deep);
+  border-radius:6px; padding:1px 7px; font-weight:700; font-size:.93em; white-space:nowrap;
+}
+.warn{
+  background:#FFF8EA; border:1px solid var(--amber); border-left:5px solid var(--amber-deep);
+  border-radius:12px; padding:16px 20px; margin-bottom:26px; font-size:14px; color:#6B4500;
+}
+.warn b{color:#6B4500}
+
+/* ── 하단 ─────────────────────────────────────────── */
+footer{background:var(--blue-ink); color:#9FB8CC; padding:30px 24px; font-size:13px}
+footer .in{max-width:980px; margin:0 auto; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+footer a{color:#CBDDEC}
+
+@media(max-width:640px){
+  .head{padding:30px 0 20px}
+  .sheet{border-radius:14px}
+  .top .in{padding:14px 18px}
+  main{padding:0 14px 48px}
+}
+@media print{
+  .top nav,footer,.warn{display:none}
+  body{background:#fff}
+  .sheet{border:0; box-shadow:none; padding:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="logo" href="../index.html">복구<b>온</b></a>
+    <nav aria-label="법적 고지">
+      <a href="../legal/privacy.html" >개인정보 처리방침</a>
+      <a href="../legal/terms.html" >이용약관</a>
+      <a href="../legal/business.html" aria-current="page">사업자 정보</a>
+      <a href="../index.html">서비스 홈</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="head">
+    <h1>사업자 정보</h1>
+    <p class="sub">전자상거래법 제10조에 따른 표시</p>
+  </div>
+
+  
+
+  <article class="sheet">
+    
+<p class="lead">「전자상거래 등에서의 소비자보호에 관한 법률」 제10조에 따라 사업자 정보를 표시합니다.</p>
+<table class="ltbl">
+  <tr><th style="width:26%">상호</th><td>주식회사 올림포스네트웍스</td></tr>
+  <tr><th>대표자</th><td>원종훈</td></tr>
+  <tr><th>사업자등록번호</th><td>656-87-02554</td></tr>
+  <tr><th>통신판매업 신고번호</th><td>제2022-서울송파-1106호</td></tr>
+  <tr><th>사업장 주소</th><td>서울특별시 송파구 오금로 233</td></tr>
+  <tr><th>대표 전화</th><td>1533-7120</td></tr>
+  <tr><th>전자우편</th><td>c.common@olymposnetworks.com</td></tr>
+  <tr><th>개인정보 보호책임자</th><td>김예찬 이사</td></tr>
+  <tr><th>호스팅 제공자</th><td>아마존웹서비스(AWS) — 서울 리전</td></tr>
+</table>
+<p class="note">「복구온」은 ㈜올림포스네트웍스가 운영하는 피해물 복구 중개 플랫폼입니다.
+회사는 복구 공사의 당사자가 아닌 중개자이며, 개별 복구 공사의 이행 책임은 수주한 시행사에 있습니다.</p>
+
+  </article>
+</main>
+
+<footer>
+  <div class="in">
+    <span>㈜올림포스네트웍스 · 서울특별시 송파구 오금로 233 · 사업자등록번호 656-87-02554</span>
+    <span><a href="../legal/privacy.html">개인정보 처리방침</a> · <a href="../legal/terms.html">이용약관</a></span>
+  </div>
+</footer>
+
+<script>
+// 넓은 표는 가로 스크롤 컨테이너로 감싼다 (모바일에서 본문이 가로로 밀리지 않도록)
+document.querySelectorAll('article.sheet table.ltbl').forEach(function(t){
+  if (t.parentElement.classList.contains('tw')) return;
+  var w = document.createElement('div');
+  w.className = 'tw';
+  t.parentNode.insertBefore(w, t);
+  w.appendChild(t);
+});
+</script>
+</body>
+</html>

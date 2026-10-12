@@ -1,0 +1,155 @@
+[
+ {
+  "title": "같은 '누적 거래액'이 엑셀 119,940,000 · 대시보드 115,840,000 · 월명세서 92,400,000 — 취소·데모 제외 기준이 화면마다 다르다",
+  "kind": "결함",
+  "evidence": "app.py:5206-5212 정산 엑셀(정산 화면의 유일한 엑셀 버튼, static/admin.js:1803 `xlsxBtn('settlements','정산')`)의 SQL 에는 필터가 하나도 없고 취소 열조차 없다 — `SELECT s.case_no ..., s.amount AS 공사대금, s.fee AS 수수료, s.payout AS 지급액 ... FROM settlements s LEFT JOIN cases c ON c.id=s.case_id ORDER BY s.id DESC`. 반면 app.py:7152-7166 CSV 는 `s.void_status ... AS 취소여부` 를 넣고, app.py:3702-3704 대시보드는 `WHERE COALESCE(void_status,'')<>'취소'` 만, app.py:7204-7206 월 정산 명세서는 `AND COALESCE(s.is_demo,0)=0 AND COALESCE(s.void_status,'')<>'취소'` 둘 다 건다. 현재 bokguon.db 실측(33건): 엑셀 합계 amount 119,940,000/fee 11,994,000, 대시보드 115,840,000/11,584,000, 명세서 92,400,000/9,240,000. 추가로 app.py:6967 `q = \"SELECT * FROM settlements\"` 가 취소분을 그대로 내려보내 static/admin.js:1780 평균 수수료율(Σfee/Σamount)·1782 총 정산 건·1767 `apWait=all.filter(s=>!s.insurer_approved && s.transfer_status!=='이체완료')` 에 취소 1건(4,100,000원)이 계속 포함된다.",
+  "impact": "회계 담당이 정산 화면에서 엑셀을 받아 합계를 내면 대시보드보다 4,100,000원, 보험사에 보낸 월 명세서보다 27,540,000원 많다. 수수료 매출은 11,994,000 / 11,584,000 / 9,240,000 세 값이 동시에 존재해 어느 쪽으로 결산해도 다른 두 화면과 안 맞는다. 취소 정산은 어드민 '보험사 완료승인 대기' 빨간 패널에 영구히 남고, app.py:7010-7047 remind-approval 에 void 가드가 없어 이미 취소된 사건의 승인 독촉이 보험사 포털로 나간다.",
+  "fix": "EXPORT_SECTIONS['settlements'] 를 CSV(app.py:7151-7157)와 같은 쿼리로 통일하고 `s.void_status AS 취소여부` 열 추가 + `WHERE COALESCE(s.is_demo,0)=0`. 취소·데모 제외 조건을 `_settlement_scope()` 같은 헬퍼 한 곳으로 뽑아 대시보드·CSV·엑셀·명세서가 같은 WHERE 를 쓰게 한다. admin.js 상단 지표는 `all.filter(s=>s.void_status!=='취소')` 기준으로 계산하고, remind-approval 에 `if s.get('void_status')=='취소': 409` 가드를 넣는다.",
+  "value": 9,
+  "effort": "소"
+ },
+ {
+  "title": "출동 호출 이력(dispatch_calls)이 업체 단위로는 한 번도 집계되지 않는다 — 협력사 신뢰도 지표 부재",
+  "kind": "기능갭",
+  "evidence": "적재: dispatch.py:242-251 이 호출 1건마다 dist_km·call_order·notified_at 을 남기고, dispatch.py:362(수락)/367(마감)/390(거절)/503(무응답) 이 response·responded_at 을 채운다. 코드 주석이 용도를 이미 선언해 놓았다 — dispatch.py:382 \"거절 — 통계·재수배 판단에 쓴다\", dispatch.py:501 \"맡고도 안 간 업체는 기록에 남긴다(반복되면 수배 대상에서 뺄 근거)\". 판독: 전 소스에서 dispatch_calls 를 읽는 곳은 4군데뿐이고 전부 '수배 1건' 또는 '내 호출'만 본다 — app.py:8894(COUNT), app.py:8925(COUNT DISTINCT), app.py:8978(협력사 본인 것), dispatch.py:796(그 수배의 명단). 운영KPI(app.py:3951-3965)는 dispatches(수배 단위)만 집계하고 호출 단위는 건드리지 않는다. 협력사 목록 app.py:4278(SELECT *)·엑셀 내보내기 EXPORT_SECTIONS['partners'] 에도 rating 만 있고 응답 지표가 없다. 현재 DB: dispatch_calls 40행 중 수락 2 / 마감 38, dist_km·call_order 전건 기록됨.",
+  "impact": "'사진없음' 트랙의 성패는 누가 전화를 받느냐인데, 어느 업체가 몇 번 불려 몇 번 응답했는지를 볼 화면이 하나도 없다. 운영자는 수배 실패가 날 때마다 원인을 알 수 없고(권역에 업체가 없나, 있는데 다 무시하나), 반복 무응답 업체를 걸러낼 근거도 남지 않는다. 보험사에 '평균 몇 분 안에 현장에 붙는다'를 업체별로 소명할 수 없고, 우수 협력사를 가려 재계약·물량 배분에 쓸 자료도 못 만든다.",
+  "fix": "① 업체별 집계 조회 1개 추가(호출수/수락/거절/무응답/마감, 수락률, 평균 응답분=responded_at-notified_at, 평균 호출거리, 마지막 수락일) — dispatch_calls JOIN dispatches 로 기간 필터. ② 협력사 상세와 수배 관제 화면(app.py:8878 응답)에 이 지표를 표시하고, 협력업체 엑셀에 열 추가. ③ 호출 순번(call_order) 대비 수락 분포로 동시호출 수(fanout) 적정치를 점검. 단, 이 지표는 표시·정렬 참고로만 쓰고 낙찰이나 자동 배차 결정에는 반영하지 않는다.",
+  "value": 9,
+  "effort": "중"
+ },
+ {
+  "title": "사진 지문(photos.sha256)을 전건 저장하면서 '다른 사건에 같은 사진'은 구조적으로 탐지하지 않는다",
+  "kind": "기능갭",
+  "evidence": "적재: photo_ai.py:187 이 업로드마다 sha256 을 계산하고 photos 60행 전부 값이 있다. 판독: 중복 검사는 app.py:6391(협력사 업로드)·app.py:6502(보험사 업로드) 두 곳뿐이며 둘 다 `SELECT 1 FROM photos WHERE case_id=? AND sha256=?` — 같은 사건 안에서만 본다. 유니크 인덱스도 db.py:1068 `idx_photo_dedup ON photos(case_id, sha256)` 로 사건 단위라, 동일 파일을 다른 사건에 몇 번이든 등록할 수 있다. sha256 단독 인덱스는 없고, app.py:6602 는 응답에서 sha256 을 제거해 화면으로도 나가지 않는다. 하자 사진 등록(app.py:7906)은 중복 검사 자체가 없다. 실제 DB 확인 결과 서로 다른 14개 사건이 같은 해시의 사진을 공유하는 묶음이 이미 5종 존재하는데(시드 데이터 포함 가능), 시스템은 이를 볼 수단이 없다.",
+  "impact": "완료 검수와 정산의 유일한 증빙이 시공 사진이다. 한 현장에서 찍은 사진을 여러 사건에 돌려쓰는 방식의 허위 준공이 지금 구조에서는 아무 마찰 없이 통과하고, 사후에 문제가 되어도 '언제 어느 사건에 재사용됐는지'를 조회할 방법이 없어 보험사 소명이 불가능하다. 반대로 결백한 업체를 의심할 때 반증할 자료도 없다. 이미 해시를 다 갖고 있어 추가 수집 없이 바로 만들 수 있는데 쓰지 않고 있다.",
+  "fix": "① photos(sha256) 인덱스 추가. ② 업로드 시 다른 case_id 에 같은 해시가 있으면 **차단이 아니라 검수 경고 플래그**로 표시(정상 사유도 있다 — 같은 현장 분할 접수 등). ③ 운영자용 '사진 재사용 의심' 목록: 해시별 사건 수·사건번호·업로드 업체·업로드 시각. ④ 하자 사진에도 동일 점검 적용. 금액이나 손해 판단은 일절 하지 않고 증빙 무결성만 다룬다.",
+  "value": 9,
+  "effort": "중"
+ },
+ {
+  "title": "보험사 포털 계정을 콘솔에서 만들 수도, 비밀번호를 재발급할 수도 없다 (CLI 전용 + 기관 중복 생성 함정)",
+  "kind": "기능갭",
+  "evidence": "app.py:4650 `POST /api/insurers` 는 name/org_type/manager/dept/phone/email/fee_rate_bp 만 INSERT 하고 login_id·password_hash 는 건드리지 않는다. 협력사에는 app.py:4318 `POST /api/partners/<int:pid>/credentials`(계정 발급·비밀번호 재발급, 임시비번 1회 노출)가 있고 admin.js 에서 호출되지만, 보험사용 동등 라우트는 app.py 전체 235개 라우트 어디에도 없다. static/admin.js:1465 는 `i.login_id ? '<span class=\"pill blue\" title=\"포털 계정 있음\">포털</span>'` 로 계정 유무 배지를 띄우고, 1479행 `insurerForm()` 모달에는 아이디·비밀번호 관련 입력이 하나도 없다. 유일한 발급 수단은 manage.py:356 `cmd_create_insurer` 인데, 이 함수는 `SELECT 1 FROM insurers WHERE login_id=?` 로 로그인ID 중복만 검사하고 **기관명 중복은 검사하지 않는다**(371행에서 그대로 INSERT).",
+  "impact": "신규 보험사를 콘솔에서 등록해도 그 보험사는 포털에 로그인할 수 없다. 운영자가 계정을 주려면 서버에 접속해 manage.py 를 돌려야 하는데, 이때 기관명 중복 검사가 없어 같은 이름의 보험사 행이 하나 더 생긴다. 사건·정산은 insurer_id 로 묶이므로(app.py:2352 `insurer_id = ? OR (insurer_id IS NULL AND insurer = ?)`) 보험사 담당자는 사건 0건짜리 빈 포털에 로그인하게 되고, 운영자는 목록에 같은 이름이 두 줄 뜬 채 어느 쪽에 사건을 붙여야 하는지 알 수 없게 된다. 보험사 담당자가 비밀번호를 잊었을 때도 콘솔에서는 아무 조치가 불가능해, 최우선 고객이 서버 접근 권한자를 기다려야 한다.",
+  "fix": "① `POST /api/insurers/<int:iid>/credentials` 를 최고관리자 전용으로 신설한다 — api_partner_credentials(app.py:4318) 를 그대로 본떠 아이디 형식검증·예약어 차단·중복검사·임시비번 14자 1회 노출·must_change_pw=1·감사로그·본인확인 통지까지 동일하게 맞춘다. ② admin.js `insurerForm()`(1479행) 에 계정 미발급이면 [포털 계정 발급], 발급됐으면 [비밀번호 재발급] 버튼과 임시비번 표시 영역을 넣고, 1465행의 '포털' 배지를 그 버튼과 같은 셀에 붙인다. ③ manage.py cmd_create_insurer 에 기관명 중복 검사를 추가하고, 이미 있는 기관이면 신규 INSERT 대신 그 행에 login_id 를 붙이도록 바꾼다.",
+  "value": 9,
+  "effort": "중"
+ },
+ {
+  "title": "현장 실견적 '발주처 승인 요청'이 알림을 하나도 보내지 않고, 어드민에 대기열·독촉 수단도 없다",
+  "kind": "결함",
+  "evidence": "admin.js:2745 `agRequest()` 버튼 문구는 '📤 발주처에 승인 요청' 이지만, 호출하는 app.py:9154 `api_field_agreement_open` 에는 notify() 가 한 줄도 없고, 그 안의 dispatch.py:634 `open_agreement` 도 DB.log 만 남긴다(667행 INSERT → 675행 DB.log → commit). 반면 app.py:9095 도착 보고 시점에는 보험사에 `'현장 사진 {n}장이 확보되었습니다 — 곧 승인 요청이 올라갑니다.'` 를 보내 예고까지 해둔다. 조회 쪽도 비어 있다: app.py:8878 `/api/dispatches` 응답(items/agg/need_dispatch/failed_cases)에 field_agreements 가 없고, app.py:3723 대시보드 actions 12종에도 '현장합의 승인대기'가 없다. field_agreements 를 status='검토중' 으로 나열하는 관리자 라우트 자체가 없다(보험사 포털 app.py:2361 fa_wait 만 존재). 대조군으로 정산은 app.py:7010 `/api/settlements/<sid>/remind-approval` + admin.js:1878 [승인 독촉] 버튼 + 경과일 컬럼을 갖추고 있다.",
+  "impact": "사진 없는 접수(2트랙)는 출동→사진확보→실견적→보험사 승인 순으로 흐르는데, 마지막 승인 요청만 보험사에게 아무 신호 없이 올라간다. 보험사 담당자는 포털을 스스로 열어야만 알고, '곧 올라갑니다' 예고만 받은 채 실제 요청은 영영 못 볼 수 있다. 운영자 쪽도 이 건이 며칠째 서 있는지 볼 화면이 없다 — open_agreement 는 cases.status 를 바꾸지 않으므로 사건은 '접수' 로 남아 정체 목록에 섞여 버리고, 왜 멈췄는지(발주처 승인 대기)는 사건 상세를 하나씩 열어봐야 안다. 우리가 금액을 정하지 않는 구조라 이 승인 하나가 없으면 사건 전체가 정지하는데, 그 정지가 아무에게도 보이지 않는다.",
+  "fix": "① api_field_agreement_open 커밋 직후 `notify(conn, '합의승인요청', '알림톡', 기관명, f'[{case_no}] 현장 실견적 {field_amount:,}원 승인 요청이 등록되었습니다', audience_type='insurer', insurer_id=c['insurer_id'], case_id=cid, url='/app/insurer')` 를 추가한다(금액은 출동업체 실견적 원문 그대로, 우리 의견 없음). ② `/api/dispatches` 응답에 `agreements_waiting`(field_agreements JOIN cases, status='검토중', 경과일 DESC)을 추가하고 dispatch 화면에 need_dispatch/failed_cases 와 같은 형태의 카드+표로 띄운다. ③ 대시보드 actions 에 '발주처_합의승인대기' 를 넣고 ACTION_MENU/ACTION_DRILL 로 dispatch 화면에 연결한다. ④ remind-approval 과 같은 24시간 쿨다운 독촉 라우트를 field_agreements 용으로 하나 더 만든다.",
+  "value": 9,
+  "effort": "중"
+ },
+ {
+  "title": "협력사 정산계좌 암호문이 '저장' 한 번에 소멸 — 서버 가드가 어드민 경로에선 무력",
+  "kind": "결함",
+  "evidence": "static/admin.js:845-854 `saveAccount()` 는 항상 `bank_account:$('#b_acct').value.trim()` 를 실어 보낸다. app.py:4416-4430 은 `touch_acct = \"bank_account\" in d` 로 '안 보냄'과 '빈 값'을 구분하지만, 어드민은 언제나 키를 보내므로 이 가드가 발동하지 않는다. 길이 검증 `if touch_acct and acct and not (8<=len(acct)<=20)` 은 acct=\"\" 에서 단락되어 통과하고, `CRYPTO.encrypt(\"\")`(crypto_util.py:54-55)와 `blind_index(\"\")`(:79-80)가 각각 \"\" 를 반환해 `bank_account_enc`·`bank_account_idx` 가 함께 지워진다. 트리거 경로는 코드 주석(app.py:4415)이 직접 지목한 것: `decrypt()` 는 실패 시 조용히 \"\" 를 돌려주므로(crypto_util.py:62-74) 암호화키가 바뀌면 app.py:4397 의 GET 이 빈 계좌를 내려주고 화면 입력칸이 공백이 된다.",
+  "impact": "AWS 이전·.env 재발급으로 BOKGUON_ENC_KEY 가 바뀐 뒤 최고관리자가 업체 모달을 열어 은행·예금주만 고치고 '계좌 저장'을 누르면, 그 업체의 계좌 암호문이 영구 소멸한다. 응답은 {ok:true}, 화면은 '계좌를 저장했습니다' 토스트라 아무도 사고를 알아채지 못한다. 이후 `_payout_account_gate`(app.py:7603-7634)가 NO_BANK_ACCOUNT 로 지급 검수·이체를 막아, 정산 대기 중인 시공사 대금이 통째로 멈추고 계좌를 전화로 다시 받아야 한다. 키를 되돌려도 원문은 복구 불가.",
+  "fix": "① 서버: `touch_acct and acct==\"\" and 기존 bank_account_enc 가 비어있지 않음` 이면 409 CLEAR_NOT_ALLOWED 로 거절하고, 지우기는 {clear_account:true} 를 명시한 요청에서만 허용. ② GET /api/partners/<pid>/account 은 '미등록'과 '복호화 실패'를 구분해 decrypt_failed:true 를 내려주고, 그 경우 프런트가 입력칸을 잠그고 '키 확인 필요' 안내를 띄운다. ③ static/admin.js saveAccount 는 사용자가 실제로 손댄 경우(dirty)에만 bank_account 키를 포함. ④ 덮어쓰기 직전 기존 암호문을 partner_account_history 에 1행 남겨 오조작을 되돌릴 수 있게 한다.",
+  "value": 9,
+  "effort": "소"
+ },
+ {
+  "title": "대시보드 '누적 절감액' 53,710,000원 vs 보험사 리포트 '누적 절감액' 7,000,000원 — 아직 낙찰도 안 된 입찰가와 데모를 합산",
+  "kind": "결함",
+  "evidence": "app.py:3717-3721 대시보드: `SELECT COALESCE(SUM(est_price),0) e, COALESCE(SUM(low_price),0) l FROM cases WHERE low_price>0 AND est_price>0` → 상태 조건·is_demo·낙찰 여부 조건이 전부 없다. 같은 이름의 지표를 내는 app.py:3973-3980 `_compute_ops_kpi` 는 `... FROM cases WHERE COALESCE(is_demo,0)=0 ... AND status='완료' AND award_amount>0` 로 `est_price-award_amount` 를 쓴다(app.py:7383 보험사 절감 리포트, app.py:4046 운영 KPI 가 이 코어를 공유). 실측: 대시보드 53,710,000원(−16.8%), KPI 코어 7,000,000원. 차액 중 30,210,000원은 입찰중·승인대기·유찰 34건의 '현재 최저 입찰가'에서, 13,380,000원은 데모 10건에서 나온다. 낙찰 전 low_price 를 절감으로 쓰면 안 된다는 것은 app.py:2331-2334 에 이미 명시돼 있는데 대시보드만 그 원칙 밖에 있다.",
+  "impact": "임원 화면(static/admin.js:270 '누적 절감액')과 보험사가 받는 절감 리포트(insurer_portal.html:935)가 같은 이름으로 7.6배 다른 숫자를 말한다. 대시보드 값이 제안서·IR 에 인용되면 보험사가 자기 포털에서 보는 값과 대조하는 순간 근거가 무너지고, 입찰만 들어와도(낙찰 없이) 절감액이 자동으로 불어나 실적처럼 보인다.",
+  "fix": "대시보드 money 블록의 saved_amount/saved_rate 를 `_compute_ops_kpi(conn, '', '')['saving']` 결과로 교체한다(기간 없는 전체 집계가 필요하면 코어에 all_time 플래그 추가). 최소한 `WHERE status='완료' AND award_amount>0 AND COALESCE(is_demo,0)=0` 과 `est_price-award_amount` 로 맞춘다.",
+  "value": 8,
+  "effort": "소"
+ },
+ {
+  "title": "계약 요율 0%가 falsy 로 무시돼 10%가 부과되고, 협력사 화면과 정산이 서로 다른 요율을 말한다",
+  "kind": "결함",
+  "evidence": "app.py:6149-6159 `_fee_rate_bp_for`: `if r[\"fee_rate_bp\"]: return int(r[\"fee_rate_bp\"])` — 0bp(수수료 0% 계약)는 falsy 라 이 분기를 못 타고 `_default_fee_rate_bp` 로 떨어져 settings.fee_rate(현재 '10') → 1000bp 가 부과된다. 0% 는 app.py:4640-4647 `_parse_fee_pct` 가 `if not (0 <= pct <= 100)` 로 명시 허용하고 static/admin.js:1497 입력폼도 `min=\"0\"` 이라 실제로 저장 가능하다. 같은 값을 협력사에게 보여주는 app.py:2831 은 `COALESCE(i.fee_rate_bp, 1000) AS fee_rate_bp` 라 0 을 그대로 통과시키고, templates/partner_portal.html:732·785 가 `payoutOf(n, c.fee_rate_bp)` 로 \"수수료 0%를 뺀 약 N원을 받으실 예정\" 이라고 고지한다. 또 db.py:782 `(\"insurers\",\"fee_rate_bp\",\"INTEGER DEFAULT 1000\")` 로 전 발주처가 1000bp 를 갖고 있어(실측 6곳 모두 non-null), 설정 화면의 '수수료율(%) — 정산에 직접 적용'(static/admin.js:3579)은 insurer_id 가 없는 74건 중 2건에만 닿는 사실상 죽은 값이다 — app.py:6131-6135 주석은 이 문제를 고쳤다고 적어 두었다.",
+  "impact": "0% 로 계약한 발주처(공공·프로모션) 사건에서 협력사는 입찰 화면에서 '전액 수령'을 보고 투찰하는데 정산에서 10%가 공제된다. 1억 낙찰이면 1,000만원이 고지와 다르게 빠지고, 약관 제5조(legal_docs.py:325)와도 어긋나 분쟁 시 방어가 안 된다. 반대로 운영자가 설정 화면에서 요율을 8%로 바꾸면 '저장되었습니다'만 뜨고 실제 정산은 계속 10%로 나간다.",
+  "fix": "app.py:6155 를 `if r[\"fee_rate_bp\"] is not None:` 로 바꾼다. app.py:2831 의 COALESCE 대신 `_fee_rate_bp_for` 와 동일한 판정을 쓰는 서버 헬퍼를 경유시켜 화면·정산이 한 함수만 보게 한다. 설정 화면 라벨은 '신규 발주처 기본 요율'로 정정하거나, insurers.fee_rate_bp 를 NULL 허용으로 바꿔 '미지정=플랫폼 기본' 이 실제로 성립하게 한다.",
+  "value": 8,
+  "effort": "소"
+ },
+ {
+  "title": "est_outcome.final_amount 가 코드 어디에서도 채워지지 않는다 — 실적 축적 설계가 절반만 동작",
+  "kind": "결함",
+  "evidence": "db.py:413-429 정의에 `final_amount INTEGER, -- 최종 확정액(변경견적 반영 후). 정산 확정 때 채운다` 라고 용도가 적혀 있으나, 전 소스에 final_amount 를 쓰는 UPDATE 가 0건이다(app.py·db.py·dispatch.py·manage.py 모두 매칭 없음). 적재는 app.py:8291 _record_outcome 의 INSERT OR IGNORE 한 번뿐이고 이 문에도 final_amount 는 없다. 정산이 생기는 자리(app.py:6245-6263, 검수 승인 → settlements INSERT)에서 최종 확정액 amount 를 이미 계산하지만 est_outcome 은 손대지 않는다. 판독 쪽도 app.py:8332-8338 이 COUNT 3종만 읽어, 27행에 들어 있는 est_price·low_price·award_amount·bid_count·severity·region 이 전부 미판독이다. 현재 DB: est_outcome 27행 중 final_amount 는 전부 NULL.",
+  "impact": "낙찰 후 변경견적으로 금액이 바뀌면 cases.award_amount 는 덮어써지고(app.py:5716), 그 시점 값을 보존하라고 만든 est_outcome 에는 최종액이 안 남는다. 결과적으로 '가견적 → 낙찰 → 최종 확정'의 마지막 칸이 영구히 비어, 표본 30건(OUTCOME_MIN_SAMPLE)이 차더라도 가견적 점검 구간(est_check_band)을 실적으로 교정할 근거 데이터가 없다. 공종별·지역별 실적 리포트, 보험사 분기 보고에 쓸 절감 실적의 신뢰도도 여기서 막힌다.",
+  "fix": "① app.py:6253 정산 생성 트랜잭션 안에서 `UPDATE est_outcome SET final_amount=? WHERE case_id=?` (amount 그대로). ② 정산 취소·정정(app.py:7485 void / 7557 undo) 시 되돌리거나 재기록. ③ 실적 화면(app.py:8323)에 공종별 건수와 함께 est_price 대비 final_amount 분포를 **건수·구간 표시로만** 확장. 평균가·추천가는 계속 만들지 않고 표본 게이트도 유지한다.",
+  "value": 8,
+  "effort": "소"
+ },
+ {
+  "title": "현장 사진 업로드가 진행률·재시도 없는 단일 요청(최대 260MB)이고, 중복 전송 방지도 없다",
+  "kind": "기능갭",
+  "evidence": "partner_portal.html:961-976 — 최대 30장을 `new FormData()` 하나에 담아 `fetch()` 한 번으로 전송. 파일 전체에 `XMLHttpRequest`/`upload.onprogress` 가 없어 진행률 표시 불가(:963 `toast('사진 N장 올리는 중…')` 토스트 하나가 전부), AbortController·타임아웃 없음, 실패는 :976 `catch(e){ toast(esc(e.message)) }` 로 끝나고 부분 성공/재시도 경로가 없다.\n\n중복 전송: 업로드 중 `<label class=\"btn g sm upl\">`(:889)이 비활성화되지 않고, `input.value` 는 **성공했을 때만** 비워진다(:973). 두 번째 change 로 동시 업로드가 가능하다.\n\n용량: app.py:107 `MAX_CONTENT_LENGTH = 260MB`(주석 '장당 8MB × 30장'), partner_portal.html:951 클라 상한 8MB×30장. 전송 전 리사이즈 코드 없음. 8MB 초과분은 :954-956 에서 첫 파일명 하나만 알리고 조용히 제외된다.",
+  "impact": "도로변 LTE 업링크로 수십~200MB 를 몇 분간 올리는 동안 화면엔 토스트 한 줄뿐이라, 기사는 멈춘 줄 알고 다시 누르거나 앱을 종료한다. 다시 누르면 중복 업로드로 데이터·서버 저장공간이 이중 소모되고(사건별 장수 상한 app.py:6349 에 조기 도달), 끊기면 30장 전량이 사라져 처음부터 다시 찍어야 한다. 사진은 가견적 근거이자 검수·정산의 유일한 증빙이라 이 실패가 곧 정산 지연이다.",
+  "fix": "① 전송 전 `createImageBitmap`+canvas 로 장변 1600px·JPEG 0.8 리사이즈(대부분 300KB~800KB 로 떨어져 8MB 제외 로직이 사실상 불필요해지고 EXIF 방향만 보정하면 된다). ② 30장 일괄 대신 3~5장 배치로 순차 전송하고 `XMLHttpRequest.upload.onprogress` 로 '12/30장 (68%)' 진행 표시. ③ 실패한 배치만 남겨 「이 3장 다시 올리기」 버튼 제공(성공분은 서버에 남으므로 전량 재전송 금지). ④ 업로드 중 label 에 `pointer-events:none`+`aria-busy=\"true\"`, 완료·실패 모두 `input.value=''` 로 초기화해 같은 파일 재선택이 먹히게 한다.",
+  "value": 8,
+  "effort": "중"
+ },
+ {
+  "title": "보험사 API 키·웹훅 관리 라우트 5개가 화면 진입점 없이 방치 — 전산연동을 콘솔에서 켤 수 없고 웹훅 실패도 아무도 못 본다",
+  "kind": "기능갭",
+  "evidence": "app.py:4721 `GET /api/insurers/<iid>/api`, 4740 `POST /apikey`, 4764 `DELETE /apikey`, 4778 `POST /api-enable`, 4796 `PATCH /webhook`, 4821 `POST /webhook-test` — 6개 라우트가 최고관리자 전용으로 완성돼 있다(SSRF 방어 `_webhook_host_safe`, HMAC 서명, 리다이렉트 미추종 오프너까지 구현). static/admin.js 전체와 templates/*.html 을 검색해도 'apikey', 'api-enable', 'webhook' 문자열이 0건이다. 4731행은 최근 20건 `webhook_deliveries` 를 함께 내려주는데, 그 응답을 그리는 화면이 없으므로 전송 이력을 볼 방법이 없다. 전송부 app.py:1289 `_webhook_send` 는 실패 시 `status='실패'` 로 UPDATE 만 하고 재시도 큐가 없다(attempts 컬럼은 +1 되지만 재시도 주체가 없다).",
+  "impact": "보험사 전산연동(`/api/v1/cases` 접수, case.awarded·case.completed·case.reviewed·settlement.paid 웹훅)은 사업의 핵심 판매 포인트인데, 키 발급·연동 on/off·웹훅 주소 등록·테스트 발송을 콘솔에서 전혀 할 수 없어 연동 개시가 개발자 손을 타야 한다. 더 나쁜 것은 운영 중 실패다 — 보험사 수신 서버가 잠깐 죽거나 인증서가 만료되면 낙찰·완료·정산 통지가 조용히 '실패' 로 기록되고 재시도도 없이 끝난다. 보험사 전산에는 사건이 낙찰된 사실이 영영 안 들어가고, 복구온 쪽에서는 그 사실을 보여주는 화면 자체가 없어 보험사가 전화로 항의할 때까지 아무도 모른다.",
+  "fix": "admin.js `insurerForm()` 에 'API·웹훅 연동' 탭(또는 목록 행의 [연동] 버튼)을 추가해 GET /api/insurers/<id>/api 를 그린다: 키 접두부·발급일·연동 on/off 토글·웹훅 주소 입력(https 강제 안내)·[키 발급/재발급](원문 1회 노출 경고 포함)·[키 폐기]·[테스트 발송]·최근 전송 20건 표(event/case_no/status/http_code/error). 그리고 대시보드 또는 발주처 화면 상단에 '최근 24시간 웹훅 실패 N건' 지표를 걸고, `_sweep_if_due` 계열 점검에 status='실패' AND attempts<3 인 delivery 재시도를 붙인다.",
+  "value": 8,
+  "effort": "중"
+ },
+ {
+  "title": "알림톡·문자 19건 중 11건이 수신자 ID 없이 생성돼 팝빌을 켜는 순간 전부 '실패'로 사라진다 — 실패 건수는 어느 화면에도 없다",
+  "kind": "결함",
+  "evidence": "app.py:3560 `_notify_phone` 은 `n['partner_id']` → `n['insurer_id']` → (ntype 이 '피해자' 로 시작할 때만) victim_phone 순으로만 번호를 찾고, 못 찾으면 None 을 반환한다. app.py:3608 `sweep_send_notifications` 는 번호가 None 이면 재시도 없이 즉시 `status='실패', send_detail='수신자 휴대전화 없음'` 으로 닫는다. 그런데 channel 이 '알림톡'/'문자' 인 notify() 호출 19곳 중 11곳이 partner_id/insurer_id 를 넘기지 않는다 — app.py:4267(입점승인), 4375(포털 계정·비밀번호 재발급 보안통지), 4439(정산계좌 변경 보안통지), 5688(추가분 합산가 원업체 제시), 5812(전체 재경매 낙찰), 6863(사진 검수 승인), 6953(사진 반려), 7792(하자 접수), 7828(재시공 배정), 7832(하자 완료). 이들은 target 자리에 업체명 문자열만 넣는다(예: `notify(conn, '재경매낙찰', '알림톡', b['partner_name'], ...)`). 한편 admin.js:3417 발송 대기함 KPI 카드는 발송대기·수동처리·도달·팝빌상태 4개뿐이고, 서버가 내려주는 `counts['실패']`(app.py:8199)는 화면에서 한 번도 쓰이지 않는다. 대시보드 actions·refreshBadges(admin.js:240) 에도 발송 실패 항목이 없다.",
+  "impact": "지금은 팝빌이 꺼져 있어 이 건들이 '발송대기' 로 남아 사람이 처리하지만, 운영 전환(BOKGUON_NOTIFY_ENABLED=1)하는 그날부터 이 11종은 한 건도 나가지 않고 곧바로 '실패' 로 바뀌어 기본 필터('발송대기') 목록에서 사라진다. 낙찰 통지를 못 받은 협력사는 시공을 시작하지 않고, 사진 반려를 모르는 업체는 재촬영을 안 하며, 기한 7일짜리 하자 재시공 배정이 전달되지 않고, 계좌 변경·비밀번호 재발급 같은 보안 통지가 조용히 증발한다. 5688(추가분 합산가 제시)은 특히 치명적이다 — 원업체가 수락/거절해야 변경견적이 진행되는데 통지가 안 가면 change_orders 가 '원업체제안' 상태로 무기한 정지한다(admin.js:1782 coActions 는 이 상태에서 '원업체 응답 대기' 텍스트만 보여준다). 그리고 실패 건수를 띄우는 카드·배지가 없어 운영자는 드롭다운을 '실패' 로 바꿔 보기 전까지 이 사실을 알 수 없다.",
+  "fix": "① 11곳의 notify() 호출에 이미 손에 쥔 값으로 `partner_id=`/`insurer_id=` 와 `audience_type=`, `case_id=` 를 채운다(예: 5688은 `co['incumbent_partner_id']`, 6863·6953은 `c['partner_id']`, 7832는 `row['insurer_id']`). 회귀 방지를 위해 notify() 안에 channel 이 알림톡/문자인데 수신자 ID·피해자 경로가 모두 비면 app.logger.warning 을 남기는 가드를 넣는다. ② 발송 대기함 KPI 에 '실패' 카드를 추가하고(0보다 크면 빨강) 클릭 시 obFilter='실패' 로 전환되게 한다. ③ refreshBadges 에 outbox 실패 배지를 걸고, 대시보드 actions 에 '알림_발송실패' 를 넣어 outbox 로 드릴다운시킨다.",
+  "value": 8,
+  "effort": "소"
+ },
+ {
+  "title": "'마감→원업체 제시'는 경매 진행 중에도 즉시 실행되고 되돌릴 수단이 전혀 없다",
+  "kind": "결함",
+  "evidence": "app.py:5665-5692 `api_co_offer` 는 `co[\"status\"] != \"추가경매중\"` 만 확인할 뿐 auctions.deadline 을 보지 않는다(원경매 투찰이 쓰는 AUCTION_EXPIRED_SQL 가드가 여기엔 없다). 현재 최저 입찰을 집어 `UPDATE change_orders SET add_low=?, combined_amount=?, status='원업체제안'`(:5683-5685) 하고 `UPDATE auctions SET status='마감'`(:5686) 으로 경매를 닫은 뒤 원업체에 합산금액 알림톡을 보낸다(:5688). static/admin.js:1785 는 이 버튼을 목록 행에 '추가분 유찰' 버튼과 나란히 두고 confirm 이 없다(:1798 coOffer). 그리고 static/admin.js:1787 `case '원업체제안': return '<span class=\"sub\">원업체 응답 대기</span>'` — 그 상태의 관리자 조치는 0개다. 되돌리는 라우트도 없다(fail-add 는 '추가경매중', full-reauction 은 '거절'·'유찰' 전용).",
+  "impact": "마감 전에 실수로 눌리면 남은 시간 동안 더 내려갔을 추가분 최저가가 그 시점 값으로 굳고, 원업체에는 이미 합산금액이 통지된다. 원업체가 부도·잠적해 응답이 없으면 change_orders 는 '원업체제안'에 영구히 남고, app.py:10236-10244 의 CHANGE_ORDER_ACTIVE 가드가 낙찰취소(/cancel-award)까지 막아 사건 전체가 교착된다. 복구는 DB 직접 수정뿐이다.",
+  "fix": "① api_co_offer 에 마감 시각 가드를 넣고, 마감 전이면 409 NOT_CLOSED(남은 시간·현재 입찰 수 동봉) → 프런트에서 '아직 마감 전입니다. 지금 제시하면 남은 입찰을 못 받습니다' 확인을 받은 요청(force:true)만 통과. ② POST /api/change-orders/<coid>/withdraw-offer 신설 — 사유 필수, BEGIN IMMEDIATE + `UPDATE change_orders SET status='추가경매중' WHERE id=? AND status='원업체제안'` 로 rowcount 판정, 추가분 auctions 를 '진행'으로 되돌리고 원업체에 철회 통지. ③ 제안에 응답 기한을 두고, 기한 경과 건은 '원업체제안' 행에 '무응답 처리(→거절)' 버튼을 노출.",
+  "value": 8,
+  "effort": "중"
+ },
+ {
+  "title": "1차 합의 부동의 후 '2차 경매'를 여는 경로가 없다 — 화면·알림만 열 수 있다고 안내",
+  "kind": "기능갭",
+  "evidence": "dispatch.py:765 `settle_agreement(agreed=False)` 는 `UPDATE cases SET award_route='경매'` 만 하고 status 는 '접수' 그대로 둔다(사진없음 접수는 app.py:2530 에서 '접수'로 생성되고 경매를 열지 않는다). 그런데 app.py:9322-9324 는 '확보한 사진으로 2차 경매를 열어 주세요', static/admin.js:2706 은 '⛔ 부동의 기록 (사진으로 2차 경매)', app.py:9267-9269 안내문도 같은 약속을 한다. 실제로 cases.status 를 '입찰중'으로 옮기는 UPDATE 는 app.py:10249(cancel-award, '시공중' 전제)와 10324(reopen, '유찰'·'승인대기' 전제) 둘뿐이라 '접수'→'입찰중' 전이가 존재하지 않는다. _open_original_auction 호출부도 사건 생성 시점(2550·5876)과 레거시 보정(2968)뿐이다. 게다가 app.py:5519-5523 은 가견적 수정을 '입찰중'에서만 허용해 상한값조차 넣을 수 없다.",
+  "impact": "사진없음 트랙(현장 실태상 다수)에서 보험사가 현장 견적에 부동의하면 그 사건은 경매로 갈 길이 없다. 운영자는 알림이 시킨 대로 '2차 경매'를 찾지만 버튼이 없고, 남은 우회로는 출동 수배를 다시 열어 다른 업체를 보내는 것뿐이라 사건이 조용히 늙는다. 보험사 눈에는 접수만 해놓고 진행이 멈춘 건으로 보여 연계 신뢰가 깎인다.",
+  "fix": "POST /api/cases/<cid>/open-auction 신설 — 중간관리자, 가견적(est_price)과 그 근거를 필수로 받고 BEGIN IMMEDIATE + `UPDATE cases SET status='입찰중', est_price=? WHERE id=? AND status='접수'` rowcount 판정 후 _open_original_auction + work_lots 생성 + 협력사 공고 알림. 부동의 응답(app.py:9322)과 어드민 수배 화면에 이 버튼을 직접 연결하고, 가견적이 없으면 '개산 구간 계산'을 먼저 밟게 한다(금액은 여전히 상한일 뿐 확정이 아님을 문구로 유지).",
+  "value": 8,
+  "effort": "중"
+ },
+ {
+  "title": "수수료에 부가세 개념이 아예 없다 — 세금계산서 발행을 약속해 놓고 공급가·세액 분리 필드도 발행 경로도 없음",
+  "kind": "기능갭",
+  "evidence": "app.py:6122-6127 `compute_fee` 는 `fee = amount * rate_bp // 10000; return fee, amount - fee` 로 끝이고, settlements 테이블 컬럼은 `[... amount, fee, payout, fee_rate_bp ...]` 로 공급가액·세액·세금계산서 상태 필드가 없다(PRAGMA table_info 실측). 코드 전체에 '부가세/부가가치세/VAT/공급가액' 문자열이 0건이다. 반면 legal_docs.py:125 및 docs/legal/privacy.html:142 는 정산 목적에 \"복구 대금의 정산, 중개수수료 공제, 협력업체 계좌 이체, **세금계산서 발행**\"을 고지하고, 약관 제5조(legal_docs.py:325)는 \"중개수수료는 확정 복구 대금의 100분의 10\"이라고만 해 부가세 별도/포함이 불명이다. 팝빌 어댑터(notify_popbill.py)는 문자·알림톡만 구현돼 있고 세금계산서 서비스는 붙어 있지 않다.",
+  "impact": "중개수수료는 과세 용역이라 세금계산서에는 공급가액+세액 10%가 찍히는데, 시스템은 fee 를 통값으로만 다룬다. 현재 실적 기준 수수료 9,240,000원이 공급가액이면 세액 924,000원을 따로 받아야 하고(협력사 지급액이 그만큼 더 줄어야 함), 부가세 포함이면 실제 매출은 8,400,000원이라 대시보드 수수료가 10% 과대계상이다. 어느 쪽이든 협력사에게 알림톡으로 고지한 지급액(app.py:6267-6270, 7704-7706)과 세금계산서 금액이 어긋나고, 부가세 신고 시 장부를 수기로 재작성해야 한다.",
+  "fix": "settlements 에 `fee_supply`(공급가액)·`fee_vat`(세액)·`tax_invoice_status`·`tax_invoice_no` 를 추가하고, compute_fee 를 '수수료 총액=공급가+세액' 항등식이 성립하도록 확장한다(원 미만 절사 방향은 지금처럼 회사가 손해보는 쪽으로 고정). 약관 제5조에 '부가가치세 별도' 여부를 명시하고, 협력사·보험사 고지 문구와 월 명세서 엑셀(app.py:7244-7254)에 공급가/세액 열을 추가한다. 발행은 팝빌 세금계산서 API 를 기존 어댑터 옆에 같은 형태로 붙인다(금액 확정·협상은 하지 않고 이미 확정된 정산액을 그대로 전기).",
+  "value": 7,
+  "effort": "중"
+ },
+ {
+  "title": "사진 삭제가 트랜잭션 밖에서 파일부터 지운다 — 정산 근거 잠금(EVIDENCE_LOCKED)이 경합에 뚫린다",
+  "kind": "결함",
+  "evidence": "app.py:6870-6901 `api_photo_delete` 에는 BEGIN IMMEDIATE 가 없다. 정산 존재 확인(:6887-6888 `SELECT COUNT(*) ... FROM settlements`)이 자동커밋 읽기로 끝난 뒤 `os.remove(PHOTO.abs_path(...))`(:6895)로 먼저 파일을 지우고, 그다음에야 `DELETE FROM photos WHERE id=?`(:6898)와 commit 이 온다. 조건부 삭제(DELETE ... WHERE id=? AND NOT EXISTS(...))도 rowcount 판정도 없다. 반면 같은 잠금을 쓰는 api_photo_reject(:6931-6952)와 정산을 만드는 api_case_approve(:6205)는 BEGIN IMMEDIATE 안에서 판정한다.",
+  "impact": "운영자 A가 승인 사진 삭제를 누르는 사이 운영자 B가 같은 사건의 '검수 승인'(정산 생성)을 누르면, A의 정산 확인은 0을 본 뒤 통과해 지급 근거 사진이 디스크·DB에서 함께 사라진다. 보험사가 과다청구를 문제 삼을 때 회사가 소명할 자료가 없어지는데 로그에는 정상 삭제로만 남는다. 또 파일을 먼저 지우므로 DB 쓰기가 실패하면 photos 행은 남고 파일만 없는 상태가 되어, 검수 화면에 사진이 있는 것처럼 뜨지만 열리지 않는다.",
+  "fix": "BEGIN IMMEDIATE 로 열고 정산 존재 확인 → `DELETE FROM photos WHERE id=? AND NOT (review_status='승인' AND EXISTS(SELECT 1 FROM settlements WHERE case_id=? AND COALESCE(void_status,'')<>'취소'))` 의 rowcount 로 판정 → commit. 파일 제거는 커밋 이후에 하고, 즉시 unlink 대신 uploads/_trash 로 이동해 30일 뒤 정리하는 방식으로 오삭제 회수 경로를 남긴다.",
+  "value": 7,
+  "effort": "소"
+ },
+ {
+  "title": "공지·일정·메모는 확인창 없이 한 번에 물리 삭제되고 감사 기록도 남지 않는다",
+  "kind": "결함",
+  "evidence": "static/admin.js:3478 `deleteNotice` 는 목록 행의 빨간 '삭제' 버튼에서 confirm 없이 바로 호출되고, 서버 app.py:8006-8013 은 `DELETE FROM notices WHERE id=?` 후 rowcount 확인도 DB.log 도 없이 {ok:true} 를 준다(없는 id 도 성공). static/admin.js:2497-2498 calDel 도 confirm 없음, app.py:9783-9794 역시 감사로그가 없다. static/admin.js:1387-1388 memoDel 도 confirm 없음이고 app.py:966-973 은 `DB.log(..., \"메모 삭제\", f\"#{mid}\")` 로 번호만 남겨 본문이 사라진다. 같은 화면군의 다른 삭제는 모두 확인을 받는다 — 사진(static/admin.js:2945 '되돌릴 수 없습니다'), 표준단가(:3517, 게다가 app.py:8653-8673 은 물리삭제 대신 비활성), 점검기준(:3740).",
+  "impact": "협력사·보험사 포털에 걸린 공지(정산 일정·점검 안내)나 현장 일정, 사건 대응 메모가 오클릭 한 번에 사라진다. 누가 언제 무엇을 지웠는지 남지 않아 사고 경위 확인도 불가능하고, 지운 사람조차 원문을 복원할 수 없다. 표준단가만 이력을 보존하고 나머지는 안 하는 비대칭이라 운영자가 삭제 위험도를 화면에서 가늠하지 못한다.",
+  "fix": "세 버튼 모두 confirm(대상 제목을 문구에 넣어) 추가. 서버는 rowcount 0 이면 404 를 돌려 '지운 척'을 없애고, notices·schedule_events 는 deleted_at 소프트삭제로 바꿔 조회에서만 제외한다(memos 도 동일). 물리삭제를 유지할 경우 최소한 DB.log 상세에 삭제 직전 제목·본문 요약을 스냅샷으로 남긴다.",
+  "value": 5,
+  "effort": "소"
+ }
+]

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 콘솔</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<link rel="stylesheet" href="{{ asset('admin.css') }}">
+<link rel="stylesheet" href="{{ asset('leaflet/leaflet.css') }}">
+</head>
+<body>
+{% if server_stale %}
+<div style="background:#8A2B2B;color:#fff;padding:10px 16px;font-size:.78rem;font-weight:700;
+            text-align:center;line-height:1.5;font-family:'Malgun Gothic',sans-serif">
+  ⚠ 서버가 <b>예전 코드</b>로 실행 중입니다 — 코드가 바뀐 뒤 재시작하지 않았습니다.<br>
+  <span style="font-weight:600">서버 창을 닫고 다시 실행해 주세요. 그 전까지는 새로 추가된 메뉴가 열리지 않습니다.</span>
+</div>
+{% endif %}
+
+<div class="shell">
+<aside>
+  <div class="lg">복구<b>온</b> 콘솔<small>OLYMPOS ADMIN</small></div>
+  {#
+    메뉴는 **사건이 흘러가는 순서**대로 놓는다 —
+      접수 → 수배·입찰 → 시공 → 검수·완료 → 정산 → 사후(하자·해피콜).
+    운영자가 하루를 보내는 순서와 화면 순서가 같아야 "이걸 어디서 하지?" 가 없다.
+    각 묶음은 접힌다(.grp 클릭). 현재 보고 있는 메뉴가 든 묶음은 항상 펼쳐진다.
+  #}
+  <div class="nav" id="nav">
+    <div class="grp" data-g="today">오늘 할 일</div>
+    <div class="mi on" data-v="today" data-g="today">☀️ 오늘 할 일 <span class="bdg amber" id="bdg-today"></span></div>
+    <div class="mi" data-v="dash" data-g="today">📊 대시보드</div>
+    <div class="mi" data-v="calendar" data-g="today">📅 일정 달력</div>
+    <div class="mi" data-v="map" data-g="today">🗺️ 현장 지도</div>
+
+    <div class="grp" data-g="intake">① 접수</div>
+    <div class="mi" data-v="newcase" data-g="intake">➕ 공고·사건 등록</div>
+    <div class="mi" data-v="cases" data-g="intake">📋 사건·입찰 관제</div>
+
+    <div class="grp" data-g="bid">② 수배 · 입찰</div>
+    <div class="mi" data-v="dispatch" data-g="bid">🚨 현장 출동 수배 <span class="bdg amber" id="bdg-dispatch"></span></div>
+    <div class="mi" data-v="changeorders" data-g="bid">🔁 변경 견적·재경매 <span class="bdg amber" id="bdg-co"></span></div>
+
+    <div class="grp" data-g="work">③ 시공 · 검수</div>
+    <div class="mi" data-v="photos" data-g="work">🤖 AI 사진 검수</div>
+
+    <div class="grp" data-g="money">④ 정산</div>
+    <div class="mi" data-v="settle" data-g="money">💰 정산 관리 <span class="bdg amber" id="bdg-settle"></span></div>
+    <div class="mi" data-v="statement" data-g="money">📄 월 정산 명세서</div>
+
+    <div class="grp" data-g="after">⑤ 사후 관리</div>
+    <div class="mi" data-v="defects" data-g="after">🔧 하자·A/S 관리 <span class="bdg" id="bdg-defect"></span></div>
+    <div class="mi" data-v="happycall" data-g="after">📞 해피콜·만족도 <span class="bdg" id="bdg-hc"></span></div>
+
+    <div class="grp" data-g="member">거래처 · 심사</div>
+    <div class="mi" data-v="partners" data-g="member">🏗️ 업체 등록·관리</div>
+    <div class="mi" data-v="onboard" data-g="member">🚪 협력사 온보딩 <span class="bdg red" id="bdg-onboard"></span></div>
+    <div class="mi" data-v="selfcheck" data-g="member">🩺 운영 점검 <span class="bdg red" id="bdg-selfcheck"></span></div>
+    <div class="mi" data-v="license" data-g="member">🏛️ 건설업 등록 조사 <span class="bdg amber" id="bdg-license"></span></div>
+    <div class="mi" data-v="insurers" data-g="member">🏦 발주처(보험사) 관리</div>
+    <div class="mi" data-v="apps" data-g="member">📝 입점 신청함 <span class="bdg" id="bdg-apps"></span></div>
+    <div class="mi" data-v="leads" data-g="member">📨 도입 문의함 <span class="bdg" id="bdg-leads"></span></div>
+
+    <div class="grp" data-g="analysis">분석</div>
+    <div class="mi" data-v="opskpi" data-g="analysis">🎯 운영 KPI</div>
+    <div class="mi" data-v="stats" data-g="analysis">📈 통계·리포트</div>
+    <div class="mi" data-v="traffic" data-g="analysis">👥 접속 통계</div>
+
+    <div class="grp" data-g="comm">소통</div>
+    <div class="mi" data-v="outbox" data-g="comm">📮 발송 대기함</div>
+    <div class="mi" data-v="ops" data-g="comm">🔔 운영 알림 로그</div>
+    <div class="mi" data-v="notices" data-g="comm">📢 공지사항</div>
+    <div class="mi" data-v="contacts" data-g="comm">📇 연락처 관리</div>
+    <div class="mi" data-v="campaigns" data-g="comm">✉️ 마케팅 캠페인</div>
+
+    <div class="grp" data-g="sys">시스템</div>
+    <div class="mi" data-v="boq" data-g="sys">📐 표준 단가·내역</div>
+    <div class="mi" data-v="estbands" data-g="sys">🎚️ 가견적 점검 기준</div>
+    <div class="mi" data-v="admins" data-g="sys">👤 관리자 계정</div>
+    <div class="mi" data-v="set" data-g="sys">⚙️ 설정 · 감사로그</div>
+  </div>
+  <div class="me"><div class="av" id="av">·</div><div><div class="a" id="me-name">—</div><div class="b" id="me-role">—</div></div>
+    <button class="logout" data-act="logout" title="로그아웃">⎋</button></div>
+</aside>
+{# 좁은 화면에서 사이드바가 열렸을 때 뒤를 덮는 막 — 누르면 닫힌다 #}
+<div class="navscrim" id="navScrim" data-act="navClose"></div>
+
+<main>
+  <div class="top">
+    {# 좁은 화면에서만 보이는 메뉴 버튼 — 누르면 사이드바가 덮개로 열린다 #}
+    <button class="navtoggle" data-act="navToggle" aria-label="메뉴 열기"
+            aria-controls="nav" aria-expanded="false">☰</button>
+    <h1 id="vtitle">대시보드</h1>
+    <span class="crumb" id="vcrumb">콘솔 · 모니터링</span>
+    <span class="sp"></span>
+    <span class="chip-date" id="clock">실시간</span>
+    {# 알림 벨 — 운영팀 앞으로 온 알림. 포털에는 있었는데 콘솔에만 없었다. #}
+    <div class="bellwrap">
+      <button class="bell" id="bellBtn" data-act="bellToggle"
+              aria-label="알림" aria-expanded="false" aria-haspopup="true">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="belldot" id="bellDot"></span>
+      </button>
+      <div class="bellpop" id="bellPop" hidden>
+        <div class="bh"><span>알림 <small id="bellCnt"></small></span>
+          <button class="lnk" data-act="bellReadAll">모두 읽음</button></div>
+        <div id="bellList"><div class="bempty">불러오는 중…</div></div>
+      </div>
+    </div>
+    <button class="btn p sm" data-act="refreshView">새로고침</button>
+  </div>
+  <div class="content" id="content"><div class="loading">불러오는 중…</div></div>
+</main>
+</div>
+
+{# 새 알림이 오면 우측 아래에서 밀려 올라온다. 누르면 그 사건으로 바로 간다. #}
+<div class="tray" id="tray" aria-live="polite" aria-atomic="false"></div>
+
+<div class="modal-back" id="modalBack" data-act="modalBackdrop" data-act-self>
+  <div class="modal" id="modal"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="{{ asset('leaflet/leaflet.js') }}"></script>
+<script src="{{ asset('actions.js') }}"></script>
+<script src="{{ asset('lightbox.js') }}"></script>
+<script src="{{ asset('addrpick.js') }}"></script>
+<script src="{{ asset('admin.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  ACT.logout = (a, el, ev, b) => logout(_n(a), _n(b), el, ev);
+  ACT.modalBackdrop = (a, el, ev) => { if (ev.target === el) closeModal(); };
+  ACT.refreshView = () => loadView(CUR);
+})();
+
+</script>
+</body>
+</html>

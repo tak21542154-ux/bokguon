@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>복구 진행 조회 — 복구온</title>
+<style>
+:root{
+  --blue:#0064B2; --blue-ink:#003A69; --amber:#E8A33D;
+  --ink:#12202E; --sub:#4A5B6C; --faint:#8496A6; --line:#E3EAF1; --mist:#F4F8FC;
+  --ok:#137A38;
+  --font:"맑은 고딕","Malgun Gothic",-apple-system,"Apple SD Gothic Neo","Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font);color:var(--ink);background:var(--mist);line-height:1.7;
+  word-break:keep-all;overflow-wrap:break-word;text-wrap:pretty;-webkit-font-smoothing:antialiased}
+.sheet{max-width:560px;margin:0 auto;min-height:100vh;background:#fff;
+  box-shadow:0 0 40px rgba(0,40,80,.08);display:flex;flex-direction:column}
+.head{background:linear-gradient(135deg,var(--blue-ink),var(--blue));color:#fff;padding:30px 24px 24px}
+.head .b{font-size:.75rem;font-weight:800;letter-spacing:.12em;color:#BFE0FA;margin-bottom:8px}
+.head h1{font-size:1.35rem;font-weight:800;letter-spacing:-.02em}
+.head .no{margin-top:10px;font-size:.85rem;color:rgba(255,255,255,.85)}
+.body{flex:1;padding:24px}
+.stage{display:flex;margin:6px 0 22px}
+.st{flex:1;text-align:center;position:relative}
+.st::before{content:"";position:absolute;top:13px;left:0;right:0;height:3px;background:var(--line)}
+.st:first-child::before{left:50%}
+.st:last-child::before{right:50%}
+.st .dot{width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--line);
+  margin:0 auto;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:800;color:var(--faint)}
+.st.on .dot{background:var(--blue);border-color:var(--blue);color:#fff}
+.st.cur .dot{background:var(--amber);border-color:var(--amber);color:#1E1503;
+  box-shadow:0 0 0 5px rgba(232,163,61,.25)}
+.st .lb{font-size:.68rem;font-weight:700;color:var(--faint);margin-top:6px}
+.st.on .lb,.st.cur .lb{color:var(--ink)}
+.card{background:var(--mist);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.card .k{font-size:.72rem;font-weight:800;color:var(--faint);letter-spacing:.06em;margin-bottom:4px}
+.card .v{font-size:.95rem;font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.note{font-size:.78rem;color:var(--faint);line-height:1.65;margin-top:16px;
+  padding-top:14px;border-top:1px solid var(--line)}
+.badge{display:inline-block;font-size:.78rem;font-weight:800;padding:4px 12px;border-radius:99px;
+  background:#E6F1FA;color:var(--blue)}
+.badge.done{background:#E6F4EA;color:var(--ok)}
+.foot{background:var(--blue-ink);color:rgba(255,255,255,.8);padding:18px 24px;font-size:.78rem}
+.foot b{color:#fff}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="head">
+    <div class="b">복구온 · 진행 조회</div>
+    <h1>내 피해물 복구, 지금 어디까지 왔나요</h1>
+    <div class="no">접수번호 {{ case_no }} · {{ region }}{% if category %} · {{ category }}{% endif %}</div>
+  </div>
+  <div class="body">
+    {% if no_repair %}
+      <div class="card" style="background:#FFF9EF;border-color:#F0DBB0">
+        <div class="k">처리 결과</div>
+        <div class="v">현장 확인 결과, 수선하지 않는 것으로 정리되었습니다.</div>
+        <div style="font-size:.82rem;color:var(--sub);margin-top:6px">
+          자세한 내용은 보험사 보상 담당자에게 문의해 주세요.</div>
+      </div>
+    {% elif cancelled %}
+      {#  ⚠⚠ [라운드643] no_repair 와 같은 이유로 단계표를 건너뛴다 — '취소'도
+          더 진행되지 않는 사건인데(CASE_CLOSED, app.py:5419) 이 분기가 없으면
+          아래 else 의 단계표가 0단계(접수)를 호박색 '진행중'으로 켜 버려,
+          "취소되었다"는 배지와 "지금 한창 진행 중"이라는 단계표가 한 화면에
+          동시에 뜬다. #}
+      <div class="card" style="background:#FDEEEE;border-color:#F2C9C9">
+        <div class="k">처리 결과</div>
+        <div class="v">이 접수 건은 취소되었습니다.</div>
+        <div style="font-size:.82rem;color:var(--sub);margin-top:6px">
+          자세한 내용은 보험사 보상 담당자에게 문의해 주세요.</div>
+      </div>
+    {% else %}
+      <div class="stage">
+        {% for s in stages %}
+          <div class="st {% if loop.index0 < cur_stage %}on{% elif loop.index0 == cur_stage %}cur{% endif %}">
+            <div class="dot">{{ loop.index }}</div>
+            <div class="lb">{{ s }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="card">
+        <div class="k">현재 상태</div>
+        <div class="v"><span class="badge {% if status=='완료' %}done{% endif %}">{{ status }}</span></div>
+      </div>
+    {% endif %}
+    <div class="grid">
+      <div class="card"><div class="k">접수일</div><div class="v">{{ created or '-' }}</div></div>
+      <div class="card"><div class="k">담당 매니저</div><div class="v">{{ manager }}</div></div>
+      <div class="card"><div class="k">시공 업체</div><div class="v">{{ partner }}</div></div>
+      <div class="card"><div class="k">현장 기록 사진</div><div class="v">{{ photos_n }}장 등록</div></div>
+    </div>
+    {% if completed %}
+      <div class="card" style="margin-top:12px">
+        <div class="k">완료일 · 하자보증</div>
+        <div class="v">{{ completed }} 완료 · 보증 {{ warranty }}개월</div>
+        <div style="font-size:.82rem;color:var(--sub);margin-top:4px">
+          보증 기간 안에 하자가 생기면 이 페이지를 안내받은 연락처로 알려주세요.</div>
+      </div>
+    {% endif %}
+    <div class="note">
+      · 이 페이지는 본인 확인용 링크로만 열립니다. 링크를 다른 사람과 공유하지 마세요.<br>
+      · 보험금 관련 문의는 가입하신 보험사 보상 담당자에게 해주세요.
+        복구온은 복구 공사의 진행만 안내드립니다.
+    </div>
+  </div>
+  <div class="foot"><b>㈜올림포스네트웍스 · 복구온</b> — 사고 피해물 복구를 투명하게</div>
+</div>
+</body>
+</html>

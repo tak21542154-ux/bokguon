@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<string>", line 10, in <module>
+    print(text[:1600])
+    ~~~~~^^^^^^^^^^^^^
+UnicodeEncodeError: 'cp949' codec can't encode character '\u2014' in position 13: illegal multibyte sequence
+=== ROUND 481 ===

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="static/fonts.css">
+<script>document.documentElement.className+=" js";</script>
+<title>복구온 — 사고 피해물 복구, 입찰로 투명하게</title>
+<meta name="description" content="가드레일·담장·유리·차단기·누수 등 교통사고 기타피해물 복구를 검증된 시행사 경쟁입찰로 처리합니다. 표준 내역서 기반 통값 입찰로 청구금액을 낮춥니다. ㈜올림포스네트웍스">
+<meta name="author" content="㈜올림포스네트웍스 전략사업실 유경탁 파트장">
+<!-- canonical 은 여기 두지 않는다. 실주소가 정해지면 build_pages.py 가
+     BOKGUON_SERVICE_URL 로 넣어 준다(없으면 아예 안 넣는다). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="복구온">
+<meta property="og:title" content="복구온 — 사고 피해물 복구, 입찰로 투명하게">
+<meta property="og:description" content="검증된 시행사가 표준 내역서 기반 통값으로 경쟁합니다. 습관성 확대 청구를 걸러내고 청구금액을 낮춥니다.">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#0064B2">
+<link rel="icon" href="static/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="static/manifest.webmanifest">
+<link rel="apple-touch-icon" href="static/icons/apple-touch-icon.png">
+
+<style>
+:root{
+  --blue:#0064B2; --blue-deep:#004E8C; --blue-ink:#003A69;
+  --amber:#E8A33D; --amber-deep:#D18A1F;
+  --paper:#FFFFFF; --mist:#F3F7FB; --line:#DCE6F0;
+  --ink:#12202E; --sub:#4A5B6C;
+  /* [접근성] 글자용 저대비 색 교정 — 기존 #8698A9 는 2.97:1 로 AA 미달이었다 */
+  --faint:#5C6E82; --amber-text:#8A5800;
+  --radius-xl:28px; --radius-pill:999px;
+  font-size:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-sans);
+  color:var(--ink); background:var(--paper);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  font-feature-settings:'ss05';
+  word-break:keep-all; overflow-wrap:break-word;
+  /* 고아문자 방지 — 한글은 어절 단위로 줄이 갈려서 마지막 줄에 두 글자만
+     떨어지는 일이 잦다(“…재시공 / 주선”). pretty 는 그 마지막 줄을 채워 올린다.
+     지원 안 하는 브라우저는 이 줄을 무시할 뿐이라 위험이 없다. */
+  text-wrap:pretty;
+}
+/* 짧은 제목·라벨·버튼은 줄 길이를 고르게 나눈다(balance).
+   본문 전체에 balance 를 걸면 긴 문단에서 성능·가독성이 나빠지므로 짧은 것에만 쓴다. */
+h1, h2, h3, h4, .lbl, .btn, .kpi-label, .sec-tag, .prob-card h3, .card h3{
+  text-wrap:balance;
+}
+/* 내비게이션의 포털 버튼은 라벨을 쪼개지 않는다.
+   좁은 화면에서 84px 폭에 3줄로 눌려 “보험사 / 포 / 털” 처럼 갈렸다. */
+.nav-links a.btn-ghost-nav{white-space:nowrap}
+/* 랜딩의 버튼·표도 같은 규칙 */
+.btn{white-space:nowrap}
+table td, table th{text-wrap:balance}
+.serif{font-family:var(--font-serif)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 32px}
+
+/* ───────── nav ───────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  backdrop-filter:blur(14px);background:rgba(255,255,255,.82);
+  border-bottom:1px solid rgba(220,230,240,.6);
+  transition:box-shadow .3s;
+}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.25rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none}
+.logo-mark{
+  width:34px;height:34px;border-radius:10px;position:relative;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-deep) 100%);
+  box-shadow:0 4px 12px rgba(0,100,178,.35);
+}
+.logo-mark::after{
+  content:'';position:absolute;inset:0;
+  background:
+    linear-gradient(var(--amber),var(--amber)) 8px 20px/12px 3.5px no-repeat,
+    linear-gradient(#fff,#fff) 8px 14px/18px 3.5px no-repeat,
+    linear-gradient(#fff,#fff) 8px 8px/14px 3.5px no-repeat;
+  border-radius:10px;
+}
+.logo b{color:var(--blue)}
+.nav-links{display:flex;gap:34px;align-items:center}
+.nav-links a{color:var(--sub);text-decoration:none;font-size:.95rem;font-weight:600;transition:color .2s}
+.nav-links a:hover{color:var(--blue)}
+.nav-links a.btn-primary{color:#fff}
+.nav-links a.btn-primary:hover{color:#fff}
+.nav-links a.btn-ghost-nav{color:var(--blue);border:1px solid var(--blue);border-radius:9px;padding:8px 15px;font-size:.86rem;font-weight:700}
+.nav-links a.btn-ghost-nav:hover{background:var(--blue);color:#fff}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
+  border-radius:var(--radius-pill);font-weight:700;text-decoration:none;
+  transition:transform .18s,box-shadow .18s,background .18s;
+  font-family:inherit;
+}
+.btn-primary{background:var(--blue);color:#fff;padding:12px 26px;font-size:.95rem;box-shadow:0 6px 18px rgba(0,100,178,.28)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,100,178,.38);background:var(--blue-deep)}
+.btn-amber{background:var(--amber);color:#1E1503;padding:16px 34px;font-size:1.05rem;box-shadow:0 8px 24px rgba(232,163,61,.4)}
+.btn-amber:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,163,61,.5);background:#F0B04E}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;padding:16px 34px;font-size:1.05rem;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(4px)}
+.btn-ghost:hover{background:rgba(255,255,255,.22)}
+
+/* ───────── hero ───────── */
+.hero{
+  position:relative;color:#fff;overflow:hidden;
+  background:
+    radial-gradient(1100px 620px at 85% -10%, #1B84D6 0%, transparent 55%),
+    radial-gradient(900px 700px at -15% 110%, #00335C 0%, transparent 50%),
+    linear-gradient(158deg, var(--blue) 12%, var(--blue-deep) 58%, var(--blue-ink) 100%);
+  padding:172px 0 0;
+}
+.hero::before{ /* grain */
+  content:'';position:absolute;inset:0;opacity:.05;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");
+}
+.hero::after{ /* blueprint grid */
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:
+    linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px) 0 0/44px 44px;
+  mask-image:radial-gradient(900px 600px at 70% 30%,#000 30%,transparent 75%);
+}
+.hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.hero-copy{padding-bottom:120px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);
+  padding:8px 18px;border-radius:var(--radius-pill);
+  font-size:.85rem;font-weight:600;letter-spacing:.02em;margin-bottom:28px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.6}}
+h1{
+  font-size:clamp(2.4rem,4.6vw,3.7rem);line-height:1.16;letter-spacing:-.035em;font-weight:800;
+  margin-bottom:26px;
+}
+h1 .amber-underline{
+  color:var(--amber);position:relative;white-space:nowrap;
+}
+h1 .amber-underline::after{
+  content:'';position:absolute;left:2%;bottom:6px;width:96%;height:12px;
+  background:rgba(232,163,61,.28);z-index:-1;border-radius:3px;
+}
+.hero-sub{font-size:1.16rem;line-height:1.75;color:rgba(255,255,255,.86);max-width:520px;margin-bottom:40px;word-break:keep-all}
+.hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:56px}
+.hero-note{font-size:.85rem;color:rgba(255,255,255,.55)}
+
+/* hero phone mock */
+.hero-visual{position:relative;align-self:end;display:flex;justify-content:center}
+.phone{
+  width:318px;background:#0B1622;border-radius:44px;padding:12px;
+  box-shadow:0 40px 90px rgba(0,20,45,.55),0 0 0 1px rgba(255,255,255,.08);
+  transform:rotate(2.5deg);position:relative;z-index:2;
+  animation:float 7s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:rotate(2.5deg) translateY(0)}50%{transform:rotate(2.5deg) translateY(-14px)}}
+.phone-screen{background:var(--mist);border-radius:34px;overflow:hidden}
+.ps-head{background:#fff;padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.ps-head .t{font-weight:800;font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
+.badge-live{background:#E6F4EA;color:#137A38;font-size:.62rem;font-weight:800;padding:3px 9px;border-radius:99px}
+.bid-card{background:#fff;margin:12px;border-radius:18px;padding:16px;box-shadow:0 2px 10px rgba(15,40,70,.06)}
+.bid-card .cat{font-size:.62rem;font-weight:800;color:var(--blue);background:#E8F2FA;display:inline-block;padding:3px 9px;border-radius:99px;margin-bottom:8px}
+.bid-card .name{font-weight:800;font-size:.9rem;letter-spacing:-.01em;margin-bottom:4px}
+.bid-card .loc{font-size:.72rem;color:var(--faint);margin-bottom:12px}
+.bid-row{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px dashed var(--line)}
+.bid-row .lbl{font-size:.66rem;color:var(--faint)}
+.bid-row .val{font-weight:800;font-size:.95rem}
+.bid-row .val.amber{color:var(--amber-text)}
+.bid-row .val.blue{color:var(--blue)}
+.timer{display:flex;align-items:center;gap:6px;margin:12px;padding:12px 16px;background:#FFF6E8;border:1px solid #F5DCB2;border-radius:14px;font-size:.75rem;font-weight:700;color:#8A5A0C}
+.timer .clock{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.6s infinite}
+.ps-btn{margin:0 12px 16px;background:var(--blue);color:#fff;text-align:center;font-weight:800;font-size:.85rem;padding:14px;border-radius:14px;box-shadow:0 6px 14px rgba(0,100,178,.3)}
+/* floating chips */
+.chip{
+  position:absolute;background:#fff;border-radius:16px;padding:12px 16px;
+  box-shadow:0 16px 44px rgba(0,25,55,.28);z-index:3;font-size:.78rem;font-weight:700;color:var(--ink);
+  display:flex;align-items:center;gap:10px;
+}
+.chip .ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:.85rem;flex:0 0 auto}
+.chip small{display:block;font-weight:600;color:var(--faint);font-size:.66rem;margin-top:1px}
+.chip-1{top:9%;left:-4%;animation:float 6s ease-in-out infinite .8s}
+.chip-1 .ico{background:#E6F4EA}
+.chip-2{bottom:14%;right:-6%;animation:float 6.6s ease-in-out infinite .3s}
+.chip-2 .ico{background:#FFF1DB}
+.chip-3{bottom:34%;left:-11%;animation:float 7.4s ease-in-out infinite 1.4s}
+.chip-3 .ico{background:#E8F2FA}
+
+/* ───────── stat band ───────── */
+.stats{background:var(--blue-ink);color:#fff;position:relative;overflow:hidden}
+.stats::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05) 50%,transparent)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding-top:52px;padding-bottom:52px}
+.stat .num{font-size:2.35rem;font-weight:800;letter-spacing:-.03em;line-height:1;margin-bottom:10px}
+.stat .num em{font-style:normal;color:var(--amber);font-size:1.3rem;font-weight:800;margin-left:2px}
+.stat .lbl{font-size:.88rem;color:rgba(255,255,255,.62);font-weight:500}
+.stat{border-left:2px solid rgba(255,255,255,.14);padding-left:22px}
+.stat:first-child{border-left-color:var(--amber)}
+
+/* ───────── section common ───────── */
+section{padding:110px 0}
+.sec-tag{
+  display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.14em;color:var(--blue);
+  border:1.5px solid var(--blue);padding:7px 16px;border-radius:var(--radius-pill);margin-bottom:22px;
+}
+.sec-tag.amber{color:var(--amber-text);border-color:var(--amber)}
+h2{font-size:clamp(1.85rem,3.2vw,2.6rem);letter-spacing:-.03em;line-height:1.28;font-weight:800;margin-bottom:18px;word-break:keep-all}
+h2 .hl{color:var(--blue)}
+.sec-desc{font-size:1.08rem;color:var(--sub);line-height:1.8;max-width:640px;word-break:keep-all}
+
+/* reveal */
+/* [중요] 등장 애니메이션이 '콘텐츠가 보이는 조건'이 되면 안 된다.
+   기본값을 보이는 상태로 두고, JS 가 실제로 돌 때만(html.js) 숨겼다가 나타낸다.
+   스크립트가 차단·실패해도 본문은 정상적으로 읽힌다. */
+.rv{opacity:1;transform:none}
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.js .rv.on{opacity:1;transform:none}
+/* 움직임을 불편해하는 이용자는 애니메이션 없이 바로 표시 */
+@media (prefers-reduced-motion: reduce){
+  .js .rv{opacity:1;transform:none;transition:none}
+}
+.rv.d1{transition-delay:.08s}.rv.d2{transition-delay:.16s}.rv.d3{transition-delay:.24s}.rv.d4{transition-delay:.32s}
+
+/* ───────── problem ───────── */
+.problem{background:var(--mist)}
+.prob-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.prob-card{
+  background:#fff;border-radius:var(--radius-xl);padding:38px 32px;position:relative;overflow:hidden;
+  border:1px solid var(--line);transition:transform .25s,box-shadow .25s;
+}
+.prob-card:hover{transform:translateY(-6px);box-shadow:0 24px 48px rgba(15,45,80,.1)}
+.prob-card .no{
+  font-family:var(--font-serif);font-size:3.4rem;font-weight:700;line-height:1;
+  color:transparent;-webkit-text-stroke:1.5px var(--line);margin-bottom:22px;
+}
+.prob-card:hover .no{-webkit-text-stroke:1.5px var(--amber)}
+.prob-card h3{font-size:1.22rem;font-weight:800;letter-spacing:-.02em;margin-bottom:14px;word-break:keep-all}
+.prob-card p{font-size:.95rem;color:var(--sub);line-height:1.75;word-break:keep-all}
+.prob-card .tagline{margin-top:20px;font-size:.82rem;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:6px}
+
+/* ───────── process ───────── */
+.process-head{display:flex;justify-content:space-between;align-items:end;gap:40px;flex-wrap:wrap}
+.proc-flow{margin-top:64px;position:relative}
+.proc-line{position:absolute;left:31px;top:20px;bottom:20px;width:2px;background:linear-gradient(var(--blue),var(--amber));opacity:.25}
+.proc-step{display:grid;grid-template-columns:64px 210px 1fr;gap:28px;padding:26px 0;align-items:start;border-bottom:1px dashed var(--line)}
+.proc-step:last-child{border-bottom:none}
+.proc-dot{
+  width:64px;height:64px;border-radius:20px;display:grid;place-items:center;
+  background:#fff;border:1.5px solid var(--line);font-weight:800;color:var(--blue);font-size:1.05rem;
+  box-shadow:0 4px 14px rgba(15,45,80,.07);position:relative;z-index:1;
+}
+.proc-step.gold .proc-dot{background:var(--amber);border-color:var(--amber);color:#1E1503;box-shadow:0 8px 20px rgba(232,163,61,.4)}
+.proc-step h4{font-size:1.13rem;font-weight:800;letter-spacing:-.02em;padding-top:8px}
+.proc-step h4 small{display:block;font-size:.75rem;color:var(--faint);font-weight:600;margin-top:6px;letter-spacing:.06em}
+.proc-step p{font-size:.96rem;color:var(--sub);line-height:1.75;padding-top:8px;word-break:keep-all;max-width:560px}
+.proc-step p b{color:var(--ink)}
+/* 2단계 입찰 분기 (실측 후 증액 발생 시) */
+.proc-branch{grid-column:3;max-width:560px;margin-top:14px;border:1px solid var(--line);
+  border-radius:14px;background:var(--mist);padding:16px 18px}
+.proc-branch .bt{font-size:.8rem;font-weight:800;color:var(--blue);margin-bottom:10px;letter-spacing:-.01em}
+.proc-branch ol{margin:0;padding-left:19px}
+.proc-branch li{font-size:.88rem;color:var(--sub);line-height:1.7;margin:7px 0;word-break:keep-all}
+.proc-branch li b{color:var(--ink)}
+.proc-branch .fork{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.proc-branch .fk{border-radius:10px;padding:11px 13px;font-size:.83rem;line-height:1.6;word-break:keep-all}
+.proc-branch .fk.y{background:#EAF7EF;border:1px solid #BFE3CD}
+.proc-branch .fk.n{background:#FFF6E8;border:1px solid #F2DAB0}
+.proc-branch .fk .h{font-weight:800;display:block;margin-bottom:3px}
+.proc-branch .fk.y .h{color:#1E8449} .proc-branch .fk.n .h{color:#95610F}
+.proc-branch .cap{margin-top:11px;font-size:.78rem;color:var(--faint);line-height:1.6}
+@media(max-width:900px){.proc-branch{grid-column:2}.proc-branch .fork{grid-template-columns:1fr}}
+
+/* ───────── compare ───────── */
+.compare{background:linear-gradient(165deg,var(--blue) 0%,var(--blue-ink) 90%);color:#fff;position:relative;overflow:hidden}
+.compare::after{
+  content:'';position:absolute;inset:0;pointer-events:none;opacity:.3;
+  background:
+    linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px) 0 0/44px 44px;
+}
+.compare .wrap{position:relative;z-index:1}
+.compare h2{color:#fff}
+.compare .sec-desc{color:rgba(255,255,255,.75)}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:60px}
+.cmp-card{border-radius:var(--radius-xl);padding:42px 38px;position:relative}
+.cmp-old{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
+.cmp-new{background:#fff;color:var(--ink);box-shadow:0 30px 70px rgba(0,15,35,.4)}
+.cmp-card .cmp-label{font-size:.8rem;font-weight:800;letter-spacing:.1em;margin-bottom:18px;display:inline-block;padding:6px 14px;border-radius:99px}
+.cmp-old .cmp-label{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+.cmp-new .cmp-label{background:var(--amber);color:#1E1503}
+.cmp-card h3{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin-bottom:26px;word-break:keep-all}
+.cmp-old h3{color:#fff}
+.cmp-list{list-style:none;display:flex;flex-direction:column;gap:16px}
+.cmp-list li{display:flex;gap:12px;font-size:.96rem;line-height:1.65;word-break:keep-all}
+.cmp-old .cmp-list li{color:rgba(255,255,255,.78)}
+.cmp-list .mk{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.7rem;font-weight:800;margin-top:2px}
+.cmp-old .mk{background:rgba(255,255,255,.14);color:rgba(255,255,255,.75)}
+.cmp-new .mk{background:#E6F4EA;color:#137A38}
+.cmp-foot{margin-top:30px;padding-top:24px;border-top:1px dashed rgba(134,152,169,.4);font-size:.88rem;font-weight:700}
+.cmp-old .cmp-foot{color:rgba(255,255,255,.55)}
+.cmp-new .cmp-foot{color:var(--blue);display:flex;align-items:center;gap:8px}
+
+/* ───────── audience ───────── */
+.aud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px}
+.aud-card{
+  border-radius:var(--radius-xl);padding:40px 34px;border:1px solid var(--line);
+  background:#fff;transition:transform .25s,box-shadow .25s;position:relative;overflow:hidden;
+}
+.aud-card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--blue)}
+.aud-card.a2::before{background:var(--amber)}
+.aud-card.a3::before{background:linear-gradient(90deg,var(--blue),var(--amber))}
+.aud-card:hover{transform:translateY(-6px);box-shadow:0 24px 48px rgba(15,45,80,.1)}
+.aud-card .who{font-size:.8rem;font-weight:800;letter-spacing:.1em;color:var(--faint);margin-bottom:12px}
+.aud-card h3{font-size:1.35rem;font-weight:800;letter-spacing:-.02em;margin-bottom:24px;word-break:keep-all}
+.aud-card h3 span{color:var(--blue)}
+.aud-card.a2 h3 span{color:var(--amber-text)}
+.aud-list{list-style:none;display:flex;flex-direction:column;gap:14px}
+.aud-list li{font-size:.93rem;color:var(--sub);line-height:1.65;padding-left:24px;position:relative;word-break:keep-all}
+.aud-list li::before{content:'';position:absolute;left:2px;top:9px;width:8px;height:8px;border-radius:2px;background:var(--blue);transform:rotate(45deg)}
+.aud-card.a2 .aud-list li::before{background:var(--amber)}
+
+/* ───────── coverage ───────── */
+.coverage{background:var(--mist)}
+.cov-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:52px}
+.cov-item{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 18px;text-align:center;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.cov-item:hover{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 14px 30px rgba(0,100,178,.12)}
+.cov-item .em{font-size:1.7rem;margin-bottom:12px}
+.cov-item .nm{font-weight:800;font-size:.9rem;letter-spacing:-.01em;margin-bottom:6px;word-break:keep-all}
+.cov-item .ds{font-size:.72rem;color:var(--faint);line-height:1.5;word-break:keep-all}
+
+/* ───────── app preview ───────── */
+.appsec .wrap{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.appsec .phones{position:relative;height:560px}
+.appsec .phone{position:absolute;width:262px;animation:none}
+.appsec .phone.p1{left:0;top:40px;transform:rotate(-5deg);z-index:1}
+.appsec .phone.p2{right:8%;top:0;transform:rotate(3deg);z-index:2;box-shadow:0 50px 100px rgba(0,25,55,.35)}
+.mini-row{display:flex;justify-content:space-between;align-items:center;background:#fff;margin:10px 12px;border-radius:14px;padding:13px 15px;box-shadow:0 2px 8px rgba(15,40,70,.05)}
+.mini-row .l .a{font-weight:800;font-size:.78rem}
+.mini-row .l .b{font-size:.64rem;color:var(--faint);margin-top:2px}
+.mini-row .r{font-weight:800;font-size:.8rem;color:var(--blue)}
+.mini-row .r.win{color:#137A38}
+.mini-row .r.amber{color:var(--amber-text)}
+.feature-list{display:flex;flex-direction:column;gap:8px;margin-top:44px}
+.feat{
+  display:flex;gap:18px;padding:22px;border-radius:20px;transition:background .2s;align-items:start;cursor:default;
+}
+.feat:hover{background:var(--mist)}
+.feat .fi{
+  flex:0 0 48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:1.25rem;
+  background:linear-gradient(135deg,#E8F2FA,#D5E8F7);
+}
+.feat:nth-child(2) .fi{background:linear-gradient(135deg,#FFF1DB,#FBE3BC)}
+.feat:nth-child(3) .fi{background:linear-gradient(135deg,#E6F4EA,#D2EBD9)}
+.feat:nth-child(4) .fi{background:linear-gradient(135deg,#EDEAFF,#DCD6FB)}
+.feat h4{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.feat p{font-size:.9rem;color:var(--sub);line-height:1.7;word-break:keep-all}
+
+/* ───────── trust ───────── */
+.trust{background:var(--mist)}
+.trust-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;margin-top:56px}
+.trust-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius-xl);padding:36px 32px;display:flex;gap:22px;align-items:start}
+.trust-card .ti{flex:0 0 54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--blue),var(--blue-deep));display:grid;place-items:center;font-size:1.4rem;box-shadow:0 8px 18px rgba(0,100,178,.3)}
+.trust-card h4{font-size:1.1rem;font-weight:800;margin-bottom:8px;letter-spacing:-.02em}
+.trust-card p{font-size:.92rem;color:var(--sub);line-height:1.7;word-break:keep-all}
+
+/* ───────── cta ───────── */
+.cta{
+  position:relative;overflow:hidden;text-align:center;color:#fff;
+  background:linear-gradient(150deg,var(--blue) 0%,var(--blue-ink) 100%);
+  padding:130px 0;
+}
+.cta::before{
+  content:'';position:absolute;width:900px;height:900px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,163,61,.22) 0%,transparent 62%);
+  top:-450px;left:50%;transform:translateX(-50%);
+}
+.cta h2{color:#fff;margin-bottom:20px}
+.cta .sec-desc{margin:0 auto 46px;color:rgba(255,255,255,.78)}
+.cta-tag{font-family:var(--font-serif);font-size:1.05rem;color:var(--amber);margin-bottom:18px;letter-spacing:.06em}
+
+/* ───────── app download ───────── */
+.dl-box{margin-top:30px;padding:22px 24px;background:#0B1622;border-radius:16px}
+.dl-t{color:#fff;font-weight:700;margin-bottom:14px;font-size:1rem}
+.dl-btns{display:flex;gap:12px;flex-wrap:wrap}
+.dl-btn{display:flex;align-items:center;gap:10px;background:#111;border:1px solid #333;border-radius:11px;padding:10px 18px;text-decoration:none;color:#fff;transition:.15s}
+.dl-btn:hover{background:#1c1c1c;transform:translateY(-2px)}
+.dl-ic{font-size:1.4rem;line-height:1}
+.dl-btn small{display:block;font-size:.6rem;color:#9aa;letter-spacing:.04em}
+.dl-btn b{font-size:1rem}
+.dl-note{color:#8698A9;font-size:.72rem;margin-top:12px;line-height:1.7}
+/* ───────── portals ───────── */
+.portals{padding:80px 0;background:#F4F8FC}
+.portal-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+.portal-card{display:block;background:#fff;border:1px solid #E1EBF4;border-radius:18px;padding:30px 28px;text-decoration:none;transition:.18s;box-shadow:0 4px 16px rgba(11,60,110,.05)}
+.portal-card:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(11,60,110,.14);border-color:#0064B2}
+.pc-ic{font-size:2.4rem;margin-bottom:12px}
+.portal-card h4{color:var(--blue-ink,#083B6E);font-size:1.3rem;margin-bottom:6px}
+/*  ⚠⚠ [라운드641] body{text-wrap:pretty}(static/style.css) 를 상속하는 것만으론
+    부족했다 — 실측(orphan_probe.js __compare, 모바일 375px·데스크톱 폭 둘 다):
+    "입찰 공고 · 원터치 입찰 · 시공 사진 보고 · 정산" 이 마지막 줄에 "· 정산"
+    2글자만 남아 pretty 가 못 채웠다(옆 카드 "…절감 리포트" 는 우연히 괜찮았을
+    뿐). 이 저장소가 짧은 라벨류(h1~h4·.pt·.k·.lbl·.tag·.pill·label·표 셀)에
+    이미 쓰는 것과 같은 처방 — balance 로 모든 줄을 고르게 나눈다. */
+.portal-card p{color:#5A7089;font-size:.9rem;line-height:1.6;text-wrap:balance}
+.pc-go{display:inline-block;margin-top:16px;color:#0064B2;font-weight:700;font-size:.92rem}
+@media(max-width:720px){.portal-grid{grid-template-columns:1fr}}
+/* ───────── footer ───────── */
+footer{background:#0B1622;color:#8698A9;padding:64px 0 46px;font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap}
+footer .f-logo{color:#fff;font-weight:800;font-size:1.15rem;margin-bottom:16px}
+footer .f-logo b{color:#3E9BDD}
+footer p{line-height:1.9}
+footer .col h5{color:#C7D3DE;font-size:.9rem;margin-bottom:14px}
+footer .col a{display:block;color:#8698A9;text-decoration:none;line-height:2.1}
+footer .col a:hover{color:#fff}
+.f-bottom{border-top:1px solid #1D2B3A;margin-top:44px;padding-top:26px;display:flex;justify-content:space-between;align-items:center;color:#5A6B7C;font-size:.78rem;flex-wrap:wrap;gap:10px}
+.f-admin{color:#3D4E5E;text-decoration:none;font-size:.72rem;border:1px solid #223243;border-radius:7px;padding:4px 11px;transition:.15s}
+.f-admin:hover{color:#8698A9;border-color:#3D4E5E}
+/* ───────── responsive ───────── */
+@media(max-width:1024px){
+  .hero .wrap{grid-template-columns:1fr;gap:70px}
+  .hero-visual{padding-bottom:80px}
+  .stats .wrap{grid-template-columns:repeat(2,1fr);gap:36px}
+  .prob-grid,.aud-grid{grid-template-columns:1fr}
+  .cov-grid{grid-template-columns:repeat(3,1fr)}
+  .cmp-grid{grid-template-columns:1fr}
+  .appsec .wrap{grid-template-columns:1fr}
+  .appsec .phones{height:520px;transform:scale(.9);transform-origin:left top}
+  .trust-grid{grid-template-columns:1fr}
+  .proc-step{grid-template-columns:56px 1fr;gap:18px}
+  .proc-step p{grid-column:2}
+  /* [F-6] 예전에는 .nav-links 를 통째로 숨겨 '도입 문의' 버튼까지 사라졌다.
+     모바일 방문자가 문의로 갈 길이 스크롤뿐이었다는 뜻이다.
+     섹션 링크만 접고 **전환 버튼은 남긴다.** */
+  .nav-links a:not(.btn){display:none}
+  .nav-links{gap:0}
+  .nav-links .btn{padding:9px 16px;font-size:.82rem}
+}
+@media(max-width:560px){
+  .cov-grid{grid-template-columns:repeat(2,1fr)}
+  .nav-links .btn{padding:8px 13px;font-size:.78rem}
+}
+/* 좁은 화면에서 가로 스크롤 방지 — 넓은 표·목업이 본문을 밀어내지 않도록 */
+@media(max-width:880px){
+  html,body{overflow-x:hidden}
+}
+/* 키보드 이용자를 위한 본문 바로가기 — Tab 을 누르면 첫 번째로 나타난다 */
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:999;
+  background:var(--blue);color:#fff;padding:12px 20px;border-radius:0 0 10px 0;
+  font-weight:800;font-size:.9rem;text-decoration:none;
+}
+.skip:focus{left:0}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#problem">본문 바로가기</a>
+
+<nav aria-label="주요 메뉴">
+  <div class="wrap">
+    <a class="logo" href="#"><span class="logo-mark"></span>복구<b>온</b></a>
+    <div class="nav-links">
+      <a href="#problem">왜 복구온인가</a>
+      <a href="#process">이용 절차</a>
+      <a href="#coverage">복구 공종</a>
+      <a href="#app">앱 소개</a>
+      <a href="tel:1533-7120" class="btn btn-ghost-nav">🏦 보험사 포털</a>
+      <a href="mailto:c.common@olymposnetworks.com?subject=복구온 협력사 포털 문의" class="btn btn-ghost-nav">🏗️ 협력사 포털</a>
+      <a href="#contact" class="btn btn-primary">도입 문의</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="dot"></span>보험사 기타피해물 복구 입찰 플랫폼</div>
+      <h1>사고 피해물 복구,<br><span class="amber-underline">경쟁 입찰</span>로<br>가장 투명하게.</h1>
+      <p class="hero-sub">가드레일부터 상가 유리까지 — 차량이 아닌 모든 피해물의 복구 견적을 전국 검증 시공업체의 경쟁 입찰로 받고, 접수부터 정산까지 모든 과정을 한 화면에서 관리하세요.</p>
+      <div class="hero-ctas">
+        <a href="tel:1533-7120" class="btn btn-amber">보험사 도입 문의 1533-7120 →</a>
+        <a href="mailto:c.common@olymposnetworks.com?subject=복구온 입점 신청 문의" class="btn btn-ghost">시행사·시공사 입점 문의</a>
+      </div>
+      <p class="hero-note">㈜올림포스네트웍스가 만드는 피해물 복구의 새로운 기준</p>
+    </div>
+    <div class="hero-visual">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="ps-head">
+            <div class="t">입찰 공고 <span class="badge-live">입찰 진행중</span></div>
+          </div>
+          <div class="bid-card">
+            <span class="cat">가드레일·방호울타리</span>
+            <div class="name">국도 42호선 가드레일 12m 복구</div>
+            <div class="loc">경기 용인시 처인구 · 긴급복구 완료 상태</div>
+            <div class="bid-row">
+              <div><div class="lbl">현재 최저 입찰가</div><div class="val amber">418만 원</div></div>
+              <div><div class="lbl">참여 업체</div><div class="val blue">7곳</div></div>
+            </div>
+          </div>
+          <div class="timer"><span class="clock"></span>입찰 마감까지 02:41:07</div>
+          <div class="ps-btn">입찰가 제출하기</div>
+        </div>
+      </div>
+      <div class="chip chip-1"><span class="ico">✓</span><div>낙찰 확정<small>세진안전산업 · 418만 원</small></div></div>
+      <div class="chip chip-2"><span class="ico">📷</span><div>시공 완료 보고<small>사진 12장 · 영상 1건 첨부</small></div></div>
+      <div class="chip chip-3"><span class="ico">🔔</span><div>보험사 알림<small>정산 승인 완료</small></div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats">
+  <div class="wrap">
+    <div class="stat rv"><div class="num">12<em>개 공종</em></div><div class="lbl">가드레일부터 누수·배관까지<br>피해물 전 공종 커버</div></div>
+    <div class="stat rv d1"><div class="num">24<em>시간</em></div><div class="lbl">사고 접수 후 현장<br>출동 보고 기한</div></div>
+    <div class="stat rv d2"><div class="num">3<em>곳 이상</em></div><div class="lbl">모든 건 최소 경쟁 입찰<br>업체 수 보장</div></div>
+    <div class="stat rv d3"><div class="num">100<em>%</em></div><div class="lbl">견적·사진·정산 이력<br>전 과정 기록 보관</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ PROBLEM ═══════════ -->
+<section class="problem" id="problem">
+  <div class="wrap">
+    <span class="sec-tag rv">WHY</span>
+    <h2 class="rv">피해물 복구비, 지금은<br><span class="hl">아무도 가격을 검증하지 않습니다</span></h2>
+    <p class="sec-desc rv d1">차량 수리는 정비 수가 체계가 있지만, 차량이 아닌 피해물 — 가드레일, 담장, 유리, 주차차단기 — 는 업체가 부르는 견적이 곧 가격이 됩니다.</p>
+    <div class="prob-grid">
+      <div class="prob-card rv"><div class="no">01</div><h3>부르는 게 값인 복구 견적</h3><p>기타피해물은 표준 수가가 없어 같은 공사도 업체마다 견적이 2~3배씩 차이 납니다. 보상 담당자가 적정가를 일일이 검증하기 어려워 손해율이 새고 있습니다.</p><div class="tagline">→ 경쟁 입찰로 시장가를 자동 발견</div></div>
+      <div class="prob-card rv d1"><div class="no">02</div><h3>업체 선정을 둘러싼 시비</h3><p>특정 업체 몰아주기, 담당자와 업체 간 부적절한 거래는 보험업계의 오래된 리스크입니다. 지정·수의 방식으로는 선정 근거를 소명하기 어렵습니다.</p><div class="tagline">→ 입찰 기록이 곧 선정 근거</div></div>
+      <div class="prob-card rv d2"><div class="no">03</div><h3>전화와 수기로 도는 프로세스</h3><p>접수는 전화로, 견적은 팩스로, 사진은 문자로 — 건별 진행 상황이 흩어져 있어 담당자는 확인 전화만 반복하고, 분쟁이 생기면 근거 자료를 찾지 못합니다.</p><div class="tagline">→ 접수부터 정산까지 한 화면</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PROCESS ═══════════ -->
+<section id="process">
+  <div class="wrap">
+    <div class="process-head">
+      <div>
+        <span class="sec-tag rv">PROCESS</span>
+        <h2 class="rv">접수부터 정산까지,<br><span class="hl">6단계면 끝납니다</span></h2>
+      </div>
+      <p class="sec-desc rv d1" style="max-width:400px">보상 담당자는 사건을 등록하고 낙찰 업체를 승인하는 두 번만 개입하면 됩니다. 나머지는 플랫폼이 진행합니다.</p>
+    </div>
+    <div class="proc-flow rv d1">
+      <div class="proc-line"></div>
+      <div class="proc-step"><div class="proc-dot">1</div><h4>사건 접수 · 가견적<small>보험사 1분 등록</small></h4><p>보상 담당자가 <b>이미 현장에 출동했던 담당자가 찍어온 사진</b>으로 피해물 정보를 등록하고 <b>가견적</b>을 냅니다. <b>별도의 현장 출동을 기다릴 필요가 없습니다.</b> 보험사 보상시스템 연동 시 자동 접수도 가능합니다.</p></div>
+      <div class="proc-step gold"><div class="proc-dot">2</div><h4>통값 경쟁 입찰<small>1차 — 가견적이 상한</small></h4><p><b>가견적 금액이 입찰 시작가(상한)</b>가 되어 공고가 열립니다. 공종·지역이 맞는 검증 <b>시행사</b>들이 <b>표준 내역서 기반으로 총액(통값) 경쟁</b>하며, 인하만 가능하고 최저가 순으로 자동 정렬됩니다. 복합 현장도 시행사가 통째로 책임지고 <b>하나의 금액</b>으로 입찰합니다.<br><br><b>사진이 없어 현장 확인이 먼저 필요했던 건</b>은 규칙이 반대입니다. 출동 업체가 현장을 확인해 사진을 모두 확보한 뒤 열리는 <b>2차 공고</b>에서는, 최초 가견적이 <b>상한이 아니라 하한</b>이 됩니다 — 실제로 시공 가능한 금액으로만 경쟁하도록 하고, <b>못 할 값으로 따내고 포기하는 것을 막기 위해서</b>입니다. 낙찰은 이때도 최저가입니다.</p></div>
+      <div class="proc-step"><div class="proc-dot">3</div><h4>낙찰 승인<small>보험사 단독 결정</small></h4><p>입찰이 <b>가격순</b>으로 제시됩니다. 가격·평점·이행 이력을 환산한 점수는 참고값으로 함께 보여 드리며, <b>복구온은 어느 업체도 추천하지 않습니다</b>. 선정과 사유는 자동으로 기록됩니다.</p></div>
+      <div class="proc-step"><div class="proc-dot">4</div><h4>현장 실측 · 실견적<small>2단계 입찰 구조</small></h4><p><b>낙찰받은 시행사가 현장에 출동</b>해 사진·영상·실측 데이터로 <b>실견적</b>을 산출합니다. <b>낙찰가가 곧 계약금액</b>이며, 실측 결과 물량이 가견적과 크게 다를 때만 <b>증빙과 함께 조정을 요청</b>할 수 있습니다.<br><br>복구온은 이때 <b>금액을 협상으로 정하지 않습니다.</b> 늘어난 분량도 <b>다시 경쟁에 부칩니다.</b> 그래서 입찰이 <b>①가견적 입찰</b>과 <b>②실견적 후 입찰</b> 두 단계로 나뉩니다.</p>
+        <div class="proc-branch">
+          <div class="bt">실측 후 증액이 필요할 때 — 추가분도 경쟁으로</div>
+          <ol>
+            <li><b>추가분만 별도 경매</b>에 올립니다. 늘어난 분량에 대해 다른 시행사들이 경쟁합니다.
+              <b>원 낙찰업체는 이 경매에 참여할 수 없습니다</b> — 결과가 본인에게 제시될 금액이기 때문입니다.</li>
+            <li>추가분 <b>최저가</b>가 나오면, 원 낙찰업체에게 <b>「원 낙찰가 + 추가분 최저가」 합산액</b>으로 먼저 제시합니다.</li>
+          </ol>
+          <div class="fork">
+            <div class="fk y"><span class="h">수락하면</span>합산 금액으로 계약을 이어갑니다. 업체 교체 없이 그대로 진행됩니다.</div>
+            <div class="fk n"><span class="h">거절하면</span><b>확대된 전체 공사범위</b>가 <b>나머지 업체들에게 다시 열립니다.</b> 거절된 합산액이 새 상한이 되어, <b>그보다 낮은 금액만</b> 투찰할 수 있습니다.</div>
+          </div>
+          <div class="cap">전체 재경매가 유찰되면 <b>최대 3라운드</b>까지 다시 엽니다.
+            증액 요청 빈도와 평균 증액률은 <b>업체별로 전건 집계</b>되어, 싸게 낙찰받고 나중에 올리는
+            <b>습관성 확대 청구를 걸러냅니다.</b></div>
+        </div>
+      </div>
+      <div class="proc-step"><div class="proc-dot">5</div><h4>시공·완료 보고<small>AI 사진 분류</small></h4><p>작업 시작부터 일차별 진행·완성도까지 자동 알림으로 공유됩니다. 현장 사진은 순서 없이 올려도 <b>AI가 시공 전·중·후로 분류·정렬</b>하고, 내부 검수 승인 즉시 보험사 시스템으로 <b>API 자동 전송</b>됩니다.</p></div>
+      <div class="proc-step"><div class="proc-dot">6</div><h4>정산<small>검수 후 지급</small></h4><p>보험사가 복구비를 플랫폼에 정산하면, <b>내부 검수를 거쳐 중개수수료(계약 요율, 기본 10%)를 제외한 금액이 시공업체 계좌로 지급</b>됩니다. 모든 흐름이 기록으로 남습니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ COMPARE ═══════════ -->
+<section class="compare">
+  <div class="wrap">
+    <span class="sec-tag" style="color:var(--amber);border-color:var(--amber)">DIFFERENCE</span>
+    <h2 class="rv">지정 배정의 시대에서<br>경쟁 입찰의 시대로</h2>
+    <p class="sec-desc rv d1">기존 통합관리사는 자기 협력망 안에서 업체를 지정해 배정합니다. 복구온은 시장 전체가 경쟁하게 만듭니다.</p>
+    <div class="cmp-grid">
+      <div class="cmp-card cmp-old rv">
+        <span class="cmp-label">기존 방식 — 지정 배정</span>
+        <h3>관리사가 정한 업체,<br>관리사가 심사한 견적</h3>
+        <ul class="cmp-list">
+          <li><span class="mk">−</span>폐쇄형 협력망 안에서 업체를 지정 배정 — 가격 경쟁 없음</li>
+          <li><span class="mk">−</span>견적 적정성을 관리사 내부 인력이 심사 — 이해상충 구조</li>
+          <li><span class="mk">−</span>보험사는 결과 보고서만 수령 — 과정 확인 어려움</li>
+          <li><span class="mk">−</span>복구비가 관리사를 경유 — 자금 흐름 불투명</li>
+        </ul>
+        <div class="cmp-foot">사람이 심사해서 절감하는 구조</div>
+      </div>
+      <div class="cmp-card cmp-new rv d1">
+        <span class="cmp-label">복구온 — 경쟁 입찰</span>
+        <h3>시장이 정한 가격,<br>기록이 증명하는 과정</h3>
+        <ul class="cmp-list">
+          <li><span class="mk">✓</span>전국 개방형 업체 풀에서 최소 3개 업체 경쟁 입찰</li>
+          <li><span class="mk">✓</span>가격은 입찰이 결정 — 심사자의 자의가 개입할 자리가 없음</li>
+          <li><span class="mk">✓</span>AI가 분류·정렬한 시공 전·중·후 사진이 보험사 시스템에 API로 자동 인입</li>
+          <li><span class="mk">✓</span>정산은 검수 후 자동이체 — 승인·지급 이력이 전부 기록</li>
+        </ul>
+        <div class="cmp-foot">⚡ 구조가 자동으로 절감하는 방식</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ AUDIENCE ═══════════ -->
+<section>
+  <div class="wrap">
+    <span class="sec-tag rv">FOR WHOM</span>
+    <h2 class="rv">세 이해관계자 모두에게<br><span class="hl">남는 구조</span>를 설계했습니다</h2>
+    <div class="aud-grid">
+      <div class="aud-card rv">
+        <div class="who">보험사 · 공제조합</div>
+        <h3>손해율은 내리고,<br><span>감사 리스크</span>는 없앱니다</h3>
+        <ul class="aud-list">
+          <li>경쟁 입찰로 복구비 거품 제거 — 복구 비용 절감</li>
+          <li>업체 선정 근거가 입찰 기록으로 자동 문서화</li>
+          <li>건별 진행 현황 대시보드 — 확인 전화 제로</li>
+          <li>주간·월간 절감 리포트 자동 발행</li>
+        </ul>
+      </div>
+      <div class="aud-card a2 rv d1">
+        <div class="who">시행사 · 시공사</div>
+        <h3>영업 없이<br><span>일감이 들어옵니다</span></h3>
+        <ul class="aud-list">
+          <li><b>시행사</b> — 현장을 통째로 받아 총액으로 입찰, 시공사는 직접 선정</li>
+          <li><b>시공사</b> — 시행사 협력 풀에 등록해 공종별 물량 수주</li>
+          <li>사진은 몰아서 올리면 끝 — AI가 전·중·후 자동 분류</li>
+          <li>보험사 입금 확인 → 검수 → 수수료 공제 후 지급 — 단계마다 진행 상황이 보입니다</li>
+        </ul>
+      </div>
+      <div class="aud-card a3 rv d2">
+        <div class="who">피해자 · 시설물 소유자</div>
+        <h3>기다림 없이<br><span style="color:var(--blue)">원래대로</span></h3>
+        <ul class="aud-list">
+          <li>사고 다음 날이면 복구 일정 알림톡 수신</li>
+          <li>시공 전·중·후 사진을 그대로 공유받아 안심</li>
+          <li>하자 발생 시 플랫폼이 책임지고 재시공 주선</li>
+          <li>완료 후 만족도 평가로 업체 품질 관리 참여</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ COVERAGE ═══════════ -->
+<section class="coverage" id="coverage">
+  <div class="wrap">
+    <span class="sec-tag rv">COVERAGE</span>
+    <h2 class="rv">차량 빼고 <span class="hl">전부</span> 복구합니다</h2>
+    <p class="sec-desc rv d1">자동차사고로 파손되는 피해물 12개 공종을 전국 협력망으로 커버합니다. 사고로 인한 누수 현장까지 잡습니다.</p>
+    <div class="cov-grid">
+      <div class="cov-item rv"><div class="em">🛣️</div><div class="nm">가드레일·분리대</div><div class="ds">방호울타리 · 충격흡수시설</div></div>
+      <div class="cov-item rv d1"><div class="em">🧱</div><div class="nm">외벽·담장</div><div class="ds">석재 · 조적 · 콘크리트</div></div>
+      <div class="cov-item rv d2"><div class="em">🪟</div><div class="nm">유리·샷시</div><div class="ds">상가 유리 · 자동문</div></div>
+      <div class="cov-item rv d3"><div class="em">🚧</div><div class="nm">휀스·방음벽</div><div class="ds">펜스 · 경계 울타리</div></div>
+      <div class="cov-item rv d4"><div class="em">🅿️</div><div class="nm">차단기·셔터</div><div class="ds">주차차단기 · 게이트</div></div>
+      <div class="cov-item rv"><div class="em">🚦</div><div class="nm">교통안전시설</div><div class="ds">표지판 · 델리네이터</div></div>
+      <div class="cov-item rv d1"><div class="em">💡</div><div class="nm">가로등·전기</div><div class="ds">조명 · 배전함 · 간판</div></div>
+      <div class="cov-item rv d2"><div class="em">🌳</div><div class="nm">조경·수목</div><div class="ds">가로수 · 잔디 · 화단</div></div>
+      <div class="cov-item rv d3"><div class="em">🎨</div><div class="nm">도장·방수</div><div class="ds">도색 · 미장 · 방수</div></div>
+      <div class="cov-item rv d4"><div class="em">💧</div><div class="nm">누수·배관</div><div class="ds">누수탐지 · 소화전 · 설비</div></div>
+      <div class="cov-item rv"><div class="em">🏚️</div><div class="nm">지붕·판넬</div><div class="ds">판넬 · 캐노피 · 차양</div></div>
+      <div class="cov-item rv d1"><div class="em">🏗️</div><div class="nm">종합 복구</div><div class="ds">복합 공종 원상복구</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ APP ═══════════ -->
+<section class="appsec" id="app">
+  <div class="wrap">
+    <div class="phones rv">
+      <div class="phone p1">
+        <div class="phone-screen">
+          <div class="ps-head"><div class="t">오늘의 입찰 <span class="badge-live">3건</span></div></div>
+          <div class="mini-row"><div class="l"><div class="a">상가 전면유리 교체</div><div class="b">서울 송파 · 마감 4시간 전</div></div><div class="r">입찰중</div></div>
+          <div class="mini-row"><div class="l"><div class="a">아파트 주차차단기</div><div class="b">경기 하남 · 마감 내일 10시</div></div><div class="r amber">최저가 갱신</div></div>
+          <div class="mini-row"><div class="l"><div class="a">가드레일 8m 복구</div><div class="b">충남 천안 · 낙찰 발표</div></div><div class="r win">낙찰 ✓</div></div>
+          <div class="timer" style="margin-top:4px"><span class="clock"></span>이번 주 낙찰 2건 · 정산 예정 640만 원</div>
+          <div class="ps-btn" style="background:var(--amber);color:#1E1503">시공 보고 올리기</div>
+        </div>
+      </div>
+      <div class="phone p2">
+        <div class="phone-screen">
+          <div class="ps-head"><div class="t">사건 진행 현황 <span class="badge-live" style="background:#E8F2FA;color:var(--blue)">보험사</span></div></div>
+          <div class="bid-card">
+            <span class="cat">진행중 · 입찰</span>
+            <div class="name">접수번호 26-07142 · 담장 파손</div>
+            <div class="loc">인천 남동구 · 참여 5개 업체</div>
+            <div class="bid-row">
+              <div><div class="lbl">최저 입찰가</div><div class="val amber">276만 원</div></div>
+              <div><div class="lbl">가견적(상한) 대비</div><div class="val" style="color:#137A38">−23%</div></div>
+            </div>
+          </div>
+          <div class="mini-row"><div class="l"><div class="a">사고 출동 사진 · 가견적</div><div class="b">사진 9장 · 가견적 358만 원 = 입찰 상한</div></div><div class="r">열람</div></div>
+          <div class="mini-row"><div class="l"><div class="a">입찰 3개사</div><div class="b">가격순 · 점수는 참고값</div></div><div class="r amber">승인 대기</div></div>
+          <div class="ps-btn">낙찰 승인하기</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="sec-tag amber rv">APP</span>
+      <h2 class="rv">현장의 앱과 보험사의 관제,<br><span class="hl">하나의 데이터로</span></h2>
+      <div class="feature-list">
+        <div class="feat rv"><div class="fi">📲</div><div><h4>시공업체 앱 — 입찰과 보고</h4><p>내 공종·지역 공고 알림, 원터치 입찰, 사진·영상 출동/시공 보고, 정산 내역까지. 현장에서 모든 업무가 끝납니다.</p></div></div>
+        <div class="feat rv d1"><div class="fi">🖥️</div><div><h4>보험사 웹 — 사건 관제 대시보드</h4><p>건별 진행 단계, 입찰 현황, 절감액이 한 화면에. 승인 두 번이면 담당자 업무가 끝나는 구조입니다.</p></div></div>
+        <div class="feat rv d2"><div class="fi">🤖</div><div><h4>AI 사진 자동 분류 + 문자인식</h4><p>작업자가 순서 없이 올린 사진을 AI가 시공 전·중·후로 분류·정렬하고, 영수증 금액까지 자동 인식합니다. 검수 승인 즉시 보험사로 자동 전송됩니다.</p></div></div>
+        <div class="feat rv d2"><div class="fi">🔔</div><div><h4>진행 알림 자동 브리핑</h4><p>「작업이 시작되었습니다」 「2일차 착수 — 완성도 60%」 「최종 완료」 — 일차별 진행이 보상 담당자와 피해자에게 앱·웹·알림톡으로 자동 발송됩니다.</p></div></div>
+        <div class="feat rv d3"><div class="fi">📊</div><div><h4>절감 리포트 자동 발행</h4><p>가견적 대비 낙찰가 절감률, 공종별 평균 단가, 업체 이행 품질 — 보험사 요구 양식에 맞춘 주간 리포트를 자동 생성합니다.</p></div></div>
+      </div>
+      <div class="dl-box rv d3">
+        <div class="dl-t">시공업체 앱 다운로드</div>
+        <div class="dl-btns">
+          <a class="dl-btn" href="#" data-store="android" aria-label="구글 플레이에서 받기">
+            <span class="dl-ic">▶</span><span><small>GET IT ON</small><b>Google Play</b></span></a>
+          <a class="dl-btn" href="#" data-store="ios" aria-label="앱스토어에서 받기">
+            <span class="dl-ic"></span><span><small>Download on the</small><b>App Store</b></span></a>
+        </div>
+        <p class="dl-note">앱 심사 등록 후 실제 스토어 링크가 연결됩니다. 지금은 <b>웹 협력사 포털</b>에서 동일하게 입찰·보고할 수 있습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 포털 바로가기 ═══════════ -->
+<section class="portals" id="portals">
+  <div class="wrap">
+    <span class="sec-tag rv">PORTAL</span>
+    <h2 class="rv">바로 로그인</h2>
+    <p class="sec-desc rv d1">이미 계약·입점하신 파트너는 아래에서 바로 접속하세요.</p>
+    <div class="portal-grid rv d2">
+      <a class="portal-card" href="tel:1533-7120">
+        <div class="pc-ic">🏦</div>
+        <h4>보험사 포털</h4>
+        <p>사건 등록 · 입찰 현황 · 낙찰 승인 · 절감 리포트</p>
+        <span class="pc-go">보험사 로그인 →</span>
+      </a>
+      <a class="portal-card" href="mailto:c.common@olymposnetworks.com?subject=복구온 협력사 포털 문의">
+        <div class="pc-ic">🏗️</div>
+        <h4>협력사 포털</h4>
+        <p>입찰 공고 · 원터치 입찰 · 시공 사진 보고 · 정산</p>
+        <span class="pc-go">협력사 로그인 →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TRUST ═══════════ -->
+<section class="trust" id="partner">
+  <div class="wrap">
+    <span class="sec-tag rv">TRUST</span>
+    <h2 class="rv">협력업체는 <span class="hl">아무나 받지 않습니다</span></h2>
+    <p class="sec-desc rv d1">입찰의 신뢰는 업체 풀의 품질에서 나옵니다. 복구온은 4단계 검증을 통과한 업체만 입찰에 참여시킵니다.</p>
+    <div class="trust-grid">
+      <div class="trust-card rv"><div class="ti">🏗️</div><div><h4>면허·보험 검증</h4><p>공종별 건설업 등록(필요 공종), 산재·배상책임보험 가입, 국세 완납을 서류로 확인합니다. 등록이 없는 것으로 확인된 업체는 입찰·출동 배정에서 제외합니다.</p></div></div>
+      <div class="trust-card rv d1"><div class="ti">📐</div><div><h4>표준 내역서 입찰</h4><p>자재·노무·장비 단가를 표준 내역 체계로 제출받아 업체 간 견적을 같은 기준으로 비교합니다. 항목 누락·끼워넣기가 불가능합니다.</p></div></div>
+      <div class="trust-card rv d2"><div class="ti">⭐</div><div><h4>이행 평점제</h4><p>공기 준수, 품질, 피해자 만족도를 건별 평가해 평점화합니다. 평점은 낙찰 가점과 퇴출 기준에 반영됩니다.</p></div></div>
+      <div class="trust-card rv d3"><div class="ti">🛡️</div><div><h4>하자 이행 보증</h4><p>공사 규모별 하자보증 기준을 적용하고, 하자 발생 시 플랫폼이 재시공을 책임 주선합니다. 이력은 전부 기록으로 남습니다.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CTA ═══════════ -->
+<section class="cta" id="contact">
+  <div class="wrap">
+    <div class="cta-tag rv">복구의 기준을 다시 세우다</div>
+    <h2 class="rv">견적은 경쟁에게,<br>과정은 기록에게 맡기세요</h2>
+    <p class="sec-desc rv d1">보험사·공제조합 도입 상담과 시행사·시공사 입점 문의을 받고 있습니다.<br>담당자가 하루 안에 연락드립니다.</p>
+    <div class="hero-ctas rv d2" style="justify-content:center">
+      <a class="btn btn-amber" href="tel:1533-7120">보험사 도입 문의 1533-7120 →</a>
+      <a class="btn btn-ghost" href="mailto:c.common@olymposnetworks.com?subject=복구온 입점 신청 문의">시행사·시공사 입점 문의</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div style="max-width:340px">
+      <div class="f-logo">복구<b>온</b></div>
+      <p>㈜올림포스네트웍스<br>서울특별시 송파구 오금로 233<br>사업자등록번호 656-87-02554<br>문의 c.common@olymposnetworks.com</p>
+    </div>
+    <div class="col"><h5>서비스</h5><a href="#problem">왜 복구온인가</a><a href="#process">이용 절차</a><a href="#coverage">복구 공종</a><a href="#app">앱 소개</a></div>
+    <div class="col"><h5>바로가기</h5><a href="tel:1533-7120">보험사 포털 로그인</a><a href="mailto:c.common@olymposnetworks.com?subject=복구온 협력사 포털 문의">협력사 포털 로그인</a><a href="#app">앱 다운로드</a></div>
+    <div class="col"><h5>파트너</h5><a href="#contact">보험사 도입 문의</a><a href="#partner">시공업체 입점</a><a href="#contact">손해사정법인 제휴</a></div>
+    <div class="col"><h5>고지</h5><a href="legal/privacy.html"><b>개인정보 처리방침</b></a><a href="legal/terms.html">이용약관</a><a href="legal/business.html">사업자 정보</a></div>
+  </div>
+  <div class="wrap f-bottom">
+    <span>© 2026 Olympos Networks Inc.</span>
+    <span>복구온은 ㈜올림포스네트웍스의 피해물 복구 중개 플랫폼입니다. 회사는 복구 공사의 당사자가 아닌 중개자입니다.</span>
+    
+  </div>
+  
+</footer>
+
+<script>
+// IntersectionObserver 를 못 쓰는 환경(구형 브라우저·차단)에서도 콘텐츠는 보여야 한다.
+try{
+  if('IntersectionObserver' in window){
+    const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}})},{threshold:.12});
+    document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+  }else{
+    document.querySelectorAll('.rv').forEach(el=>el.classList.add('on'));
+  }
+}catch(_){
+  document.querySelectorAll('.rv').forEach(el=>el.classList.add('on'));
+}
+</script>
+<script>
+/* 고아문자(과부/고아) 방지 — 마지막 줄에 한 어절·한두 글자만 떨어지는 것을 막는다.
+   CSS 의 text-wrap:pretty 는 크로미움에서만 고아를 밀어 올려서, 사파리·구형·
+   카톡/네이버 인앱 웹뷰에서는 고아가 그대로 보인다. 그래서 폭·브라우저와 무관하게
+   본문의 '마지막 두 어절'을 붙여(U+00A0) 한 어절만 남는 상황 자체를 없앤다.
+   pretty 와 겹쳐도 서로 방해하지 않는다. JS 가 꺼져 있으면 크로미움은 pretty 가,
+   그 밖은 원래대로 — 즉 나빠지지 않는다. */
+(function(){
+  // 본문 성격의 블록만 손댄다(제목·라벨·버튼·표는 제외 — 짧아서 고아가 없다).
+  //  카드 제목(h3·h4)도 넣는다 — 제목은 text-wrap:balance 로 균형을 맞추는데
+  //  이 역시 크로미움 전용이라, 미지원 브라우저에선 제목도 마지막 글자만 떨어진다.
+  //  단, 큰 글씨의 섹션 제목(h2)은 제외한다 — 두 어절을 묶으면 그 덩어리가
+  //  좁은 화면에서 한 줄보다 길어져 오히려 글자 중간이 깨질 수 있고,
+  //  실제 기기 폭(320px 이상)에서는 h2 가 원래 고아를 내지 않기 때문이다.
+  var SEL='.proc-step p,.proc-branch li,.proc-branch .fk,.proc-branch .cap,'
+        +'.proc-branch .bt,.sec-desc,.prob-card p,.feat p,.aud-list li,'
+        +'.cmp-list li,.trust-card p,.hero-sub,.cov-item .ds,.aud-card p,'
+        +'h3,h4';
+  var MAXTAIL=10;   // 마지막 어절이 이보다 길면 원래도 고아가 아니라서 건드리지 않는다
+  var NBSP=' ';
+
+  function isWS(c){ return c===' '||c==='\t'||c==='\n'||c==='\r'; }
+
+  function textNodesOf(root){
+    var tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), out=[], n;
+    while(n=tw.nextNode()) out.push(n);
+    return out;
+  }
+
+  //  텍스트 노드 목록(이어붙이면 하나의 시각 단위)에서 '마지막 어절 사이
+  //  공백' 하나를 찾아 안 깨지는 공백으로 바꾼다 — 원래 fix() 안에서
+  //  문단(el) 전체에만 쓰던 로직을 그대로 뽑아 낸 것뿐이라 판정 기준은
+  //  동일하다. 문단 전체에도, <b> 강조구간 하나에도 그대로 쓴다(아래).
+  function glueLastGap(nodes){
+    var flat='', map=[], i, n;
+    for(i=0;i<nodes.length;i++){
+      n=nodes[i];
+      var s=n.nodeValue;
+      for(var j=0;j<s.length;j++){ flat+=s[j]; map.push([n,j]); }
+    }
+    // 마지막 '어절 사이 공백' 하나를 찾는다.
+    //  끝쪽 여백은 건너뛰고, 양옆이 글자인 '단일 공백'만 대상으로 한다
+    //  (들여쓰기로 생긴 여러 칸 공백은 손대면 오히려 깨질 수 있어 피한다).
+    var end=flat.length; while(end>0 && isWS(flat[end-1])) end--;   // 실제 끝 글자
+    if(end<=0) return;
+    var p=-1;
+    for(var k=end-2;k>0;k--){
+      if(isWS(flat[k]) && !isWS(flat[k-1]) && !isWS(flat[k+1])){ p=k; break; }
+    }
+    if(p<0) return;                       // 어절이 하나뿐 — 붙일 것이 없다
+    var tail=flat.slice(p+1,end);
+    if(tail.length<1 || tail.length>MAXTAIL) return;
+    // 그 공백 한 칸을 안 깨지는 공백으로 바꾼다 → 마지막 두 어절이 함께 움직인다.
+    var node=map[p][0], off=map[p][1];
+    node.nodeValue=node.nodeValue.slice(0,off)+NBSP+node.nodeValue.slice(off+1);
+  }
+
+  //  el 안에서 afterEl 뒤에(문서 순서상) 글자가 하나라도 더 남아 있는가
+  //  — <b> 가 문단의 진짜 마지막 내용이면 아래 fix() 의 2) 가 이미 같은
+  //  자리를 처리하므로 3) 은 건너뛰어야 한다(이중 처리 방지).
+  function hasMoreText(afterEl, el){
+    var r=document.createRange();
+    r.setStartAfter(afterEl); r.setEnd(el, el.childNodes.length);
+    return /\S/.test(r.toString());
+  }
+
+  function fix(el){
+    // 1) 지난번에 붙였던 것을 먼저 되돌린다(리사이즈마다 누적되지 않게 — 멱등).
+    var tw0=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,null);
+    var t; while(t=tw0.nextNode()){
+      if(t.nodeValue.indexOf(NBSP)>=0) t.nodeValue=t.nodeValue.replace(/ /g,' ');
+    }
+    // 2) 문단 전체의 진짜 마지막 줄(기존 동작 — 위 glueLastGap 로 이름만 뽑음).
+    glueLastGap(textNodesOf(el));
+    //  ⚠⚠ [라운드655] 3) 문단 **중간**에서 끝나는 <b> 강조구간도 자기 안
+    //    에서 같은 처리를 한다(신규) — round638 이 후보로만 남긴 46건 중
+    //    하나를 스크래치 정적서버(127.0.0.1:8799)에 실제로 띄워 320~
+    //    1440px 전수 스윕하다 발견: ".proc-step.gold p" 안 <b>사진이 없어
+    //    현장 확인이 먼저 필요했던 건</b>(뒤에 "은 규칙이…"로 문장이 계속
+    //    됨)이 375px·390px(흔한 모바일 폭)에서만 "건" 한 글자로 둘째 줄에
+    //    홀로 남았다. <b> 는 문단의 진짜 끝이 아니라서 위 2)가 못 잡았을
+    //    뿐 아니라, 이 함수의 1)이 el 하위 텍스트노드 전체를 훑어 되돌리는
+    //    바람에 <b> 안에 정적으로 박아 둔 안 깨지는 공백(&nbsp;)까지 다음
+    //    run()/resize 마다 도로 지워 버렸다(실측: 소스에 직접 넣어봤더니
+    //    로드 즉시 원상복구됨 — 그래서 패치는 이 파일의 진짜 root cause 인
+    //    fix() 자체에 낸다).
+    el.querySelectorAll('b').forEach(function(b){
+      if(hasMoreText(b, el)) glueLastGap(textNodesOf(b));
+    });
+  }
+
+  function run(){
+    try{ document.querySelectorAll(SEL).forEach(fix); }catch(_){}
+  }
+  run();
+  // 폭이 바뀌면 줄바꿈도 바뀌므로 다시 계산(과도한 호출은 디바운스로 억제).
+  var tmr; window.addEventListener('resize',function(){
+    clearTimeout(tmr); tmr=setTimeout(run,180);
+  });
+})();
+</script>
+</body>
+</html>

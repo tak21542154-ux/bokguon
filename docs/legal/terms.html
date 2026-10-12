@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="../static/fonts.css">
+<title>이용약관 — 복구온</title>
+<meta name="description" content="복구온 서비스 이용에 관한 회사와 이용자의 권리·의무 · 복구온 ㈜올림포스네트웍스">
+<meta name="robots" content="index,follow">
+<link rel="icon" href="../static/favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --blue:#0064B2; --blue-deep:#004E8C; --blue-ink:#003A69;
+  --amber:#E8A33D; --amber-deep:#D18A1F;
+  --paper:#FFFFFF; --mist:#F3F7FB; --line:#DCE6F0;
+  --ink:#12202E; --sub:#4A5B6C; --faint:#5C6E82;   /* [접근성] AA 통과 (기존 #8698A9 는 2.97:1 미달) */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-sans);
+  color:var(--ink); background:var(--mist); line-height:1.72; word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue); text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber); outline-offset:2px; border-radius:4px}
+
+/* ── 상단 ─────────────────────────────────────────── */
+.top{background:var(--blue-ink); color:#fff; padding:0}
+.top .in{max-width:980px; margin:0 auto; padding:18px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap}
+.logo{font-size:19px; font-weight:800; letter-spacing:-.02em; color:#fff}
+.logo b{color:var(--amber)}
+.top nav{margin-left:auto; display:flex; gap:6px; flex-wrap:wrap}
+.top nav a{
+  color:#CBDDEC; font-size:13.5px; padding:7px 13px; border-radius:999px;
+  border:1px solid transparent; white-space:nowrap;
+}
+.top nav a:hover{background:rgba(255,255,255,.09); text-decoration:none}
+.top nav a[aria-current="page"]{background:var(--blue); color:#fff; border-color:rgba(255,255,255,.25); font-weight:700}
+
+/* ── 본문 ─────────────────────────────────────────── */
+main{max-width:980px; margin:0 auto; padding:0 24px 72px}
+.head{padding:44px 0 26px}
+.head h1{font-size:clamp(26px,4.2vw,36px); font-weight:800; letter-spacing:-.03em; line-height:1.28}
+.head .sub{margin-top:9px; color:var(--sub); font-size:14.5px}
+.sheet{
+  background:var(--paper); border:1px solid var(--line); border-radius:20px;
+  padding:clamp(24px,4vw,48px); box-shadow:0 2px 20px rgba(18,32,46,.05);
+}
+.sheet .lead{
+  font-size:15.5px; color:var(--sub); background:var(--mist); border-left:4px solid var(--blue);
+  padding:16px 20px; border-radius:0 10px 10px 0; margin-bottom:34px;
+}
+.sheet h3{
+  font-size:18.5px; font-weight:800; letter-spacing:-.02em; color:var(--blue-deep);
+  margin:38px 0 14px; padding-bottom:9px; border-bottom:2px solid var(--line);
+}
+.sheet h3:first-of-type{margin-top:0}
+.sheet h4{font-size:16px; font-weight:750; margin:26px 0 10px; color:var(--ink)}
+.sheet p{font-size:14.8px; margin:11px 0}
+.sheet ol,.sheet ul{margin:11px 0 11px 21px; font-size:14.8px}
+.sheet li{margin:6px 0; padding-left:3px}
+.sheet b{font-weight:700; color:var(--blue-ink)}
+.note{
+  font-size:13.6px!important; color:var(--sub); background:#FAFCFE;
+  border:1px dashed var(--line); border-radius:10px; padding:13px 16px; margin-top:14px!important;
+}
+.eff{margin-top:34px!important; padding-top:18px; border-top:2px solid var(--line); font-weight:700}
+
+/* ── 표 ───────────────────────────────────────────── */
+.tw{overflow-x:auto; margin:14px 0; -webkit-overflow-scrolling:touch}
+table.ltbl{width:100%; border-collapse:collapse; font-size:14px; min-width:520px}
+table.ltbl th,table.ltbl td{border:1px solid var(--line); padding:11px 13px; text-align:left; vertical-align:top}
+table.ltbl th{background:var(--mist); font-weight:700; color:var(--blue-ink)}
+table.ltbl tr:nth-child(even) td{background:#FCFDFE}
+
+/* ── 미기재 자리표시자 ────────────────────────────── */
+.ph{
+  background:#FFF4DC; color:#8A5A00; border:1px dashed var(--amber-deep);
+  border-radius:6px; padding:1px 7px; font-weight:700; font-size:.93em; white-space:nowrap;
+}
+.warn{
+  background:#FFF8EA; border:1px solid var(--amber); border-left:5px solid var(--amber-deep);
+  border-radius:12px; padding:16px 20px; margin-bottom:26px; font-size:14px; color:#6B4500;
+}
+.warn b{color:#6B4500}
+
+/* ── 하단 ─────────────────────────────────────────── */
+footer{background:var(--blue-ink); color:#9FB8CC; padding:30px 24px; font-size:13px}
+footer .in{max-width:980px; margin:0 auto; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+footer a{color:#CBDDEC}
+
+@media(max-width:640px){
+  .head{padding:30px 0 20px}
+  .sheet{border-radius:14px}
+  .top .in{padding:14px 18px}
+  main{padding:0 14px 48px}
+}
+@media print{
+  .top nav,footer,.warn{display:none}
+  body{background:#fff}
+  .sheet{border:0; box-shadow:none; padding:0}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="logo" href="../index.html">복구<b>온</b></a>
+    <nav aria-label="법적 고지">
+      <a href="../legal/privacy.html" >개인정보 처리방침</a>
+      <a href="../legal/terms.html" aria-current="page">이용약관</a>
+      <a href="../legal/business.html" >사업자 정보</a>
+      <a href="../index.html">서비스 홈</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="head">
+    <h1>이용약관</h1>
+    <p class="sub">복구온 서비스 이용에 관한 회사와 이용자의 권리·의무</p>
+  </div>
+
+  
+
+  <article class="sheet">
+    
+<p class="lead">본 약관은 주식회사 올림포스네트웍스(이하 "회사")가 운영하는 피해물 복구 중개 플랫폼
+「복구온」(이하 "서비스")의 이용에 관하여 회사와 이용자 사이의 권리·의무 및 책임사항을 정함을 목적으로 합니다.</p>
+
+<h3>제1장 총칙</h3>
+
+<h4>제1조 (정의)</h4>
+<ol>
+  <li>"서비스"란 교통사고 등으로 파손된 차량 외 피해물(가드레일·담장·유리·차단기·누수 등)의 복구 공사에 대하여,
+      의뢰자와 복구업체 사이의 <b>경쟁입찰을 중개</b>하는 온라인 플랫폼을 말합니다.</li>
+  <li>"의뢰사"란 복구 사건을 등록하고 복구 대금을 지급하는 보험회사·공제조합·손해사정법인 등을 말합니다.</li>
+  <li>"시행사"란 복구 공사 전체를 총액(통값)으로 수주하여 자기 책임으로 시공을 완성하는 종합 복구업체를 말합니다.</li>
+  <li>"시공사"란 시행사로부터 개별 공종의 시공을 의뢰받는 전문 복구업체를 말합니다.</li>
+  <li>"가견적"이란 사고 현장에 출동하였던 담당자가 촬영한 사진을 근거로 의뢰사가 산정한 개략 복구비로서,
+      <b>1차 입찰의 시작가이자 상한</b>이 되는 금액을 말합니다.
+      다만 제3조의2에 따른 <b>2차 입찰에서는 하한</b>이 됩니다.</li>
+  <li>"2차 입찰"이란 사진 없이 접수되어 현장 확인이 먼저 필요하였던 사건에 관하여,
+      출동한 시행사가 현장 사진을 모두 확보한 뒤 개시되는 입찰을 말합니다.</li>
+  <li>"실견적"이란 낙찰받은 시행사가 현장에 출동하여 실측한 결과에 따라 산정한 복구비를 말합니다.</li>
+  <li>"낙찰가"란 경쟁입찰의 결과 의뢰사가 승인한 금액으로서, <b>계약금액</b>이 되는 금액을 말합니다.</li>
+</ol>
+
+<h4>제2조 (회사의 지위)</h4>
+<ol>
+  <li>회사는 의뢰사와 시행사 사이의 <b>거래를 중개</b>할 뿐이며, 복구 공사의 <b>당사자가 아닙니다.</b></li>
+  <li>회사는 복구 공사를 직접 시공하지 않으며, 손해액을 사정(査定)하거나 보험금 지급 여부를 결정하지 않습니다.
+      회사는 복수의 견적을 <b>경쟁</b>시킬 뿐, 견적의 적정성을 <b>심사</b>하지 않습니다.</li>
+  <li>복구 공사의 이행과 그 결과에 대한 책임은 <b>낙찰받은 시행사</b>가 부담합니다.</li>
+</ol>
+
+<h3>제2장 서비스 이용</h3>
+
+<h4>제3조 (입찰의 성립)</h4>
+<ol>
+  <li>의뢰사가 피해물 정보와 가견적을 등록하면 입찰 공고가 개시됩니다.</li>
+  <li>1차 입찰은 <b>가견적 금액을 상한</b>으로 하며, 인하 방향으로만 제출할 수 있습니다.</li>
+  <li>입찰은 표준 내역서에 기재된 항목·규격·물량을 기준으로 하는 <b>총액(통값)</b> 입찰로 합니다.</li>
+  <li>회사는 입찰을 <b>가격순</b>으로 제시하며 어느 업체도 추천하지 않습니다.
+    입찰 금액·업체 평점·이행 이력 등을 환산한 점수는 참고값으로만 표시하고,
+      <b>최종 낙찰 결정은 의뢰사가 합니다.</b> 의뢰사가 최저가가 아닌 업체를 선정하는 경우 그 사유를 기록하여야 합니다.</li>
+</ol>
+
+<h4>제3조의2 (사진 없이 접수된 사건의 2차 입찰)</h4>
+<ol>
+  <li>사진 없이 접수되어 현장 확인이 먼저 필요한 사건은 <b>입찰 공고를 개시하지 아니하고</b>,
+      인근 시행사에 현장 출동을 수배합니다.</li>
+  <li>출동한 시행사가 현장 사진을 확보하고 실견적을 제출한 결과 의뢰사가 이에 동의하지 아니하는 경우,
+      확보된 현장 사진 전부를 자료로 하여 <b>2차 입찰</b>을 개시합니다.</li>
+  <li>2차 입찰은 의뢰사가 등록한 <b>가견적 금액을 하한</b>으로 하며, <b>상한을 두지 아니합니다.</b>
+      이는 현장에서 실제로 시공 가능한 금액으로만 경쟁하도록 하기 위한 것입니다.</li>
+  <li>2차 입찰의 낙찰자는 <b>현장 사진 전부를 확인하고 입찰한 것으로 보며</b>,
+      낙찰 후 사진으로 확인 가능하였던 사유를 들어 증액을 요구할 수 없습니다.</li>
+  <li>2차 입찰에서도 낙찰은 최저가를 원칙으로 하고, 최종 낙찰 결정은 제3조 제4항에 따릅니다.</li>
+</ol>
+
+<h4>제4조 (실측 및 계약금액의 조정)</h4>
+<ol>
+  <li>현장 실측은 <b>낙찰 이후 낙찰받은 시행사가 수행</b>합니다.
+      이는 낙찰되지 않은 업체의 현장 출동 비용이 견적에 전가되는 것을 방지하기 위한 것입니다.</li>
+  <li><b>낙찰가를 계약금액으로 합니다.</b></li>
+  <li>실측 결과 실제 물량이 가견적의 전제와 현저히 다른 경우에 한하여, 시행사는 사진·실측 자료 등
+      객관적 증빙을 첨부하여 계약금액의 조정을 요청할 수 있습니다. 조정은 <b>의뢰사의 승인</b>이 있어야 효력이 발생합니다.</li>
+  <li>회사는 업체별 조정 요청 이력을 집계·보관합니다. 이 이력은 <b>낙찰 순서나
+    추천에 반영되지 않습니다</b> — 회사는 입찰을 가격순으로만 제시합니다.</li>
+</ol>
+
+<h4>제5조 (중개수수료)</h4>
+<ol>
+  <li>회사의 중개수수료는 <b>확정 복구 대금의 100분의 10</b>을 기본으로 하며,
+      발주처와의 계약에 따라 달리 정해질 수 있습니다. 회원에게 실제로 적용되는 요율은
+      공고·입찰·정산 화면에 그때마다 표시되며, 정산 시점의 표시 요율이 적용됩니다.</li>
+  <li>수수료에 대한 <b>부가가치세</b>는 각 발주처와의 계약 기준(포함/별도)에 따르며,
+      해당 기준과 공제 내역은 정산 화면과 지급 명세에 함께 표시됩니다.</li>
+  <li>수수료는 의뢰사가 회사에 복구 대금을 지급하고 회사의 검수가 완료된 후,
+      시행사에 지급할 금액에서 공제하는 방법으로 수취합니다.</li>
+  <li>입찰 참가, 계정 유지, 공고 열람에는 별도의 비용이 발생하지 않습니다.</li>
+</ol>
+
+<h4>제6조 (검수 및 정산)</h4>
+<ol>
+  <li>시행사는 시공 완료 후 착공 전·시공 중·완료 사진과 자재 영수증을 서비스에 제출하여야 합니다.</li>
+  <li>회사는 제출 자료의 누락·중복·부적합 여부를 검수합니다. <b>검수 승인은 정산의 필수 요건</b>입니다.</li>
+  <li>정산 대금은 검수 승인일로부터 회사가 정한 지급 주기에 따라 시행사가 등록한 계좌로 이체합니다.</li>
+  <li>제출 자료가 허위이거나 시공 사실과 다른 경우 회사는 정산을 보류하고 제9조에 따른 조치를 할 수 있습니다.</li>
+</ol>
+
+<h4>제7조 (하자담보책임)</h4>
+<ol>
+  <li>시행사는 준공일로부터 <b>하자담보책임기간</b> 동안 시공 하자에 대한 보수 책임을
+      부담합니다. 하자담보책임기간은 사건별로 정해지며, 별도로 정한 기간이 없는 경우
+      <b>24개월</b>을 기준으로 하고, 공종별로 관계 법령이 이보다 긴 기간을 정한 경우에는
+      그에 따릅니다. 사건별 정확한 기간은 시행사 포털의 사건 상세 화면에서 확인할 수
+      있습니다.</li>
+  <li>하자보증기간 내에 접수된 하자의 보수 비용은 <b>시행사가 부담</b>합니다.</li>
+  <li>회사는 하자 접수 사실을 시행사에 통지하고 재시공 일정을 관리하며,
+      하자의 경중에 따라 해당 업체의 평점을 감점합니다.</li>
+</ol>
+
+<h3>제3장 이용자의 의무</h3>
+
+<h4>제8조 (금지행위)</h4>
+<p>이용자는 다음 각 호의 행위를 하여서는 안 됩니다.</p>
+<ol>
+  <li>시공하지 않은 항목을 청구하거나, 시공 물량을 실제보다 과다하게 청구하는 행위</li>
+  <li>다른 현장의 사진을 제출하거나 사진의 촬영 시점·장소를 조작하는 행위</li>
+  <li>낙찰을 받을 목적으로 이행할 의사 없이 저가로 입찰한 후 조정을 요구하는 행위</li>
+  <li>다른 입찰 참가자와 낙찰 예정자·투찰 금액을 사전에 합의하는 행위</li>
+  <li>회사를 배제하고 의뢰사와 직접 거래하는 행위</li>
+  <li>타인의 계정을 사용하거나 자신의 계정을 타인에게 이용하게 하는 행위</li>
+  <li>서비스에서 취득한 의뢰사·다른 업체의 정보를 목적 외로 이용하거나 제3자에게 제공하는 행위</li>
+</ol>
+
+<h4>제9조 (이용 제한)</h4>
+<ol>
+  <li>회사는 이용자가 제8조를 위반한 경우 경고, 입찰 참가 제한, 정산 보류, 계약 해지,
+      계정 이용 정지 등의 조치를 할 수 있습니다.</li>
+  <li>회사는 조치를 하기 전에 이용자에게 소명 기회를 부여합니다.
+      다만 긴급히 조치할 필요가 있는 경우에는 조치 후 지체 없이 통지합니다.</li>
+</ol>
+
+<h3>제4장 기타</h3>
+
+<h4>제10조 (책임의 제한)</h4>
+<ol>
+  <li>회사는 천재지변, 정전, 통신망 장애 등 회사의 귀책사유 없는 사유로 서비스를 제공할 수 없는 경우
+      그에 대한 책임을 부담하지 않습니다.</li>
+  <li>회사는 이용자가 서비스를 통하여 체결한 복구 공사 계약의 이행, 하자, 지연에 대하여
+      제2조에 따른 중개자의 지위에서 관리·감독 책임을 부담하며, 시공 자체의 이행 책임은 부담하지 않습니다.</li>
+</ol>
+
+<h4>제11조 (분쟁의 해결)</h4>
+<ol>
+  <li>회사와 이용자 사이에 발생한 분쟁은 상호 협의하여 해결하는 것을 원칙으로 합니다.</li>
+  <li>협의가 이루어지지 않는 경우 소송의 관할은 「민사소송법」에 따릅니다.</li>
+</ol>
+
+<h4>제12조 (약관의 개정)</h4>
+<ol>
+  <li>회사는 관계 법령을 위배하지 않는 범위에서 본 약관을 개정할 수 있습니다.</li>
+  <li>약관을 개정하는 경우 적용일자와 개정 사유를 명시하여 적용일자 <b>7일 전</b>부터 공지합니다.
+      다만 이용자에게 불리한 내용으로 개정하는 경우에는 <b>30일 전</b>부터 공지하고 개별 통지합니다.</li>
+</ol>
+
+<p class="eff">시행일 : 2026년 7월 22일</p>
+
+  </article>
+</main>
+
+<footer>
+  <div class="in">
+    <span>㈜올림포스네트웍스 · 서울특별시 송파구 오금로 233 · 사업자등록번호 656-87-02554</span>
+    <span><a href="../legal/privacy.html">개인정보 처리방침</a> · <a href="../legal/terms.html">이용약관</a></span>
+  </div>
+</footer>
+
+<script>
+// 넓은 표는 가로 스크롤 컨테이너로 감싼다 (모바일에서 본문이 가로로 밀리지 않도록)
+document.querySelectorAll('article.sheet table.ltbl').forEach(function(t){
+  if (t.parentElement.classList.contains('tw')) return;
+  var w = document.createElement('div');
+  w.className = 'tw';
+  t.parentNode.insertBefore(w, t);
+  w.appendChild(t);
+});
+</script>
+</body>
+</html>

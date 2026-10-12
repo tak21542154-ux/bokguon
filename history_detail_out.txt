@@ -1,0 +1,1 @@
+--- boq_price_history for boq_id=1 (orphaned mismatched-name row, stays price_date=2017 forever) ---

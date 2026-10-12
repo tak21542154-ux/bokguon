@@ -1,0 +1,33 @@
+/* ══════════════════════════════════════════════════════════════
+   복구온 — 자체 호스팅 글꼴
+   ㈜올림포스네트웍스 기획팀 유경탁
+
+   외부 CDN(jsdelivr·Google Fonts)에 의존하지 않는 이유
+     ① 가용성 — CDN 이 죽거나 보험사 폐쇄망에서 차단되면 전 화면의 서체가 깨진다.
+        서비스 자체가 우리 서버에서 도는데 글꼴만 남의 서버에 맡길 이유가 없다.
+     ② 개인정보 — CDN 요청에는 이용자의 IP·User-Agent·Referer 가 실려 나간다.
+        국외 사업자에게 이용자 정보를 전달하는 셈이라, 처리방침에 국외 이전을
+        따로 고지해야 하는 문제가 생긴다. 자체 호스팅하면 그 문제 자체가 없어진다.
+     ③ 보안 — CSP 에서 외부 출처를 열어줄 필요가 없어진다.
+
+   Pretendard — SIL Open Font License 1.1 (자체 호스팅·재배포 허용)
+   https://github.com/orioncactus/pretendard
+   ══════════════════════════════════════════════════════════════ */
+
+@font-face{
+  font-family:'Pretendard Variable';
+  font-weight:45 920;                 /* 가변 폰트 — 한 파일로 전 굵기 처리 */
+  font-style:normal;
+  font-display:swap;                  /* 내려받는 동안 대체 글꼴로 즉시 표시 */
+  src:url('/static/fonts/PretendardVariable.woff2') format('woff2-variations');
+}
+
+/* 글꼴 파일을 못 받아도 한글이 정상적으로 보이도록 하는 대체 사슬.
+   Windows(맑은 고딕) · macOS/iOS(Apple SD Gothic Neo) · Android(Noto Sans KR) 순. */
+:root{
+  --font-sans: 'Pretendard Variable', Pretendard,
+               -apple-system, BlinkMacSystemFont,
+               'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕',
+               'Noto Sans KR', 'Nanum Gothic', system-ui, sans-serif;
+  --font-serif: 'Noto Serif KR', 'Nanum Myeongjo', 'Batang', '바탕', Georgia, serif;
+}

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>사건 전체 이력 — {{ c.case_no }}</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style nonce="{{ csp_nonce }}">
+  /*  인쇄를 전제로 한 문서다. 분쟁이 났을 때 "그 건 어떻게 흘러갔나" 를
+      재구성하려고 뽑는다 — 화면에서 예쁜 것보다 **사실이 시간순으로 빠짐없이**
+      들어가는 것이 먼저다. 서식은 현장 출동 보고서와 맞춘다(같은 회사 문서다). */
+  body{background:#EEF3F8;margin:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    font-family:'Malgun Gothic','맑은 고딕',sans-serif;color:#12283F}
+  .sheet{max-width:860px;margin:22px auto;background:#fff;padding:32px 36px;
+    border-radius:14px;box-shadow:0 10px 34px rgba(6,26,48,.10)}
+  .top{display:flex;align-items:flex-start;gap:14px;border-bottom:2.5px solid #0064B2;padding-bottom:14px}
+  .top h1{margin:0;font-size:1.32rem;letter-spacing:-.02em}
+  .top .sub{font-size:.82rem;color:#5B6D80;margin-top:4px}
+  .brand{margin-left:auto;text-align:right;font-size:.76rem;color:#5B6D80;line-height:1.6}
+  .brand b{display:block;font-size:1rem;color:#0064B2}
+  h2{font-size:.92rem;margin:22px 0 8px;padding-left:9px;border-left:4px solid #E8A33D}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{border:1px solid #D9E2EC;padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#F4F8FC;font-weight:700;color:#33475B;white-space:nowrap}
+  table.kv th{width:118px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .chip{display:inline-block;font-size:.72rem;font-weight:700;border-radius:7px;padding:2px 8px}
+  .chip.b{background:#EAF4FD;color:#0064B2} .chip.g{background:#E7F6EC;color:#137A38}
+  .chip.a{background:#FDF3E2;color:#7A5410} .chip.r{background:#FDECEC;color:#B3261E}
+  /*  이력 표는 길다 — 시각·행위자를 좁히고 내용에 폭을 준다 */
+  table.log th:nth-child(1),table.log td:nth-child(1){width:126px;white-space:nowrap}
+  table.log th:nth-child(2),table.log td:nth-child(2){width:104px;white-space:nowrap}
+  table.log th:nth-child(3),table.log td:nth-child(3){width:132px;white-space:nowrap}
+  table.log td{font-size:.79rem}
+  table.log tbody tr:nth-child(even){background:#FAFCFE}
+  .note{background:#F7FAFD;border:1px solid #D9E2EC;border-radius:9px;padding:11px 13px;
+    font-size:.81rem;line-height:1.75;white-space:pre-wrap}
+  .foot{margin-top:26px;border-top:1px solid #D9E2EC;padding-top:12px;
+    font-size:.72rem;color:#6B7C8F;line-height:1.7}
+  .bar{display:flex;gap:8px;max-width:860px;margin:0 auto;padding:0 36px}
+  .bar button{font:600 .82rem 'Malgun Gothic',sans-serif;padding:8px 15px;border-radius:9px;
+    border:1px solid #CBD6E2;background:#fff;cursor:pointer}
+  .empty{color:#6B7C8F;font-size:.8rem;padding:10px 2px}
+  @media print{
+    body{background:#fff}
+    .sheet{box-shadow:none;margin:0;max-width:none;border-radius:0;padding:0}
+    .bar{display:none}
+    table.log tbody tr{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="bar"><button id="printBtn">인쇄 / PDF 저장</button></div>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <h1>사건 전체 이력</h1>
+      <div class="sub">{{ c.case_no }} · {{ c.category or '' }} · {{ c.region or '' }}</div>
+    </div>
+    <div class="brand"><b>복구온</b>㈜올림포스네트웍스<br>출력 {{ now }}</div>
+  </div>
+
+  <h2>1. 사건 개요</h2>
+  <div class="grid">
+    <table class="kv">
+      <tr><th>접수번호</th><td>{{ c.case_no }}</td></tr>
+      <tr><th>발주처</th><td>{{ c.insurer or '-' }}</td></tr>
+      <tr><th>공종</th><td>{{ c.category or '-' }}</td></tr>
+      <tr><th>지역</th><td>{{ c.region or '-' }}</td></tr>
+      <tr><th>접수일</th><td>{{ (c.created_at or '')[:16] }}</td></tr>
+    </table>
+    <table class="kv">
+      <tr><th>현재 상태</th><td><span class="chip b">{{ c.status or '-' }}</span></td></tr>
+      <tr><th>낙찰 경로</th><td>{{ c.award_route or '-' }}</td></tr>
+      <tr><th>시공 업체</th><td>{{ c.partner_name or '-' }}</td></tr>
+      <tr><th>낙찰 시각</th><td>{{ (c.awarded_at or '')[:16] or '-' }}</td></tr>
+      <tr><th>완료 시각</th><td>{{ (c.completed_at or '')[:16] or '-' }}</td></tr>
+    </table>
+  </div>
+
+  {#  ⚠ **확정된 금액만** 적는다. 경쟁 입찰가·다른 업체 견적은 넣지 않는다(철칙 4) —
+      이 문서는 발주처나 상대방에게 그대로 건네질 수 있다.  #}
+  <h2>2. 확정 금액</h2>
+  <table class="kv">
+    <tr>
+      <th>확정 공사대금</th>
+      <td class="num">{% if c.award_amount %}{{ '{:,}'.format(c.award_amount) }}원{% else %}미확정{% endif %}</td>
+      <th>승인 사진</th><td class="num">{{ photos_n }}장</td>
+    </tr>
+    {% if sett %}
+    <tr>
+      <th>수수료</th><td class="num">{{ '{:,}'.format(sett.fee or 0) }}원</td>
+      <th>업체 지급액</th><td class="num">{{ '{:,}'.format(sett.payout or 0) }}원</td>
+    </tr>
+    <tr>
+      <th>발주처 입금</th><td>{{ sett.insurer_paid or '-' }}</td>
+      <th>지급 검수 / 이체</th><td>{{ sett.review_status or '-' }} / {{ sett.transfer_status or '-' }}</td>
+    </tr>
+    {% else %}
+    <tr><th>정산</th><td colspan="3">아직 생성되지 않았습니다.</td></tr>
+    {% endif %}
+  </table>
+  <div class="note" style="margin-top:8px">이 표의 금액은 <b>시공 도급 금액</b>입니다.
+보험금 지급액이나 손해액이 아니며, 복구온은 금액을 확정·협상하지 않습니다.</div>
+
+  {% if defects %}
+  <h2>3. 하자·A/S</h2>
+  <table>
+    <tr><th>하자번호</th><th>제목</th><th>중대성</th><th>상태</th><th>기한</th><th>완료</th></tr>
+    {% for d in defects %}
+    <tr>
+      <td>{{ d.defect_no }}</td><td>{{ d.title }}</td>
+      <td>{{ d.severity or '-' }}</td><td>{{ d.status or '-' }}</td>
+      <td>{{ d.due_date or '-' }}</td><td>{{ (d.resolved_at or '')[:10] or '-' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+
+  <h2>{% if defects %}4{% else %}3{% endif %}. 처리 이력 <span style="font-weight:400;color:#5B6D80;font-size:.8rem">— 감사 로그 {{ logs|length }}건 (시간순)</span></h2>
+  {% if logs %}
+  <table class="log">
+    <thead><tr><th>시각</th><th>행위자</th><th>행위</th><th>내용</th></tr></thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td>{{ (l.created_at or '')[:16] }}</td>
+        <td>{{ l.actor or '-' }}</td>
+        <td>{{ l.action or '-' }}</td>
+        <td>{{ l.detail or '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">이 접수번호로 남은 감사 기록이 없습니다.</div>
+  {% endif %}
+
+  <div class="foot">
+    본 문서는 복구온 시스템의 <b>감사 로그를 그대로</b> 시간순으로 옮긴 것입니다.
+    기록은 각 처리 시점에 자동으로 남으며 사후 편집 기능이 없습니다.<br>
+    출력 {{ now }} · 접수번호 {{ c.case_no }}
+  </div>
+</div>
+<script nonce="{{ csp_nonce }}">
+//  ⚠⚠ [라운드319] onclick="..." 은 nonce 를 붙일 자리가 없어 CSP 가
+//    무조건 차단한다(actions.js 독스트링과 같은 이유) — 이 버튼만을
+//    위해 addEventListener 로 직접 연결한다.
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+</script>
+</body>
+</html>

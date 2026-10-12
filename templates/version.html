@@ -1,0 +1,176 @@
+{# 앱 버전 확인 — 폰 주소창에 /version 만 치면 열린다.
+   설치형 앱(홈 화면에 추가)에서는 캐시 때문에 옛 화면이 남을 수 있어서,
+   "서버가 말하는 버전"과 "지금 내 폰에 깔린 버전"을 나란히 보여 준다.
+   둘이 다르면 새로고침으로 맞출 수 있게 버튼을 둔다. #}
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>복구온 — 앱 버전</title>
+<meta name="theme-color" content="#0064B2">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style>
+  body{background:var(--mist);margin:0;min-height:100vh;
+    display:flex;align-items:center;justify-content:center;padding:20px}
+  .vwrap{width:100%;max-width:440px}
+  .vcard{background:#fff;border-radius:20px;padding:28px 24px 24px;
+    box-shadow:0 10px 40px rgba(6,26,48,.1);position:relative;overflow:hidden}
+  /* 상단에 회사색 띠 — 어느 서비스 화면인지 즉시 읽힌다 */
+  .vcard::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;
+    background:linear-gradient(90deg,var(--blue),#3E9BDD 55%,var(--amber))}
+  .vlogo{font-weight:800;font-size:1.32rem;letter-spacing:-.02em}
+  .vlogo b{color:var(--blue)}
+  .vsub{font-size:.74rem;color:var(--faint);font-weight:700;
+    letter-spacing:.13em;margin-top:4px}
+  .vbig{margin:22px 0 6px;font-size:2.6rem;font-weight:800;letter-spacing:-.03em;
+    line-height:1;font-variant-numeric:tabular-nums}
+  .vch{display:inline-block;font-size:.7rem;font-weight:800;padding:3px 11px;
+    border-radius:99px;background:var(--blue-bg);color:var(--blue);
+    vertical-align:middle;margin-left:8px;letter-spacing:.02em}
+  .vch.dev{background:var(--amber-bg);color:#8A5F12}
+  .vrow{display:flex;justify-content:space-between;gap:12px;padding:11px 0;
+    border-bottom:1px solid var(--mist);font-size:.83rem}
+  .vrow:last-of-type{border-bottom:none}
+  .vrow .k{color:var(--faint);font-weight:700;flex:0 0 auto}
+  .vrow .v{font-weight:800;text-align:right;word-break:break-all;
+    font-variant-numeric:tabular-nums}
+  .vnote{margin-top:18px;background:var(--mist);border-radius:12px;
+    padding:13px 15px;font-size:.76rem;line-height:1.65;color:var(--sub)}
+  .vnote b{color:var(--ink)}
+  .vbtns{display:flex;gap:9px;margin-top:16px}
+  .vbtns .btn{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center}
+  .vstale{display:none;background:#FFF6E9;border:1px solid #F5DCB2;color:#7A5410;
+    border-radius:12px;padding:12px 14px;font-size:.79rem;font-weight:700;
+    line-height:1.6;margin-top:14px}
+  .vstale.show{display:block}
+  .vfoot{text-align:center;font-size:.7rem;color:var(--faint);
+    font-weight:600;margin-top:16px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="vwrap">
+  <div class="vcard">
+    <div class="vlogo">복구<b>온</b></div>
+    <div class="vsub">APP VERSION</div>
+
+    <div class="vbig" id="vNum">{{ APP_VERSION }}<span class="vch" id="vCh">—</span></div>
+
+    <div class="vrow"><span class="k">서버 버전</span><span class="v" id="vSrv">{{ APP_VERSION }}</span></div>
+    <div class="vrow"><span class="k">내 기기에 깔린 버전</span><span class="v" id="vDev">확인 중…</span></div>
+    <div class="vrow"><span class="k">빌드</span><span class="v" id="vBuild">{{ BUILD_HASH }}</span></div>
+    <div class="vrow"><span class="k">설치 형태</span><span class="v" id="vMode">확인 중…</span></div>
+    <div class="vrow"><span class="k">서버 시각</span><span class="v" id="vTime">—</span></div>
+
+    <div class="vstale" id="vStale">
+      기기에 <b>옛 버전</b>이 남아 있습니다. 아래 <b>최신으로 맞추기</b>를 누르면
+      새 화면을 다시 내려받습니다.
+    </div>
+
+    <div class="vbtns">
+      <button class="btn p" id="vUpd">최신으로 맞추기</button>
+      <a class="btn g" href="/">처음 화면</a>
+    </div>
+
+    <div class="vnote">
+      <b>앱으로 쓰려면</b> — 이 주소를 폰 브라우저로 열고,
+      아이폰은 <b>공유 → 홈 화면에 추가</b>,
+      안드로이드는 <b>메뉴 → 홈 화면에 추가(앱 설치)</b>를 누르세요.
+      홈 화면 아이콘으로 열면 주소창 없이 앱처럼 뜹니다.
+    </div>
+  </div>
+  <div class="vfoot">
+    ㈜올림포스네트웍스 · 복구온<br>
+    문제가 있을 때 이 화면의 <b>버전·빌드</b>를 함께 알려 주시면 원인을 빨리 찾습니다.
+  </div>
+</div>
+
+<script nonce="{{ csp_nonce }}">
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+
+  // 설치 형태 — 홈 화면 앱으로 열었는지, 브라우저 탭인지
+  var standalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+  $('vMode').textContent = standalone ? '홈 화면 앱' : '브라우저';
+
+  // 서버가 말하는 최신 버전 (캐시를 타지 않게 no-store)
+  fetch('/api/version', {cache:'no-store'}).then(function(r){ return r.json(); })
+    .then(function(d){
+      $('vSrv').textContent = d.version;
+      $('vNum').firstChild.nodeValue = d.version;
+      $('vBuild').textContent = d.build;
+      $('vTime').textContent = d.server_time || '—';
+      var ch = $('vCh');
+      ch.textContent = d.channel;
+      if(d.channel !== '운영') ch.className = 'vch dev';
+      compare(d.version);
+    }).catch(function(){ $('vSrv').textContent = '연결 실패'; });
+
+  // 내 기기에 깔린(서비스워커가 들고 있는) 버전
+  //  이 화면에서도 서비스워커를 등록한다 — 여기로 바로 들어온 사람도
+  //  '설치된 앱'과 같은 상태에서 버전을 확인할 수 있어야 한다.
+  var devVer = null;
+  function askWorker(sw){
+    var done = false;
+    navigator.serviceWorker.addEventListener('message', function(e){
+      if(e.data && e.data.type === 'sw-version'){
+        done = true; devVer = e.data.version;
+        $('vDev').textContent = e.data.version;
+        compare(null);
+      }
+    });
+    sw.postMessage('version');
+    setTimeout(function(){
+      if(!done) $('vDev').textContent = '확인 불가(재시도: 새로고침)';
+    }, 3000);
+  }
+  if('serviceWorker' in navigator){
+    $('vDev').textContent = '확인 중…';
+    navigator.serviceWorker.register('/sw.js').then(function(reg){
+      if(reg.active) return askWorker(reg.active);
+      // 방금 설치가 시작된 경우 — 활성화될 때까지 기다린다
+      var w = reg.installing || reg.waiting;
+      if(!w){ $('vDev').textContent = '설치 안 됨'; return; }
+      w.addEventListener('statechange', function(){
+        if(w.state === 'activated') askWorker(w);
+      });
+      setTimeout(function(){
+        if(navigator.serviceWorker.controller) askWorker(navigator.serviceWorker.controller);
+      }, 1200);
+    }).catch(function(){ $('vDev').textContent = '설치 실패'; });
+  }else{
+    $('vDev').textContent = '지원 안 함(구형 브라우저)';
+  }
+
+  var srvVer = null;
+  function compare(v){
+    if(v) srvVer = v;
+    if(srvVer && devVer && srvVer !== devVer) $('vStale').classList.add('show');
+  }
+
+  // 최신으로 맞추기 — 서비스워커·캐시를 비우고 새로 받는다
+  $('vUpd').addEventListener('click', function(){
+    var btn = this; btn.disabled = true; btn.textContent = '맞추는 중…';
+    var jobs = [];
+    if('serviceWorker' in navigator){
+      jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){
+        return Promise.all(rs.map(function(r){ return r.unregister(); }));
+      }));
+    }
+    if(window.caches){
+      jobs.push(caches.keys().then(function(ks){
+        return Promise.all(ks.map(function(k){ return caches.delete(k); }));
+      }));
+    }
+    Promise.all(jobs).catch(function(){}).then(function(){
+      setTimeout(function(){ location.reload(true); }, 400);
+    });
+  });
+})();
+</script>
+</body>
+</html>

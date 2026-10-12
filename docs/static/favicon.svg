@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="복구온">
+  <rect width="64" height="64" rx="14" fill="#003A69"/>
+  <!-- 복구: 꺾였다가 다시 올라가는 선 -->
+  <path d="M13 42 L24 42 L31 24 L38 47 L44 34 L51 34"
+        fill="none" stroke="#FFFFFF" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 온: 완료 지점 -->
+  <circle cx="51" cy="34" r="6.5" fill="#E8A33D"/>
+</svg>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 — 시공업체 입점 신청</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+</head>
+<body>
+<div class="topbar"><a class="logo" href="/">복구<b>온</b></a><span class="sp"></span><a class="btn g sm" href="/">← 홈으로</a></div>
+<div class="form-shell">
+  <div class="form-card" id="card">
+    <div class="form-head">
+      <span class="badge">시공업체 전용</span>
+      <h1>입점 신청</h1>
+      <p>입점비·월회비 없이 보험사 복구공사 물량을 수주하세요. 낙찰 시에만 중개수수료(계약 요율, 기본 10%)가 발생하며, 공사대금은 <b>보험사 입금 확인과 검수를 마친 뒤</b> 지급됩니다.</p>
+    </div>
+    <form id="f" data-act-submit="submitForm">
+      <div class="field">
+        <label for="partner_type">업체 구분<span class="req">*</span></label>
+        <select id="partner_type" data-act-change="typeHint" name="partner_type">
+          <option value="시행사">🏢 시행사 — 현장을 통째로 맡아 통값으로 입찰 (다공종 관리·종합건설)</option>
+          <option value="시공사">🔧 시공사 — 단일 공종 전문 (시행사 협력 풀 등록)</option>
+        </select>
+        <p id="thint" style="font-size:.72rem;color:var(--blue);font-weight:700;margin-top:8px;line-height:1.6"></p>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="company">업체명(상호)<span class="req">*</span></label><input id="company" required placeholder="예: ○○종합건설" name="company" autocomplete="organization"></div>
+        <div class="field"><label for="biz_no">사업자등록번호</label><input id="biz_no" inputmode="numeric" placeholder="000-00-00000" name="biz_no"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="ceo">대표자명</label><input id="ceo" placeholder="대표 성함" name="ceo" autocomplete="name"></div>
+        <div class="field"><label for="phone">연락처<span class="req">*</span></label><input id="phone" required inputmode="tel" placeholder="000-0000-0000" name="phone" autocomplete="tel"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="major">주력 공종<span class="req">*</span></label>
+          <select id="major" name="major">
+            <option>종합시행(종합건설)</option>
+            <option>가드레일·방호울타리</option><option>교통안전시설</option><option>방음벽·휀스·펜스</option>
+            <option>유리·샷시·자동문</option><option>셔터·차단기·게이트</option><option>누수·배관·설비</option>
+            <option>지붕·판넬·캐노피</option><option>외벽·석재·담장·조적</option><option>도장·방수·미장</option>
+            <option>간판·전기·가로등</option><option>조경·수목</option><option>종합 원상복구</option>
+          </select></div>
+        <div class="field"><label for="region">활동 권역</label><input id="region" placeholder="예: 경기 남부·서울" name="region" autocomplete="address-level1"></div>
+      </div>
+      <div class="field"><label for="address">사업장 주소 <span style="font-weight:400;opacity:.75">— 가까운 현장의 출동 요청을 우선 받으시려면 정확히 적어 주세요</span></label>
+        <input id="address" placeholder="예: 서울 송파구 올림픽로 300" name="address" autocomplete="street-address"></div>
+      <div class="field"><label for="category">세부 취급 품목·특징</label><input id="category" placeholder="예: 가드레일·휀스 시공, 긴급출동 가능" name="category"></div>
+      <div class="field"><label for="email">이메일</label><input id="email" inputmode="email" type="email" placeholder="name@company.kr" name="email" autocomplete="email"></div>
+      <div class="field"><label for="license">보유 면허·등록업종</label><input id="license" placeholder="예: 건축공사업, 실내건축공사업, 시설물유지관리 (시행사는 필수 확인)" name="license"></div>
+      <!--  ⚠⚠ [라운드248] 서버(api_create_application)는 이미 "1인 사업자는 접수
+            자체를 막는다"는 정책을 갖고 있고 그 검사가 정확히 이 값(staff_count)
+            을 본다 — 그런데 이 폼(가장 흔한 유입 경로, app.py 자신의 주석)에는
+            애초에 이 값을 보낼 칸이 없었다. 그래서 값이 항상 없음(None)으로
+            들어가 접수·승인 두 관문 다 절대 안 걸렸다(0과 없음을 구분하는
+            코드라 없음은 통과된다) — 아래 각주가 말하는 "1인 영세업체는
+            제외됩니다"가 이 유입경로에서는 지금까지 지켜진 적이 없었다.
+            관리자 직접접수 폼(admin.js appIntakeForm)이 이미 쓰는 같은 문구·
+            같은 입력방식을 그대로 가져온다 — 다만 본인이 직접 적는 폼이라
+            필수로 받는다(직접접수는 전화로 받아적다 보니 선택으로 둔 것). -->
+      <div class="field"><label for="staff_count">대표 외 상시 인력 수<span class="req">*</span>
+        <span style="font-weight:400;opacity:.75">— 1인 사업체(대표만 있는 경우)는 입점 대상이 아닙니다</span></label>
+        <input id="staff_count" type="number" min="0" required inputmode="numeric" placeholder="예: 3" name="staff_count"></div>
+      <div class="field"><label for="equipment">보유 장비</label><input id="equipment" placeholder="예: 크레인 1대, 용접기 3대" name="equipment"></div>
+      <div class="field"><label for="message">서류 보유 현황</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="has_license"> 면허·등록증 보유</label>
+          <label class="check"><input type="checkbox" id="has_insurance"> 배상책임보험 가입</label>
+        </div>
+      </div>
+      <div class="field"><label>남기실 말씀</label><textarea id="message" placeholder="시공 실적, 수주 희망 지역 등" name="message"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+        <label for="website_url">홈페이지 주소</label>
+        <input id="website_url" name="website_url" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <div id="consentSlot"></div>
+      <div class="form-foot">
+        <button class="btn a" type="submit" style="flex:1">입점 신청하기</button>
+      </div>
+      <p class="form-note">입점 심사는 서류 검토 → 현장 실사 순으로 진행되며, 1인 영세업체는 제외됩니다. 승인 시 앱 계정이 발급됩니다. 개인정보 처리에 관한 자세한 내용은 <a href="/legal/privacy" target="_blank" rel="noopener" style="color:var(--blue);font-weight:800">개인정보 처리방침</a>을 확인해 주세요.</p>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="{{ asset('actions.js') }}"></script>
+<script src="{{ asset('addrpick.js') }}"></script>
+<script src="{{ asset('form.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+const HINTS={
+  '시행사':'✔ 시행사는 한 현장을 통째로 맡아, 필요한 시공사를 직접 선정하고 <b>통값(총액)으로 경매에 입찰</b>합니다. 건축공사업·실내건축공사업 등 다공종 관리 면허가 있으면 유리합니다.',
+  '시공사':'✔ 시공사는 시행사의 협력 풀에 등록되어 하도급 물량을 받습니다. 향후 공종별 분리발주(협업) 모델 전환 시 직접 입찰 주체가 됩니다.'
+};
+function typeHint(){ document.getElementById('thint').innerHTML = HINTS[val('partner_type')]||''; }
+typeHint();
+//  주소 검색 — 고르면 좌표가 남아, 승인 뒤 이 업체가 거리순 호출에 제대로 들어간다
+if(window.AddrPick) AddrPick.attach({input:'#address', region:'#region'});
+document.getElementById('consentSlot').innerHTML = consentBlock('partner');
+function submitForm(e){
+  e.preventDefault();
+  const body={
+    company:val('company'), partner_type:val('partner_type'), biz_no:val('biz_no'), ceo:val('ceo'),
+    phone:val('phone'), major:val('major'), region:val('region'), category:val('category'),
+    email:val('email'), license:val('license'), equipment:val('equipment'), message:val('message'),
+    address:val('address'), staff_count:val('staff_count'),
+    has_license:document.getElementById('has_license').checked,
+    has_insurance:document.getElementById('has_insurance').checked
+  };
+  if(!body.company||!body.phone){toast('업체명과 연락처는 필수입니다.');return false;}
+  //  ⚠⚠ [라운드248] required 속성은 브라우저 자체 검증이라 신뢰만으론 부족하다
+  //    (JS 비활성·직접 API 호출은 우회한다 — 서버가 진짜 관문이다). 그래도
+  //    정상 사용자에게는 여기서 먼저 말해 준다 — 서버까지 왕복한 뒤에야
+  //    "1인 사업자는 안 됩니다"를 듣는 것보다 낫다.
+  if(body.staff_count===''){toast('대표 외 상시 인력 수를 입력해 주세요.');return false;}
+  if(window.AddrPick) Object.assign(body, AddrPick.coords('#address'));
+  body.website_url = val('website_url');
+  const cs = consentValues(); if(!cs) return false;
+  Object.assign(body, cs);
+  postForm('/api/applications', body, () => {
+    document.getElementById('card').innerHTML = successHTML('입점 신청이 접수되었습니다',
+      '담당자가 서류를 검토한 뒤 연락드립니다.<br>승인되면 「복구온 파트너」 앱 계정이 발급됩니다.');
+  });
+  return false;
+}
+
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  // 폼 제출 핸들러는 원래 event 를 받는다 — 위임에서 넘어오는 (el, ev) 순서를 맞춘다
+  ACT.submitForm = (el, ev) => submitForm(ev);
+  ACT.typeHint = (a, el, ev, b) => typeHint(_n(a), _n(b), el, ev);
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════════════════════
+#  복구온 — 저장소에 절대 올리면 안 되는 것들
+#  ㈜올림포스네트웍스 기획팀 유경탁
+# ══════════════════════════════════════════════════════════════
+
+# 시크릿 — 세션키·계좌번호 암호화키. 유출 시 저장된 계좌번호가 복호화된다.
+.env
+*.env
+!.env.example
+
+# 데이터베이스 (개인정보 포함)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+*.before_restore_*
+*.before_reset_*
+backups/
+
+# 내부 자동개발 도구 세션/체크포인트 (제품 코드 아님)
+.omc/
+.claude/
+.playwright-mcp/
+.superpowers/
+
+# 과거 버전 전체 백업 스냅샷 (원본 자리에만 보관, 저장소에는 올리지 않음)
+_archive/
+
+# 로그 (접속기록에 IP 포함)
+*.log
+logs/
+
+# 파이썬
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 편집기·OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 로컬 TLS 리허설용 자체 서명 인증서
+dev_cert.pem
+dev_key.pem
+bokguon.log*
+waitress_*.log
+tls_*.log
+
+# 업로드된 시공 사진 (사고 현장 이미지 = 개인정보 포함 가능)
+uploads/

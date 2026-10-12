@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 콘솔 — 로그인</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style>
+body{background:linear-gradient(152deg,var(--blue) 0%,var(--blue-ink) 100%);min-height:100vh;display:grid;place-items:center}
+.login-card{background:#fff;border-radius:22px;padding:40px 38px;width:380px;max-width:92vw;box-shadow:0 30px 70px rgba(0,20,45,.35)}
+.login-card .lg{font-weight:800;font-size:1.5rem;text-align:center;margin-bottom:6px}
+.login-card .lg b{color:var(--blue)}
+.login-card .sub{text-align:center;color:var(--faint);font-size:.78rem;margin-bottom:26px;letter-spacing:.1em}
+.err{background:var(--red-bg);color:var(--red);font-size:.8rem;font-weight:700;padding:10px 14px;border-radius:10px;margin-bottom:14px;display:none}
+.hint{margin-top:18px;font-size:.72rem;color:var(--faint);text-align:center;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="lg">복구<b>온</b> 콘솔</div>
+  <div class="sub">OLYMPOS ADMIN</div>
+  <div class="err" id="err"></div>
+  <form id="f" data-act-submit="doLogin">
+    <div class="field"><label>아이디</label><input id="u" autocomplete="username" placeholder="관리자 아이디" autofocus></div>
+    <div class="field"><label>비밀번호</label><input id="p" type="password" autocomplete="current-password" placeholder="비밀번호"></div>
+    <button class="btn p" style="width:100%" type="submit">로그인</button>
+  </form>
+  <!-- 2단계 인증 — 비밀번호가 맞은 뒤에만 나타난다 -->
+  <form id="f2" data-act-submit="doOtp" style="display:none">
+    <div class="field"><label>인증 앱 6자리 코드</label>
+      <input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="16"
+             placeholder="000000" style="letter-spacing:.25em;text-align:center;font-size:1.15rem"></div>
+    <button class="btn p" style="width:100%" type="submit">확인</button>
+    <div class="hint" style="margin-top:10px">
+      휴대폰 인증 앱(구글 OTP 등)의 6자리 코드를 입력하세요.<br>
+      폰을 잃어버렸다면 <b>복구 코드</b>(xxxx-xxxx)를 대신 입력해도 됩니다.
+    </div>
+  </form>
+  {% if show_demo_hint %}
+  <div class="hint">데모 계정 — admin / bokguon2026<br>운영자 — staff / staff2026</div>
+  {% endif %}
+</div>
+<script src="{{ asset('actions.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+async function doLogin(e){
+  e.preventDefault();
+  const err=document.getElementById('err'); err.style.display='none';
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:document.getElementById('u').value,password:document.getElementById('p').value})});
+  // 서버가 JSON 이 아닌 응답(502·타임아웃 HTML 등)을 줄 수 있다.
+  // 방어하지 않으면 예외로 죽어 버튼이 아무 반응 없는 상태로 남는다.
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok && !d.error){
+    err.textContent = r.status===429
+      ? '로그인 시도가 많아 잠시 제한되었습니다. 잠시 후 다시 시도해 주세요.'
+      : '서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    err.style.display='block'; return false;
+  }
+  if(d.ok){ location.href = d.must_change_pw ? '/change-password' : '/admin'; }
+  else if(d.need_otp){ showOtp(d.error); }
+  else{err.textContent=d.error||'로그인 실패';err.style.display='block';}
+  return false;
+}
+
+// ── 2단계 인증 (외부 접속 시 법령상 필수) ────────────────────
+function showOtp(msg){
+  document.getElementById('f').style.display='none';
+  const f2=document.getElementById('f2'); f2.style.display='';
+  const err=document.getElementById('err');
+  if(msg){ err.textContent=msg; err.style.display='block'; }
+  document.getElementById('otp').focus();
+}
+async function doOtp(e){
+  e.preventDefault();
+  const err=document.getElementById('err'); err.style.display='none';
+  const code=document.getElementById('otp').value;
+  const r=await fetch('/api/login/otp',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({code})});
+  const d=await r.json().catch(()=>({}));
+  if(d.ok){ location.href = d.must_change_pw ? '/change-password' : '/admin'; return false; }
+  err.textContent = d.error || '코드 확인에 실패했습니다.';
+  err.style.display='block';
+  document.getElementById('otp').value='';
+  // 대기 시간이 지났거나 시도를 초과하면 처음부터 — 화면도 되돌린다
+  if(!d.need_otp){
+    document.getElementById('f2').style.display='none';
+    document.getElementById('f').style.display='';
+  }
+  return false;
+}
+
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  // 폼 제출 핸들러는 원래 event 를 받는다 — 위임에서 넘어오는 (el, ev) 순서를 맞춘다
+  ACT.doLogin = (el, ev) => doLogin(ev);
+  ACT.doOtp = (el, ev) => doOtp(ev);
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>{{ code }} — 복구온</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --blue:#0064B2; --blue-deep:#004E8C; --blue-ink:#003A69;
+  --amber:#E8A33D; --mist:#F3F7FB; --line:#DCE6F0;
+  --ink:#12202E; --sub:#4A5B6C; --faint:#5C6E82;   /* [접근성] AA 통과 (기존 #8698A9 는 2.97:1 미달) */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font-sans);
+  background:var(--mist); color:var(--ink); min-height:100vh;
+  display:grid; place-items:center; padding:24px; word-break:keep-all; line-height:1.7;
+}
+.box{
+  max-width:520px; width:100%; text-align:center;
+  background:#fff; border:1px solid var(--line); border-radius:24px;
+  padding:clamp(34px,6vw,52px) clamp(24px,5vw,44px);
+  box-shadow:0 20px 50px rgba(15,45,80,.07);
+}
+.logo{font-size:1.15rem; font-weight:800; color:var(--blue-ink); margin-bottom:26px}
+.logo b{color:var(--amber)}
+.code{
+  font-size:clamp(52px,12vw,74px); font-weight:800; letter-spacing:-.04em;
+  color:var(--blue); line-height:1; margin-bottom:14px;
+}
+h1{font-size:clamp(19px,3.4vw,23px); font-weight:800; letter-spacing:-.02em; margin-bottom:12px}
+p{color:var(--sub); font-size:.93rem; margin-bottom:30px}
+p b{color:var(--blue-ink); font-family:ui-monospace,Consolas,monospace}
+.acts{display:flex; gap:10px; justify-content:center; flex-wrap:wrap}
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:12px 24px; border-radius:12px; font-weight:800; font-size:.88rem;
+  text-decoration:none; border:1px solid transparent; transition:transform .12s;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.p{background:var(--blue); color:#fff; box-shadow:0 6px 16px rgba(0,100,178,.25)}
+.btn.g{background:#fff; color:var(--sub); border-color:var(--line)}
+.btn:focus-visible{outline:3px solid var(--amber); outline-offset:2px}
+.foot{margin-top:28px; padding-top:20px; border-top:1px solid var(--line); font-size:.76rem; color:var(--faint)}
+</style>
+</head>
+<body>
+<main class="box">
+  <div class="logo">복구<b>온</b></div>
+  <div class="code">{{ code }}</div>
+  <h1>{{ title }}</h1>
+  <p>{{ msg }}</p>
+  <div class="acts">
+    <a class="btn p" href="/">홈으로</a>
+    <a class="btn g" href="#" data-act="goBack">이전 페이지</a>
+  </div>
+  <div class="foot">㈜올림포스네트웍스 · 복구온</div>
+</main>
+<script src="{{ asset('actions.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+(function(){ window.ACT = window.ACT || {}; window.ACT.goBack = function(){ history.back(); }; })();
+</script>
+</body>
+</html>

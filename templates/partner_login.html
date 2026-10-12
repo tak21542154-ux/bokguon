@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 파트너 — 로그인</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style>
+body{background:linear-gradient(152deg,var(--blue) 0%,var(--blue-ink) 100%);min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{background:#fff;border-radius:22px;padding:40px 38px;width:400px;max-width:94vw;box-shadow:0 30px 70px rgba(0,20,45,.35)}
+.login-card .lg{font-weight:800;font-size:1.5rem;text-align:center;margin-bottom:4px}
+.login-card .lg b{color:var(--blue)}
+.login-card .sub{text-align:center;color:var(--faint);font-size:.8rem;margin-bottom:24px}
+.err{background:var(--red-bg);color:var(--red);font-size:.8rem;font-weight:700;padding:10px 14px;border-radius:10px;margin-bottom:14px;display:none}
+.hint{margin-top:18px;font-size:.72rem;color:var(--faint);text-align:center;line-height:1.8}
+.hint a{color:var(--blue);font-weight:700}
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="lg">복구<b>온</b> 파트너</div>
+  <div class="sub">시행사 · 시공사 협력사 포털</div>
+  <div class="err" id="err"></div>
+  <form data-act-submit="doLogin">
+    <div class="field"><label>아이디</label><input id="u" autocomplete="username" placeholder="발급받은 아이디" autofocus></div>
+    <div class="field"><label>비밀번호</label><input id="p" type="password" autocomplete="current-password"></div>
+    <button class="btn p" style="width:100%" type="submit">로그인</button>
+  </form>
+  {% if show_demo_hint %}
+  <div class="hint">
+    데모 계정 — partner / partner2026<br>
+    아직 입점 전이신가요? <a href="/apply/partner">입점 신청하기</a>
+  </div>
+  {% endif %}
+</div>
+<script src="{{ asset('actions.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+async function doLogin(e){
+  e.preventDefault();
+  const err=document.getElementById('err'); err.style.display='none';
+  const r=await fetch('/api/partner/login',{method:'POST',headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',
+    body:JSON.stringify({login_id:document.getElementById('u').value,password:document.getElementById('p').value})});
+  // 서버가 JSON 이 아닌 응답(502·타임아웃 HTML 등)을 줄 수 있다.
+  // 방어하지 않으면 예외로 죽어 버튼이 아무 반응 없는 상태로 남는다.
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok && !d.error){
+    err.textContent = r.status===429
+      ? '로그인 시도가 많아 잠시 제한되었습니다. 잠시 후 다시 시도해 주세요.'
+      : '서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    err.style.display='block'; return false;
+  }
+  //  ⚠ **로그인 화면에서 이전 계정의 사본을 지운다.**
+  //    서비스워커는 대시보드 응답을 URL 만 열쇠로 캐시한다 — 계정 구분이 없다.
+  //    로그아웃을 거치지 않고(세션 만료·앱 재실행) 다른 계정으로 들어온 직후
+  //    네트워크가 잠깐 끊기면 **이전 업체의 입찰가·낙찰금액**이 그려진다.
+  try{ if(window.caches){ caches.keys().then(ks => ks.forEach(k => caches.delete(k))); } }catch(e){}
+  if(d.ok){ location.href = d.must_change_pw ? '/change-password' : '/partner'; }
+  else{ err.textContent=d.error||'로그인 실패'; err.style.display='block'; }
+  return false;
+}
+
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  // 폼 제출 핸들러는 원래 event 를 받는다 — 위임에서 넘어오는 (el, ev) 순서를 맞춘다
+  ACT.doLogin = (el, ev) => doLogin(ev);
+})();
+
+</script>
+</body>
+</html>

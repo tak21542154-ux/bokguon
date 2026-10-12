@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="stylesheet" href="{{ asset('fonts.css') }}">
+<title>복구온 — 보험사 도입 문의</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+</head>
+<body>
+<div class="topbar"><a class="logo" href="/">복구<b>온</b></a><span class="sp"></span><a class="btn g sm" href="/">← 홈으로</a></div>
+<div class="form-shell">
+  <div class="form-card" id="card">
+    <div class="form-head">
+      <span class="badge">보험사·공제조합 전용</span>
+      <h1>도입 문의</h1>
+      <p>기타피해물 복구를 경쟁 입찰로 처리하고 손해율을 낮춰보세요. 담당자가 하루 안에 절감 리포트 샘플과 함께 연락드립니다.</p>
+    </div>
+    <form id="f" data-act-submit="submitForm">
+      <div class="field-row">
+        <div class="field"><label for="company">기관명<span class="req">*</span></label><input id="company" required placeholder="예: ○○손해보험" name="company" autocomplete="organization"></div>
+        <div class="field"><label for="org_type">기관 유형</label>
+          <select id="org_type" name="org_type"><option>손해보험사</option><option>공제조합</option><option>손해사정법인</option><option>기타</option></select></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="name">담당자명</label><input id="name" placeholder="성함" name="name" autocomplete="name"></div>
+        <div class="field"><label for="title">직함</label><input id="title" placeholder="예: 대물보상팀장" name="title" autocomplete="organization-title"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="phone">연락처<span class="req">*</span></label><input id="phone" required inputmode="tel" placeholder="02-000-0000" name="phone" autocomplete="tel"></div>
+        <div class="field"><label for="email">이메일</label><input id="email" inputmode="email" type="email" placeholder="name@company.co.kr" name="email" autocomplete="email"></div>
+      </div>
+      <div class="field"><label for="interest">관심 사항</label>
+        <select id="interest" name="interest">
+          <option>손해율 절감 · 경쟁입찰</option>
+          <option>업체 선정 근거 문서화 (감사 대응)</option>
+          <option>AI 사진 자동 분류·전송</option>
+          <option>시범 운영(파일럿) 상담</option>
+        </select></div>
+      <div class="field"><label for="message">문의 내용</label><textarea id="message" placeholder="현재 처리 방식, 검토 배경 등을 남겨주세요." name="message"></textarea></div>
+      <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden">
+        <label for="website_url">홈페이지 주소</label>
+        <input id="website_url" name="website_url" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <div id="consentSlot"></div>
+      <div class="form-foot">
+        <button class="btn a" type="submit" style="flex:1">도입 문의 보내기</button>
+      </div>
+      <p class="form-note">복구온은 ㈜올림포스네트웍스의 피해물 복구 중개 플랫폼입니다. 개인정보 처리에 관한 자세한 내용은 <a href="/legal/privacy" target="_blank" rel="noopener" style="color:var(--blue);font-weight:800">개인정보 처리방침</a>을 확인해 주세요.</p>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script src="{{ asset('actions.js') }}"></script>
+<script src="{{ asset('form.js') }}"></script>
+<script nonce="{{ csp_nonce }}">
+document.getElementById('consentSlot').innerHTML = consentBlock('insurer');
+function submitForm(e){
+  e.preventDefault();
+  const body={
+    company:val('company'), org_type:val('org_type'), name:val('name'), title:val('title'),
+    phone:val('phone'), email:val('email'), interest:val('interest'), message:val('message')
+  };
+  if(!body.company||!body.phone){toast('기관명과 연락처는 필수입니다.');return false;}
+  body.website_url = val('website_url');
+  const cs = consentValues(); if(!cs) return false;
+  Object.assign(body, cs);
+  postForm('/api/leads', body, () => {
+    document.getElementById('card').innerHTML = successHTML('도입 문의가 접수되었습니다',
+      '담당자가 영업일 기준 하루 안에 연락드립니다.<br>절감 리포트 샘플을 함께 준비해 드리겠습니다.');
+  });
+  return false;
+}
+
+
+// ── 인라인 핸들러 대체 (CSP nonce 전환) ──────────────────────
+//  data-act="이름" 으로 적힌 동작을 실제 함수에 연결한다.
+//  ⚠ 즉시실행 함수로 감싼다 — 클래식 스크립트들이 전역 렉시컬 스코프를 공유하므로
+//    최상위에서 const ACT 를 선언하면 다른 스크립트와 중복 선언 충돌이 나고,
+//    그 스크립트가 통째로 실행되지 않는다(화면이 "불러오는 중…" 에서 멈춘다).
+(function () {
+  window.ACT = window.ACT || {};
+  var ACT = window.ACT;
+  // data 속성은 항상 문자열이라, 숫자를 받던 함수가 깨지지 않도록 되돌린다
+  var _n = function (v) { return (v !== null && v !== "" && !isNaN(v)) ? Number(v) : v; };
+  // 폼 제출 핸들러는 원래 event 를 받는다 — 위임에서 넘어오는 (el, ev) 순서를 맞춘다
+  ACT.submitForm = (el, ev) => submitForm(ev);
+})();
+
+</script>
+</body>
+</html>

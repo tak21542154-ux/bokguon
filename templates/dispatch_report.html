@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>현장 출동 보고서 — {{ c.case_no }}</title>
+<link rel="stylesheet" href="{{ asset('style.css') }}">
+<style nonce="{{ csp_nonce }}">
+  /*  인쇄를 전제로 한 화면이다. 담당자가 보험사에 그대로 넘기거나 파일로 남긴다.
+      화면에서 보기 좋은 것보다 **A4 한 장에 사실이 다 들어가는 것**이 먼저다. */
+  body{background:#EEF3F8;margin:0;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);font-family:'Malgun Gothic','맑은 고딕',sans-serif;color:#12283F}
+  .sheet{max-width:860px;margin:22px auto;background:#fff;padding:32px 36px;
+    border-radius:14px;box-shadow:0 10px 34px rgba(6,26,48,.10)}
+  .top{display:flex;align-items:flex-start;gap:14px;border-bottom:2.5px solid #0064B2;padding-bottom:14px}
+  .top h1{margin:0;font-size:1.32rem;letter-spacing:-.02em}
+  .top .sub{font-size:.82rem;color:#5B6D80;margin-top:4px}
+  .brand{margin-left:auto;text-align:right;font-size:.76rem;color:#5B6D80;line-height:1.6}
+  .brand b{display:block;font-size:1rem;color:#0064B2}
+  h2{font-size:.92rem;margin:22px 0 8px;padding-left:9px;border-left:4px solid #E8A33D}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{border:1px solid #D9E2EC;padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#F4F8FC;width:118px;font-weight:700;color:#33475B;white-space:nowrap}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+  .chip{display:inline-block;font-size:.72rem;font-weight:700;border-radius:7px;padding:2px 8px}
+  .chip.b{background:#EAF4FD;color:#0064B2} .chip.g{background:#E7F6EC;color:#137A38}
+  .chip.a{background:#FDF3E2;color:#7A5410} .chip.r{background:#FDECEC;color:#B3261E}
+  .photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+  .photos figure{margin:0}
+  .photos img{width:100%;height:104px;object-fit:cover;border-radius:8px;border:1px solid #D9E2EC}
+  .photos figcaption{font-size:.68rem;color:#5B6D80;margin-top:3px}
+  .note{background:#F7FAFD;border:1px solid #D9E2EC;border-radius:9px;padding:11px 13px;
+    font-size:.81rem;line-height:1.75;white-space:pre-wrap}
+  .foot{margin-top:26px;border-top:1px solid #D9E2EC;padding-top:12px;
+    font-size:.72rem;color:#6B7C8F;line-height:1.7}
+  .sign{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+  .sign div{border:1px solid #D9E2EC;border-radius:9px;padding:10px 12px;font-size:.76rem;color:#5B6D80}
+  .sign b{display:block;color:#12283F;margin-bottom:26px}
+  .bar{display:flex;gap:8px;max-width:860px;margin:0 auto;padding:0 36px}
+  .bar button{font:600 .82rem 'Malgun Gothic',sans-serif;padding:8px 15px;border-radius:9px;
+    border:1px solid #CBD6E2;background:#fff;cursor:pointer}
+  @media print{
+    body{background:#fff}
+    .sheet{box-shadow:none;margin:0;max-width:none;padding:0;border-radius:0}
+    .bar{display:none}
+    .photos img{height:88px}
+  }
+</style>
+</head>
+<body>
+<div class="bar"><button id="pr">🖨 인쇄 · PDF 저장</button></div>
+<div class="sheet">
+
+  <div class="top">
+    <div>
+      <h1>현장 출동 보고서</h1>
+      <div class="sub">접수번호 <b>{{ c.case_no }}</b> · {{ c.category }} · 발주처 {{ c.insurer }}</div>
+    </div>
+    <div class="brand"><b>복구온</b>㈜올림포스네트웍스<br>출력 {{ now }}</div>
+  </div>
+
+  <h2>1. 사건 개요</h2>
+  <div class="grid">
+    <table>
+      <tr><th>접수 일시</th><td>{{ c.created_at or '-' }}</td></tr>
+      <tr><th>공종</th><td>{{ c.category or '-' }}</td></tr>
+      <tr><th>현장 주소</th><td>{{ c.address or c.region or '-' }}</td></tr>
+      <tr><th>좌표</th><td>
+        {% if c.lat and c.lng %}{{ '%.6f'|format(c.lat) }}, {{ '%.6f'|format(c.lng) }}
+          <span class="chip b">{{ c.geo_src or '기록' }}</span>
+        {% else %}미확정 — 주소 검색으로 고르면 좌표가 남습니다{% endif %}</td></tr>
+    </table>
+    <table>
+      <tr><th>현재 상태</th><td><span class="chip b">{{ c.status }}</span></td></tr>
+      <tr><th>접수 유형</th><td>{{ c.intake_type or '-' }}</td></tr>
+      <tr><th>보상 담당</th><td>{{ c.manager or '-' }}</td></tr>
+      <tr><th>긴급</th><td>{% if c.urgent %}<span class="chip r">긴급</span>{% else %}일반{% endif %}</td></tr>
+    </table>
+  </div>
+
+  <h2>2. 출동 수배 경과</h2>
+  {% if not dispatches %}
+    <div class="note">이 사건은 출동 수배가 열리지 않았습니다(사진이 함께 접수된 건).</div>
+  {% else %}
+  <table>
+    <tr><th>회차</th><th>수배 개시</th><th>기한</th><th>수락 업체</th><th>수락 시각</th><th>도착 시각</th><th>결과</th></tr>
+    {% for d in dispatches %}
+    <tr>
+      <td>{{ d.round }}차</td>
+      <td>{{ d.created_at or '-' }}</td>
+      <td>{{ d.due_at or '-' }}</td>
+      <td>{{ d.claimed_name or '—' }}</td>
+      <td>{{ d.claimed_at or '-' }}</td>
+      <td>{{ d.arrived_at or '-' }}</td>
+      <td>
+        {% if d.status == '도착' %}<span class="chip g">도착 · 사진 {{ d.photo_count or 0 }}장</span>
+        {% elif d.status == '실패' %}<span class="chip r">실패 {{ d.fail_reason or '' }}</span>
+        {% else %}<span class="chip a">{{ d.status }}</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% if calls %}
+  <h2>2-1. 호출 이력 <span style="font-weight:400;font-size:.76rem;color:#6B7C8F">— 누구를 언제 불렀고 누가 받았는가</span></h2>
+  <div class="note" style="margin-bottom:6px">
+    총 <b>{{ calls|length }}곳</b>에 호출 · 수락
+    <b>{{ calls|selectattr('response','equalto','수락')|list|length }}곳</b> ·
+    가장 가까운 업체
+    {# ⚠ selectattr('dist_km') 단독은 진리값 검사라 0.0km(반경 50m 내 근접,
+       round(dkm,1)로 흔히 발생)를 "없음"으로 걸러 최솟값·존재 여부를 둘 다
+       틀리게 만든다(예: [0.0, 3.2] → 0.0이 빠져 "3.2km"로 오표시,
+       [0.0] 단독이면 "거리 미상"으로 오표시). None만 제외해야 한다 —
+       바로 아래 표의 k.dist_km is not none 처리와 같은 원칙. #}
+    {% set near = calls|selectattr('dist_km', 'ne', none)|map(attribute='dist_km')|list %}
+    {% if near %}<b>{{ '%.1f'|format(near|min) }}km</b>{% else %}거리 미상{% endif %}.
+    아래는 소명을 위한 전체 기록입니다.
+  </div>
+  <table>
+    <tr><th>순번</th><th>업체</th><th>거리</th><th>호출</th><th>응답</th><th>결과</th></tr>
+    {% for k in calls %}
+    <tr>
+      <td>{{ k.call_order or '-' }}</td>
+      <td>{{ k.partner_name or '-' }}</td>
+      <td class="num">{% if k.dist_km is not none %}{{ '%.1f'|format(k.dist_km) }}km{% else %}-{% endif %}</td>
+      <td>{{ k.notified_at or '-' }}</td>
+      <td>{{ k.responded_at or '-' }}</td>
+      <td>{{ k.response or '무응답' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% endif %}
+
+  <h2>3. 현장 확인 결과</h2>
+  {% if agreement %}
+  <div class="grid">
+    <table>
+      <tr><th>확인 업체</th><td>{{ agreement.partner_name or '-' }}</td></tr>
+      <tr><th>현장 실견적</th><td class="num"><b>{{ '{:,}'.format(agreement.field_amount or 0) }}원</b></td></tr>
+      <tr><th>보상담당 가견적</th><td class="num">{{ '{:,}'.format(c.est_price or 0) }}원</td></tr>
+    </table>
+    <table>
+      <tr><th>표준단가 개산</th><td class="num">
+        {{ '{:,}'.format(agreement.engine_low or 0) }} ~ {{ '{:,}'.format(agreement.engine_high or 0) }}원</td></tr>
+      <tr><th>산출 근거</th><td>
+        {% if basis %}
+        <div>수선 유형: <b>{{ basis.name or agreement.engine_pattern or '' }}</b>
+          {% if agreement.engine_ver %}· 엔진 {{ agreement.engine_ver }}{% endif %}</div>
+        <div>직접공사비 {{ '{:,}'.format(basis.direct_cost or 0) }}원
+          {% if basis.markup %}· 할증 {{ basis.markup|join('~') }}배{% endif %}
+          {% if basis.gate %}· {{ basis.gate }}{% endif %}</div>
+        {% if basis.lines %}
+        <table style="margin-top:4px">
+          <tr><th>품명</th><th class="num">수량</th><th class="num">단가</th><th class="num">금액</th></tr>
+          {% for l in basis.lines %}
+          <tr><td>{{ l.item or l.name or '' }}</td>
+            <td class="num">{{ l.qty if l.qty is not none else '' }}</td>
+            <td class="num">{{ '{:,}'.format(l.unit_price or l.price or 0) }}원</td>
+            <td class="num">{{ '{:,}'.format(l.amount or 0) }}원</td></tr>
+          {% endfor %}
+        </table>
+        {% endif %}
+        {% if basis.disclaimer %}<div class="note" style="margin-top:2px">{{ basis.disclaimer }}</div>{% endif %}
+        {% else %}
+        {{ agreement.engine_pattern or '기록 없음' }}
+        {% endif %}
+      </td></tr>
+      <tr><th>협의 결과</th><td>
+        {% if agreement.status == '합의' %}<span class="chip g">합의 {{ '{:,}'.format(agreement.agreed_amount or 0) }}원</span>
+        {% elif agreement.status == '결렬' %}<span class="chip a">결렬 → 2차 경매</span>
+        {% else %}<span class="chip b">{{ agreement.status }}</span>{% endif %}</td></tr>
+    </table>
+  </div>
+  {% if agreement.note %}<div class="note" style="margin-top:8px">{{ agreement.note }}</div>{% endif %}
+  {% else %}
+  <div class="note">현장 확인 기록이 없습니다.</div>
+  {% endif %}
+
+  <h2>4. 현장 사진 <span style="font-weight:400;font-size:.76rem;color:#6B7C8F">— 검수 승인분 {{ photos|length }}장</span></h2>
+  {% if photos %}
+  <div class="photos">
+    {% for p in photos %}
+    <figure>
+      <img src="/api/photos/{{ p.id }}/file" alt="{{ p.kind or '현장' }} 사진">
+      <figcaption>{{ p.kind or '기타' }} · {{ (p.created_at or '')[5:16] }}</figcaption>
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="note">등록된 사진이 없습니다.</div>
+  {% endif %}
+
+  <h2>5. 진행 · 확정</h2>
+  <table>
+    <tr><th>시공 업체</th><td>{{ c.partner_name or '선정 전' }}</td>
+        <th>계약(낙찰) 금액</th><td class="num">
+          {% if c.award_amount %}<b>{{ '{:,}'.format(c.award_amount) }}원</b>{% else %}미확정{% endif %}</td></tr>
+    <tr><th>낙찰 경로</th><td>{{ c.award_route or '-' }}</td>
+        <!--  0 은 '무보증' 이라는 유효한 값이다 — or 는 0 도 걸러 24로 둔갑시킨다 -->
+        <th>하자 담보</th><td>{{ c.warranty_months if c.warranty_months is not none else 24 }}개월</td></tr>
+  </table>
+
+  <div class="sign">
+    <div><b>현장 확인</b>업체 · 서명</div>
+    <div><b>복구온 담당</b>확인 · 서명</div>
+    <div><b>발주처 담당</b>확인 · 서명</div>
+  </div>
+
+  <div class="foot">
+    이 보고서는 복구온에 기록된 사실(수배·호출·도착·사진·견적)을 그대로 옮긴 것입니다.
+    복구온은 중개 플랫폼으로서 <b>손해액을 사정하거나 금액을 확정하지 않으며</b>,
+    금액의 승인은 발주처가 단독으로 합니다. 표준단가 개산은 참고 자료입니다.<br>
+    ㈜올림포스네트웍스 · 문서 생성 {{ now }}
+  </div>
+</div>
+<script nonce="{{ csp_nonce }}">
+  document.getElementById('pr').addEventListener('click', function(){ window.print(); });
+</script>
+</body>
+</html>
