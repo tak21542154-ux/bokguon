@@ -3428,7 +3428,7 @@ VIEWS.settle = async () => {
         대시보드 카드와 <b>같은 조건</b>으로 걸러 냈으므로, 위 합계가 그 숫자와 같아야 합니다.</div>
     </div>`:''}
     <div class="panel">
-      <div class="ph"><span class="pt">정산 내역 <small>${md?`${esc(md.label)} ${data.length}건 · `:(qs.toString()?data.length+'건 검색결과 · ':'')}보험사 입금 → 내부 검수(필수) → 수수료 공제 → 업체 이체</small></span></div>
+      <div class="ph"><span class="pt">정산 내역 <small>${md?`${esc(md.label)} ${data.length}건 · `:(qs.toString()?data.length+'건 검색결과 · ':'')}보험사→시행사 직접 지급 확인 → 내부 검수(필수) → 지급 확정 · 수수료는 보험사가 복구온에 별도 송금(상세에서 확인)</small></span></div>
       ${searchBar('settle',{ph:'접수번호·발주처·시공업체'})}
       <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
         ${xlsxBtn('settlements','정산')}
@@ -3451,7 +3451,7 @@ VIEWS.settle = async () => {
           <td>${statusPill(s.insurer_paid)}</td><td>${statusPill(s.review_status)}</td><td>${statusPill(s.transfer_status)}</td>
           <td class="r">${settleAction(s)}</td></tr>`).join('')}
       </table></div>
-      <p style="font-size:.66rem;color:var(--faint);margin-top:10px">※ <b>보험사 입금 확인 → 지급 검수 승인 → 이체 완료</b> 순서로만 진행됩니다. 입금 전 지급 예약은 서버에서 차단되며, 모든 단계가 감사 로그에 기록됩니다.</p>
+      <p style="font-size:.66rem;color:var(--faint);margin-top:10px">※ <b>보험사→시행사 지급 확인 → 지급 검수 승인 → 이체 완료</b> 순서로만 진행됩니다. 공사대금은 보험사가 시행사에 직접 지급하고, 복구온 수수료는 (기존과 같이 시행사 부담으로) 시행사가 별도로 송금합니다(수수료 입금 확인은 각 건 상세에서 처리). 확인 전 지급 예약은 서버에서 차단되며, 모든 단계가 감사 로그에 기록됩니다.</p>
     </div>`;
 };
 // 보험사에 완료승인을 다시 안내한다(상태는 바뀌지 않는다 — 알림만).
@@ -3570,16 +3570,31 @@ async function settleDetail(id){
       </div>
       <div style="font-size:.7rem;color:var(--faint);margin-top:4px">${esc(d.tax.basis)}</div>
     </div>`:''}
-    <div class="ph" style="margin-top:6px"><span class="pt" style="font-size:.8rem">정산 단계</span></div>
+    <div class="ph" style="margin-top:6px"><span class="pt" style="font-size:.8rem">정산 단계 (공사대금 — 보험사 → 시행사 직접 지급)</span></div>
     <div style="padding:4px 0">
       ${step('보험사 공사 완료 승인', !!s.insurer_approved, (s.insurer_approved_at||'').slice(5,16))}
-      ${step('보험사 입금 확인', s.insurer_paid==='입금완료')}
+      ${step('보험사 → 시행사 지급 확인', s.insurer_paid==='입금완료')}
       ${step('지급 검수 승인 (더블 크로스체크)', s.review_status==='승인')}
-      ${step('수수료 공제 후 업체 지급', s.transfer_status==='이체완료')}
+      ${step('시행사 지급 완료', s.transfer_status==='이체완료')}
     </div>
-    <div class="ph" style="margin-top:10px"><span class="pt" style="font-size:.8rem">지급 계좌</span></div>
+    <div class="ph" style="margin-top:10px"><span class="pt" style="font-size:.8rem">시행사 지급 계좌</span></div>
     <div class="kv"><span class="k">시공업체</span><span class="v">${esc(p.name||'')}</span></div>
     <div class="kv"><span class="k">계좌</span><span class="v">${esc(p.bank_name||'-')} ${esc(p.account_masked||'미등록')} ${p.bank_holder?'('+esc(p.bank_holder)+')':''}</span></div>
+    ${/*  ⚠ 정산구조 변경(2026-10-18) — 수수료는 더 이상 시행사 지급액에서 공제돼
+           나가는 게 아니라, 보험사가 복구온에 별도로 송금한다. 그래서 위 '정산
+           단계'(시행사 지급 체인)와는 완전히 독립된 별도 확인 절차·버튼을 둔다 —
+           review_status 승인만 선행 관문(이 건이 정당한지는 먼저 확인돼야 하므로),
+           순서는 시행사 지급과 무관하게 아무 때나 할 수 있다. */''}
+    <div class="ph" style="margin-top:10px"><span class="pt" style="font-size:.8rem">복구온 수수료 (시행사 부담 — 시행사 → 복구온 별도 송금)</span></div>
+    <div style="padding:4px 0">
+      ${step('수수료 입금 확인', s.fee_collect_status==='완료', (s.fee_collected_at||'').slice(5,16))}
+    </div>
+    ${s.void_status!=='취소' && s.review_status==='승인' && s.fee_collect_status!=='완료'
+      ? (myRank()>=2
+          ? `<button class="btn a sm" data-act="settleFeeCollected" data-arg="${s.id}">수수료 입금 확인</button>`
+          : `<span class="sub">중간관리자 이상만 처리할 수 있습니다</span>`)
+      : (s.review_status!=='승인' && s.fee_collect_status!=='완료'
+          ? `<span class="sub">지급 검수 승인 후 확인할 수 있습니다</span>` : '')}
     ${d.timeline&&d.timeline.length?`<div class="ph" style="margin-top:10px"><span class="pt" style="font-size:.8rem">처리 이력</span></div>
       <div style="font-size:.72rem;max-height:150px;overflow:auto">${d.timeline.map(t=>`· ${esc((t.created_at||'').slice(5,16))} ${esc(t.actor||'')} — ${esc(t.action)}`).join('<br>')}</div>`:''}
     <div class="modal-foot"><span style="flex:1"></span><button class="btn g" data-act="closeModal">닫기</button></div>`);
@@ -3612,6 +3627,20 @@ async function settlePaid(id){
   }catch(e){
     //  ⚠⚠ [라운드500] 형제(settleVoid) 참조 — catch도 성공 분기와 같이 정리한다.
     toast(e.message); refreshBadges(); VIEWS.settle();
+  }
+}
+
+//  정산구조 변경(2026-10-18) 신규 — 시행사 지급 체인(settlePaid→Review→Transfer)과
+//  완전히 독립된 별도 확인. 성공하면 상세 모달을 다시 열어 체크 표시를 바로 보여준다
+//  (닫아버리면 '진짜 저장됐는지' 다시 눌러 확인해야 해서 — 형제들과 다르게 이 모달
+//  자체를 새로고침하는 이유).
+async function settleFeeCollected(id){
+  try{
+    await api('POST','/api/settlements/'+id+'/fee-collected');
+    toast('복구온 <b>수수료 입금</b>을 확인했습니다.');
+    refreshBadges(); VIEWS.settle(); settleDetail(id);
+  }catch(e){
+    toast(e.message);
   }
 }
 
@@ -6574,6 +6603,7 @@ ACT.obHandled = async (a) => {
   ACT.settleReview = (a, el, ev, b) => settleReview(_n(a), _n(b), el, ev);
   ACT.doSettleReview = (a, el, ev, b) => doSettleReview(_n(a), _n(b), el, ev);
   ACT.settlePaid = (a, el, ev, b) => settlePaid(_n(a), _n(b), el, ev);
+  ACT.settleFeeCollected = (a) => settleFeeCollected(_n(a));
   ACT.pbSync = () => pbSync();
   ACT.settlePickAll = () => settlePickAll();
   ACT.settlePaidBulk = () => settlePaidBulk();

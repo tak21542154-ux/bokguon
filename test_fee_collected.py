@@ -2,9 +2,10 @@
 """수수료(fee) 입금 확인 라우트 — 정산구조 변경(2026-10-18, 토니 결정) 신규 기능.
 
    전자금융거래법상 PG 등록 리스크를 없애려고 "보험사→복구온→시행사"(복구온이
-   전액을 경유)를 "보험사→시행사 직접 지급 + 보험사→복구온 수수료 별도 지급"
-   으로 바꿨다. api_settlement_fee_collected()(app.py)가 그 수수료 입금을
-   기존 insurer_paid/transfer_status 와 독립적으로 추적한다 — 검증 대상:
+   전액을 경유)를 "보험사→시행사 직접 지급(전액) + 시행사→복구온 수수료 별도
+   지급"으로 바꿨다(수수료를 시행사가 부담하는 기존 원칙은 그대로, 경유 여부만
+   바뀜). api_settlement_fee_collected()(app.py)가 그 수수료 입금을 기존
+   insurer_paid/transfer_status 와 독립적으로 추적한다 — 검증 대상:
 
    1) review_status='승인' 전에는 거부(선행 관문)
    2) 정상 경로: review 승인된 건은 성공 → fee_collect_status='완료' 기록

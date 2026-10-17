@@ -1630,7 +1630,7 @@ RENDER.settle = () => {
       <div class="kc gold"><div class="k">지급 예정</div><div class="v">${won(D.kpi.pending_pay)}<small>원</small></div><div class="d">청구 후 미입금</div></div>
       <div class="kc"><div class="k">정산 건수</div><div class="v">${ss.length}<small>건</small></div><div class="d">수수료는 시행사 부담</div></div>
     </div>
-    <div class="notice">정산 흐름: <b>①공사 완료 승인(귀사)</b> → ②복구온 계좌 입금 → ③복구온 입금 확인·더블 체크 → ④수수료 공제 후 시행사 지급. <b>귀사가 하실 일은 완료 승인과 대금 입금뿐</b>입니다.</div>
+    <div class="notice">정산 흐름: <b>①공사 완료 승인(귀사)</b> → ②공사대금 전액을 시행사 계좌로 직접 송금(귀사) → ③복구온 입금 확인·더블 체크. 수수료는 시행사가 복구온에 별도 납부하며 귀사와 무관합니다. <b>귀사가 하실 일은 완료 승인과 시행사 앞 대금 송금뿐</b>입니다.</div>
     <div class="panel">
       <div class="ph"><span class="pt">📄 월 정산 명세서 <small>발주 사건·지급·절감 한 달치를 엑셀로</small></span>
         <span style="flex:1"></span>
@@ -1645,7 +1645,7 @@ RENDER.settle = () => {
     <div class="panel">
       <div class="ph"><span class="pt">정산 내역 <small>${ss.length}건</small></span></div>
       <div style="overflow:auto"><table class="tbl">
-        <tr><th>사건</th><th>시행사</th><th class="r">공사대금</th><th>완료 승인</th><th>귀사 입금</th><th>업체 지급</th><th class="r">처리</th></tr>
+        <tr><th>사건</th><th>시행사</th><th class="r">공사대금</th><th>완료 승인</th><th>시행사 송금</th><th>지급 확정</th><th class="r">처리</th></tr>
         ${ss.length?ssView.map(s=>`<tr class="rowclick" data-act="caseDetail" data-arg="${s.case_id}">
           <td class="em">${esc(s.case_no)}</td><td>${esc(s.partner_name)}</td>
           <td class="r em">${won(s.amount)}</td>
@@ -1662,7 +1662,7 @@ RENDER.settle = () => {
     </div>`;
 };
 async function approveDone(sid){
-  if(!confirm('이 건의 공사 완료를 승인하시겠습니까?\n승인하면 복구온이 대금 입금을 확인하고 시행사 지급 절차를 진행합니다.')) return;
+  if(!confirm('이 건의 공사 완료를 승인하시겠습니까?\n승인 후 공사대금 전액을 시행사 계좌로 직접 송금해 주세요 — 복구온은 송금 사실을 확인만 합니다.')) return;
   try{
     const r=await api('POST','/api/insurer/settlements/'+sid+'/approve');
     toast(r.message||'완료 승인되었습니다.');
