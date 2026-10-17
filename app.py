@@ -5104,7 +5104,9 @@ def settlement_wait_info(conn, s, has_account):
     if not s.get("insurer_approved"):
         return "보험사 완료 승인 대기", "발주 보험사의 공사 완료 승인을 기다리는 중입니다.", False
     if s.get("insurer_paid") != "입금완료":
-        return "보험사 입금 대기", "보험사 공사대금 입금이 확인되면 검수가 시작됩니다.", False
+        return ("보험사 송금 대기",
+                "보험사가 공사대금 전액을 귀사 계좌로 직접 송금하면, 그 확인 후 검수가 시작됩니다.",
+                False)
     if s.get("case_id"):
         _cph = ",".join("?" * len(DEFECT_CLOSED_STATES))
         od = rows(conn.execute(
@@ -7447,8 +7449,14 @@ def api_dashboard():
     #   여기만 안 빼서 수수료가 53% 부풀려 보였다(모집단이 갈리면 비교가 무의미하다).
     fee_total = scalar("SELECT COALESCE(SUM(fee),0) FROM settlements "
                        "WHERE COALESCE(void_status,'') <> '취소' AND COALESCE(is_demo,0)=0")
+    #  ⚠ 정산구조 변경(2026-10-18) 이전엔 fee 가 복구온이 payout 이체 시 자동으로
+    #    공제해 챙기는 몫이라 transfer_status='이체완료'가 곧 "수수료도 받았다"는
+    #    뜻이었다. 지금은 시행사가 fee 를 복구온에 **별도로** 송금하므로(공사대금
+    #    지급과 수수료 수납이 서로 다른 사건), 실제 수납 여부는 독립 컬럼
+    #    fee_collect_status 로 봐야 한다 — 안 바꾸면 수수료를 실제로 못 받았어도
+    #    시행사가 지급만 받으면 "수납 완료"로 잘못 집계된다.
     fee_paid = scalar("SELECT COALESCE(SUM(fee),0) FROM settlements "
-                      "WHERE transfer_status='이체완료' AND COALESCE(void_status,'') <> '취소' "
+                      "WHERE fee_collect_status='완료' AND COALESCE(void_status,'') <> '취소' "
                       "  AND COALESCE(is_demo,0)=0")
     payout_pending = scalar(
         "SELECT COALESCE(SUM(payout),0) FROM settlements "
@@ -14100,8 +14108,12 @@ MONEY_DRILL = {
         "note": "취소분을 뺀 전체 정산의 공사대금 합계입니다."},
     "fee_paid": {
         "label": "수수료 수익(수납)", "sum_col": "fee",
-        "where": "transfer_status='이체완료' AND COALESCE(void_status,'') <> '취소'",
-        "note": "이체가 끝나 수수료가 실제로 남은 건만입니다."},
+        #  ⚠ 정산구조 변경(2026-10-18) — 수수료는 이제 시행사가 복구온에 별도
+        #    납부한다(transfer_status 는 "시행사가 지급받았는가"만 본다, 수수료
+        #    수납 여부와는 독립). 위 api_settlements_summary 의 같은 이름 지표와
+        #    기준을 맞춘다.
+        "where": "fee_collect_status='완료' AND COALESCE(void_status,'') <> '취소'",
+        "note": "시행사가 복구온에 수수료를 실제로 납부 완료한 건만입니다."},
     "fee_total": {
         "label": "수수료 발생액", "sum_col": "fee",
         "where": "COALESCE(void_status,'') <> '취소'",
@@ -14111,9 +14123,9 @@ MONEY_DRILL = {
         "where": "transfer_status IN ('대기','이체예약') AND COALESCE(void_status,'') <> '취소'",
         "note": "아직 이체하지 않은 건입니다. 지급 검수 승인 후 이체하세요."},
     "inflow_pending": {
-        "label": "보험사 입금 대기", "sum_col": "amount",
+        "label": "보험사 송금 대기", "sum_col": "amount",
         "where": "insurer_paid='대기' AND COALESCE(void_status,'') <> '취소'",
-        "note": "청구했으나 아직 입금 확인이 안 된 건입니다."},
+        "note": "보험사가 시행사에게 아직 공사대금을 직접 송금하지 않은 건입니다."},
 }
 
 
@@ -22292,8 +22304,17 @@ def api_settlements_summary():
     live = " FROM settlements WHERE COALESCE(is_demo,0)=0 AND COALESCE(void_status,'') <> '취소'"
     try:
         r = one(conn.execute(
+            #  ⚠ fee_paid 만 fee_collect_status 기준(시행사→복구온 별도 수납,
+            #    2026-10-18 정산구조 변경) — amt_paid/payout_paid 는 "시행사가
+            #    지급받았는가"라 여전히 transfer_status 가 맞는 기준이다(아래
+            #    7452행 근처 fee_paid 와 같은 이유, 거기 주석 참고).
             "SELECT COUNT(*) n, "
-            "       COALESCE(SUM(CASE WHEN transfer_status='이체완료' THEN fee END),0) fee_paid, "
+            "       COALESCE(SUM(CASE WHEN fee_collect_status='완료' THEN fee END),0) fee_paid, "
+            #  ⚠ fee_rate_avg(아래) = fee_paid/fee_amt_base 라, 분모도 **같은
+            #    모집단**(fee_collect_status='완료'인 행)의 amount 여야 한다 —
+            #    transfer_status 기준 집합과 섞으면(두 상태가 서로 독립이라 건이
+            #    다를 수 있다) 비율이 수학적으로 무의미해진다.
+            "       COALESCE(SUM(CASE WHEN fee_collect_status='완료' THEN amount END),0) fee_amt_base, "
             "       COALESCE(SUM(CASE WHEN transfer_status='이체완료' THEN amount END),0) amt_paid, "
             "       COALESCE(SUM(CASE WHEN transfer_status='이체완료' THEN payout END),0) payout_paid, "
             "       SUM(CASE WHEN COALESCE(insurer_approved,0)=0 THEN 1 ELSE 0 END) approve_wait, "
@@ -22321,8 +22342,8 @@ def api_settlements_summary():
     finally:
         conn.close()
     d = dict(r or {})
-    d["fee_rate_avg"] = (round(d.get("fee_paid", 0) * 1000.0 / d["amt_paid"], 1) / 10.0
-                         if d.get("amt_paid") else 0)
+    d["fee_rate_avg"] = (round(d.get("fee_paid", 0) * 1000.0 / d["fee_amt_base"], 1) / 10.0
+                         if d.get("fee_amt_base") else 0)
     d["drill"] = drill
     return jsonify(d)
 

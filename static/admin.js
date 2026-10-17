@@ -673,9 +673,9 @@ VIEWS.dash = async () => {
         <div class="k">수수료 수익 <span class="kgo">›</span></div>
         <div class="v">${won(m.fee_paid)}<small>원</small></div>
         <div class="d">발생 <a href="#" data-act="drillMoney" data-arg="fee_total" style="color:inherit;text-decoration:underline">${won(m.fee_total)}원</a> 중 수납</div></div>
-      <div class="kc clickable" data-act="drillMoney" data-arg="inflow_pending" title="입금 대기 중인 건 보기">
-        <div class="k">보험사 입금 대기 <span class="kgo">›</span></div>
-        <div class="v">${won(m.inflow_pending)}<small>원</small></div><div class="d">청구 후 미입금</div></div>
+      <div class="kc clickable" data-act="drillMoney" data-arg="inflow_pending" title="송금 대기 중인 건 보기">
+        <div class="k">보험사 송금 대기 <span class="kgo">›</span></div>
+        <div class="v">${won(m.inflow_pending)}<small>원</small></div><div class="d">승인 후 시행사 미입금</div></div>
       <div class="kc clickable" data-act="drillMoney" data-arg="payout_pending" title="지급 예정 건 보기">
         <div class="k">업체 지급 예정 <span class="kgo">›</span></div>
         <div class="v">${won(m.payout_pending)}<small>원</small></div><div class="d">지급 검수 후 · 이체 실행 대기</div></div>
@@ -3392,8 +3392,8 @@ VIEWS.settle = async () => {
           <div class="d">${wait.length?`${won(amt)}원 — 담당자가 이체를 눌러야 나갑니다`:'대기 없음'}</div></div>`;})()}
       ${/*  ⚠ 돈 3칸은 **서버 집계(sum)** 를 쓴다. 화면에서 목록을 더하면 LIMIT 1000 에
              잘리고 취소된 정산까지 섞여, 대시보드와 숫자가 어긋난다. */''}
-      <div class="kc"><div class="k">평균 수수료율</div><div class="v">${sum ? (sum.fee_rate_avg ?? '—') : '—'}<small>%</small></div><div class="d">이체완료 기준 · 취소분 제외</div></div>
-      <div class="kc hero"><div class="k">이체완료 수수료</div><div class="v">${won(sum ? sum.fee_paid : 0)}<small>원</small></div><div class="d">전체 누적 · 취소분 제외</div></div>
+      <div class="kc"><div class="k">평균 수수료율</div><div class="v">${sum ? (sum.fee_rate_avg ?? '—') : '—'}<small>%</small></div><div class="d">시행사 수수료 납부완료 기준 · 취소분 제외</div></div>
+      <div class="kc hero"><div class="k">수수료 수납액</div><div class="v">${won(sum ? sum.fee_paid : 0)}<small>원</small></div><div class="d">시행사→복구온 납부완료 누적 · 취소분 제외</div></div>
       <div class="kc"><div class="k">총 정산 건</div><div class="v">${sum ? sum.n : all.length}<small>건</small></div><div class="d">${sum ? '취소분 제외' : '표시 기준'}</div></div>
     </div>
     ${apWait.length?`<div class="panel" style="border:1.5px solid var(--red);margin-bottom:12px">
