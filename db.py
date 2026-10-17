@@ -1334,6 +1334,17 @@ MIGRATIONS = [
     #    소명 근거)가 영구히 사라졌다. 형제 skipped_optout/skipped_nocontact
     #    와 같은 대우를 준다.
     ("campaigns", "skipped_noconsent", "INTEGER DEFAULT 0"),
+    #  ⚠ 정산 구조 변경(2026-10-18, 토니 결정) — 전자금융거래법상 PG(전자지급결제대행)
+    #    등록 리스크를 없애기 위해 "보험사→복구온→시행사"(복구온이 전액을 경유)를
+    #    "보험사→시행사 직접 지급 + 보험사→복구온 수수료(fee) 별도 지급"으로 바꾼다.
+    #    기존 insurer_paid/transfer_status 는 "시행사가 돈을 받았는가"를 그대로
+    #    추적하면 되므로 안 건드린다(누가 보냈는지는 바뀌어도 받았다는 사실 자체는
+    #    같은 의미). 새로 필요한 건 수수료(fee) 입금만 **독립적으로** 추적하는 것 —
+    #    전에는 fee 가 amount 안에 섞여 들어와 insurer_paid 하나로 같이 확인됐지만,
+    #    이제 보험사가 fee 를 별도 송금하므로 그게 들어왔는지 따로 확인해야 한다.
+    ("settlements", "fee_collect_status", "TEXT DEFAULT '대기'"),   # 대기 / 완료
+    ("settlements", "fee_collected_at", "TEXT"),
+    ("settlements", "fee_collected_by", "TEXT"),
 ]
 
 # seed() 가 넣은 행을 전부 데모로 표시할 테이블 목록

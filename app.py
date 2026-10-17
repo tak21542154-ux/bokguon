@@ -14353,6 +14353,54 @@ def api_settlement_paid(sid):
     return jsonify({"ok": True})
 
 
+@app.post("/api/settlements/<int:sid>/fee-collected")
+@require_role("중간관리자")
+def api_settlement_fee_collected(sid):
+    """수수료(fee) 입금 확인 — 정산구조 변경(2026-10-18) 이후 신설.
+
+    기존엔 보험사가 전체 금액(amount)을 복구온에 입금 → 복구온이 시행사에
+    payout 을 이체했다(그래서 금액 전체가 플랫폼을 경유 — 전자금융거래법상
+    PG 등록 리스크). 지금은 보험사가 시행사에게 payout 을 **직접** 지급하고,
+    복구온에게는 수수료(fee)만 별도로 보낸다 — 플랫폼은 자기 몫(fee)만 받으므로
+    자금을 경유하지 않는다.
+
+    ⚠ 일부러 insurer_paid/transfer_status(시행사가 돈을 받았는지 추적하는
+    기존 상태)와는 독립된 별도 컬럼으로 뒀다. "시행사가 지급받았다"와
+    "복구온이 수수료를 받았다"는 이제 서로 다른 당사자가 서로 다른 시점에
+    보내는 별개의 송금이라, 하나가 다른 하나를 기다릴 이유가 없다(순서를
+    강제하면 실제로는 안 그런데 억지로 선후관계를 만드는 셈이 된다).
+    내부 검수(review_status 승인)는 그대로 선행 관문으로 둔다 — "이 건이
+    정당한 거래인지"는 수수료를 누가 보내든 먼저 확인돼야 하기 때문이다.
+    """
+    conn = DB.get_db()
+    conn.execute("BEGIN IMMEDIATE")
+    st = one(conn.execute("SELECT * FROM settlements WHERE id=?", (sid,)))
+    if not st:
+        conn.rollback(); conn.close()
+        return jsonify({"ok": False, "error": "정산 건을 찾을 수 없습니다."}), 404
+    if (st["void_status"] or "") == "취소":
+        conn.rollback(); conn.close()
+        return jsonify({"ok": False, "error": "취소된 정산 건입니다."}), 409
+    if st["review_status"] != "승인":
+        conn.rollback(); conn.close()
+        return jsonify({"ok": False, "error": "지급 검수 승인이 먼저 필요합니다."}), 409
+    if st["fee_collect_status"] == "완료":
+        conn.rollback(); conn.close()
+        return jsonify({"ok": False, "error": "이미 수수료 입금이 확인된 건입니다."}), 409
+    memo = _s(body().get("memo"), 100)
+    cur = conn.execute(
+        "UPDATE settlements SET fee_collect_status='완료', "
+        "fee_collected_at=datetime('now','+9 hours'), fee_collected_by=? "
+        "WHERE id=? AND fee_collect_status<>'완료'", (actor(), sid))
+    if not cur.rowcount:
+        conn.rollback(); conn.close()
+        return jsonify({"ok": False, "error": "다른 요청이 먼저 처리했습니다."}), 409
+    DB.log(conn, actor(), "수수료 입금 확인",
+           f"{st['case_no']} {st['fee']:,}원" + (f" ({memo})" if memo else ""))
+    conn.commit(); conn.close()
+    return jsonify({"ok": True})
+
+
 @app.post("/api/settlements/paid-bulk")
 @require_role("중간관리자")
 def api_settlements_paid_bulk():

@@ -316,7 +316,10 @@ def build():
     #    빌드 — "미확정 수탁자 N행 제외" 경고와 "8/8 반영"이 같은 실행에서
     #    동시에 찍힘). _ph() 와 같은 기준(비거나 공백뿐이면 미기재)으로 센다.
     filled = sum(1 for v in info.values() if (v or "").strip())
-    print(f"  회사 정보 {filled}/8 반영")
+    #  ⚠ 분모를 8로 박아 두면(2026-10-18 PG 항목 삭제로 INFO_FIELDS 가 8→7이
+    #    된 것처럼) 항목이 늘거나 줄 때마다 조용히 틀린 비율을 찍는다 — 실제
+    #    정의(len(LEGAL.INFO_FIELDS))를 그대로 읽는다.
+    print(f"  회사 정보 {filled}/{len(LEGAL.INFO_FIELDS)} 반영")
     print(f"  문의 창구: 전화 {TEL} · 메일 {MAIL}")
 
 
