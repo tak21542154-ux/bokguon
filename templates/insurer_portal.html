@@ -1647,7 +1647,10 @@ RENDER.settle = () => {
       <div style="overflow:auto"><table class="tbl">
         <tr><th>사건</th><th>시행사</th><th class="r">공사대금</th><th>완료 승인</th><th>시행사 송금</th><th>지급 확정</th><th class="r">처리</th></tr>
         ${ss.length?ssView.map(s=>`<tr class="rowclick" data-act="caseDetail" data-arg="${s.case_id}">
-          <td class="em">${esc(s.case_no)}</td><td>${esc(s.partner_name)}</td>
+          <td class="em">${esc(s.case_no)}</td><td>${esc(s.partner_name)}
+            ${s.insurer_approved && s.partner_bank_account?`<div class="sub" style="margin-top:2px;white-space:nowrap">
+              🏦 ${esc(s.partner_bank_name||'')} ${esc(s.partner_bank_account)} (${esc(s.partner_bank_holder||'')})</div>`
+            : s.insurer_approved ? '<div class="sub" style="color:var(--red);margin-top:2px">⚠ 계좌 미등록 — 송금 불가, 복구온 운영팀에 문의해 주세요</div>' : ''}</td>
           <td class="r em">${won(s.amount)}</td>
           <td>${s.insurer_approved?'<span class="tag green">승인완료</span>':'<span class="tag amber">대기</span>'}</td>
           <td>${stTag(s.insurer_paid)}</td><td>${stTag(s.transfer_status)}</td>

@@ -3998,6 +3998,24 @@ def api_insurer_dashboard():
               AND COALESCE(void_status,'') <> '취소'
               AND COALESCE(is_demo,0)=0
             ORDER BY id DESC LIMIT 200""", _sp))
+    #  ⚠ 정산구조 변경(2026-10-18) 이후 신설 — 이제 공사대금을 보험사가 시행사
+    #    계좌로 **직접** 송금하므로, 보험사가 그 계좌번호를 알아야 한다(예전엔
+    #    복구온이 이체를 대신 했으므로 보험사 화면에 계좌를 보여줄 이유가 없었다).
+    #    어드민 화면(api_settlement_detail)은 마스킹해서 보여주지만, 여긴 실제
+    #    송금 당사자라 마스킹하면 송금을 못한다 — 전체 번호를 복호화해서 내려준다.
+    #    N+1 방지로 한 번에 IN 조회.
+    _pids = {s["partner_id"] for s in setts if s.get("partner_id")}
+    if _pids:
+        _ph3 = ",".join("?" * len(_pids))
+        _accts = {r["id"]: r for r in rows(conn.execute(
+            f"SELECT id, bank_name, bank_holder, bank_account_enc FROM partners WHERE id IN ({_ph3})",
+            tuple(_pids)))}
+        for s in setts:
+            a = _accts.get(s.get("partner_id"))
+            s["partner_bank_name"] = a["bank_name"] if a else None
+            s["partner_bank_holder"] = a["bank_holder"] if a else None
+            s["partner_bank_account"] = (CRYPTO.decrypt(a["bank_account_enc"])
+                                          if a and a["bank_account_enc"] else None)
     _sett_kpi = one(conn.execute(
         f"""SELECT COALESCE(SUM(CASE WHEN insurer_paid='입금완료' THEN amount ELSE 0 END),0) paid,
                   COALESCE(SUM(CASE WHEN insurer_paid<>'입금완료' THEN amount ELSE 0 END),0) pending_pay
